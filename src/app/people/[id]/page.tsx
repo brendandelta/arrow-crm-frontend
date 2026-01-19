@@ -14,7 +14,9 @@ import {
   Calendar,
   Tag,
   Briefcase,
-  ExternalLink
+  ExternalLink,
+  ChevronDown,
+  AlertCircle
 } from "lucide-react";
 
 interface Person {
@@ -76,7 +78,7 @@ interface Person {
 }
 
 function formatDate(dateStr: string | null) {
-  if (!dateStr) return "—";
+  if (!dateStr) return null;
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -103,6 +105,60 @@ function OrgKindBadge({ kind }: { kind: string }) {
     broker: "bg-slate-100 text-slate-600",
   };
   return <Badge className={styles[kind] || styles.broker}>{kind}</Badge>;
+}
+
+function getMissingFields(person: Person): string[] {
+  const missing: string[] = [];
+
+  if (!person.emails?.length) missing.push("Email");
+  if (!person.phones?.length) missing.push("Phone");
+  if (!person.linkedinUrl) missing.push("LinkedIn");
+  if (!person.twitterUrl) missing.push("Twitter");
+  if (!person.bio) missing.push("Bio");
+  if (!person.birthday) missing.push("Birthday");
+  if (!person.nickname) missing.push("Nickname");
+  if (!person.source) missing.push("Source");
+  if (!person.sourceDetail) missing.push("Source Detail");
+  if (!person.preferredContact) missing.push("Preferred Contact");
+  if (!person.lastContactedAt) missing.push("Last Contacted");
+  if (!person.nextFollowUpAt) missing.push("Next Follow Up");
+  if (!person.tags?.length) missing.push("Tags");
+  if (!person.notes) missing.push("Notes");
+  if (!person.address.line1 && !person.address.city && !person.address.country) missing.push("Address");
+  if (!person.currentEmployment) missing.push("Current Employment");
+
+  return missing;
+}
+
+function MissingDataDropdown({ missingFields }: { missingFields: string[] }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (missingFields.length === 0) return null;
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-amber-50 text-amber-700 border border-amber-200 rounded-md hover:bg-amber-100 transition-colors"
+      >
+        <AlertCircle className="h-4 w-4" />
+        {missingFields.length} missing field{missingFields.length !== 1 ? "s" : ""}
+        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-md shadow-lg z-10">
+          <div className="p-2">
+            <div className="text-xs font-medium text-muted-foreground px-2 py-1">Missing Data</div>
+            {missingFields.map((field) => (
+              <div key={field} className="px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-50 rounded">
+                {field}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function PersonDetailPage() {
@@ -155,6 +211,17 @@ export default function PersonDetailPage() {
   const primaryEmail = person.emails?.find((e) => e.primary)?.value || person.emails?.[0]?.value;
   const primaryPhone = person.phones?.find((p) => p.primary)?.value || person.phones?.[0]?.value;
 
+  const missingFields = getMissingFields(person);
+
+  // Build details array with only non-empty fields
+  const details: Array<{ label: string; value: string }> = [];
+  if (person.nickname) details.push({ label: "Nickname", value: person.nickname });
+  if (person.birthday) details.push({ label: "Birthday", value: formatDate(person.birthday)! });
+  if (person.source) details.push({ label: "Source", value: person.source });
+  if (person.sourceDetail) details.push({ label: "Source Detail", value: person.sourceDetail });
+  if (person.preferredContact) details.push({ label: "Preferred Contact", value: person.preferredContact });
+  details.push({ label: "Created", value: formatDate(person.createdAt)! });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -191,63 +258,66 @@ export default function PersonDetailPage() {
             </div>
           </div>
         </div>
+        <MissingDataDropdown missingFields={missingFields} />
       </div>
 
-      {/* Contact Info */}
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex flex-wrap gap-6">
-            {primaryEmail && (
-              <a
-                href={`mailto:${primaryEmail}`}
-                className="flex items-center gap-2 text-blue-600 hover:underline"
-              >
-                <Mail className="h-4 w-4" />
-                {primaryEmail}
-              </a>
-            )}
-            {primaryPhone && (
-              <a
-                href={`tel:${primaryPhone}`}
-                className="flex items-center gap-2 text-blue-600 hover:underline"
-              >
-                <Phone className="h-4 w-4" />
-                {primaryPhone}
-              </a>
-            )}
-            {address && (
-              <span className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                {address}
-              </span>
-            )}
-            {person.linkedinUrl && (
-              <a
-                href={person.linkedinUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-blue-600 hover:underline"
-              >
-                <ExternalLink className="h-4 w-4" />
-                LinkedIn
-              </a>
-            )}
-            {person.twitterUrl && (
-              <a
-                href={person.twitterUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-blue-600 hover:underline"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Twitter
-              </a>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Contact Info - only show if there's any contact info */}
+      {(primaryEmail || primaryPhone || address || person.linkedinUrl || person.twitterUrl) && (
+        <Card>
+          <CardContent className="pt-4">
+            <div className="flex flex-wrap gap-6">
+              {primaryEmail && (
+                <a
+                  href={`mailto:${primaryEmail}`}
+                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                >
+                  <Mail className="h-4 w-4" />
+                  {primaryEmail}
+                </a>
+              )}
+              {primaryPhone && (
+                <a
+                  href={`tel:${primaryPhone}`}
+                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                >
+                  <Phone className="h-4 w-4" />
+                  {primaryPhone}
+                </a>
+              )}
+              {address && (
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  {address}
+                </span>
+              )}
+              {person.linkedinUrl && (
+                <a
+                  href={person.linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  LinkedIn
+                </a>
+              )}
+              {person.twitterUrl && (
+                <a
+                  href={person.twitterUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Twitter
+                </a>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Stats Row */}
+      {/* Stats Row - only show cards with actual data */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-4">
@@ -258,33 +328,39 @@ export default function PersonDetailPage() {
             <div className="text-2xl font-semibold">{person.employments.length}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <Mail className="h-4 w-4" />
-              Contact Count
-            </div>
-            <div className="text-2xl font-semibold">{person.contactCount}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <Calendar className="h-4 w-4" />
-              Last Contact
-            </div>
-            <div className="text-2xl font-semibold">{formatDate(person.lastContactedAt)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <Calendar className="h-4 w-4" />
-              Follow Up
-            </div>
-            <div className="text-2xl font-semibold">{formatDate(person.nextFollowUpAt)}</div>
-          </CardContent>
-        </Card>
+        {person.contactCount > 0 && (
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                <Mail className="h-4 w-4" />
+                Contact Count
+              </div>
+              <div className="text-2xl font-semibold">{person.contactCount}</div>
+            </CardContent>
+          </Card>
+        )}
+        {person.lastContactedAt && (
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                <Calendar className="h-4 w-4" />
+                Last Contact
+              </div>
+              <div className="text-2xl font-semibold">{formatDate(person.lastContactedAt)}</div>
+            </CardContent>
+          </Card>
+        )}
+        {person.nextFollowUpAt && (
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                <Calendar className="h-4 w-4" />
+                Follow Up
+              </div>
+              <div className="text-2xl font-semibold">{formatDate(person.nextFollowUpAt)}</div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Bio */}
@@ -323,7 +399,7 @@ export default function PersonDetailPage() {
                       <Building2 className="h-5 w-5 text-slate-500" />
                     </div>
                     <div>
-                      <div className="font-medium">{emp.title || "—"}</div>
+                      {emp.title && <div className="font-medium">{emp.title}</div>}
                       <div className="text-sm text-muted-foreground flex items-center gap-2">
                         <span>{emp.organization.name}</span>
                         {emp.department && <span>· {emp.department}</span>}
@@ -392,62 +468,42 @@ export default function PersonDetailPage() {
         </Card>
       )}
 
-      {/* Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-            {person.nickname && (
-              <div>
-                <dt className="text-muted-foreground">Nickname</dt>
-                <dd className="font-medium">{person.nickname}</dd>
-              </div>
-            )}
-            {person.birthday && (
-              <div>
-                <dt className="text-muted-foreground">Birthday</dt>
-                <dd className="font-medium">{formatDate(person.birthday)}</dd>
-              </div>
-            )}
-            <div>
-              <dt className="text-muted-foreground">Source</dt>
-              <dd className="font-medium">{person.source || "—"}</dd>
-            </div>
-            {person.sourceDetail && (
-              <div>
-                <dt className="text-muted-foreground">Source Detail</dt>
-                <dd className="font-medium">{person.sourceDetail}</dd>
-              </div>
-            )}
-            <div>
-              <dt className="text-muted-foreground">Preferred Contact</dt>
-              <dd className="font-medium">{person.preferredContact || "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Created</dt>
-              <dd className="font-medium">{formatDate(person.createdAt)}</dd>
-            </div>
-          </dl>
-          {person.tags?.length > 0 && (
-            <div className="mt-4 pt-4 border-t">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Tag className="h-4 w-4 text-muted-foreground" />
-                {person.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary">{tag}</Badge>
+      {/* Details - only show if there are any details */}
+      {(details.length > 0 || person.tags?.length > 0 || person.notes) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {details.length > 0 && (
+              <dl className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                {details.map(({ label, value }) => (
+                  <div key={label}>
+                    <dt className="text-muted-foreground">{label}</dt>
+                    <dd className="font-medium">{value}</dd>
+                  </div>
                 ))}
+              </dl>
+            )}
+            {person.tags?.length > 0 && (
+              <div className={details.length > 0 ? "mt-4 pt-4 border-t" : ""}>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Tag className="h-4 w-4 text-muted-foreground" />
+                  {person.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary">{tag}</Badge>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {person.notes && (
-            <div className="mt-4 pt-4 border-t">
-              <h4 className="text-sm text-muted-foreground mb-2">Notes</h4>
-              <p className="text-sm whitespace-pre-wrap">{person.notes}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+            {person.notes && (
+              <div className={details.length > 0 || person.tags?.length > 0 ? "mt-4 pt-4 border-t" : ""}>
+                <h4 className="text-sm text-muted-foreground mb-2">Notes</h4>
+                <p className="text-sm whitespace-pre-wrap">{person.notes}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

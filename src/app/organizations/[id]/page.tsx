@@ -16,7 +16,9 @@ import {
   Users,
   CircleDollarSign,
   Tag,
-  Calendar
+  Calendar,
+  ChevronDown,
+  AlertCircle
 } from "lucide-react";
 
 interface Organization {
@@ -69,7 +71,7 @@ interface Organization {
 }
 
 function formatCurrency(cents: number | null) {
-  if (!cents || cents === 0) return "—";
+  if (!cents || cents === 0) return null;
   const dollars = cents / 100;
   if (dollars >= 1_000_000_000) {
     return `$${(dollars / 1_000_000_000).toFixed(1).replace(/\.0$/, "")}B`;
@@ -84,7 +86,7 @@ function formatCurrency(cents: number | null) {
 }
 
 function formatDate(dateStr: string | null) {
-  if (!dateStr) return "—";
+  if (!dateStr) return null;
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -135,6 +137,60 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge className={styles[status] || styles.sourcing}>{status}</Badge>;
 }
 
+function getMissingFields(org: Organization): string[] {
+  const missing: string[] = [];
+
+  if (!org.website) missing.push("Website");
+  if (!org.email) missing.push("Email");
+  if (!org.phone) missing.push("Phone");
+  if (!org.linkedinUrl) missing.push("LinkedIn");
+  if (!org.twitterUrl) missing.push("Twitter");
+  if (!org.description) missing.push("Description");
+  if (!org.legalName) missing.push("Legal Name");
+  if (!org.sector) missing.push("Sector");
+  if (!org.subSector) missing.push("Sub-Sector");
+  if (!org.stage) missing.push("Stage");
+  if (!org.employeeRange) missing.push("Employee Range");
+  if (!org.lastContactedAt) missing.push("Last Contacted");
+  if (!org.nextFollowUpAt) missing.push("Next Follow Up");
+  if (!org.tags?.length) missing.push("Tags");
+  if (!org.notes) missing.push("Notes");
+  if (!org.address.line1 && !org.address.city && !org.address.country) missing.push("Address");
+
+  return missing;
+}
+
+function MissingDataDropdown({ missingFields }: { missingFields: string[] }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (missingFields.length === 0) return null;
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-amber-50 text-amber-700 border border-amber-200 rounded-md hover:bg-amber-100 transition-colors"
+      >
+        <AlertCircle className="h-4 w-4" />
+        {missingFields.length} missing field{missingFields.length !== 1 ? "s" : ""}
+        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-md shadow-lg z-10">
+          <div className="p-2">
+            <div className="text-xs font-medium text-muted-foreground px-2 py-1">Missing Data</div>
+            {missingFields.map((field) => (
+              <div key={field} className="px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-50 rounded">
+                {field}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function OrganizationDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -178,6 +234,17 @@ export default function OrganizationDetailPage() {
     org.address.country
   ].filter(Boolean).join(", ");
 
+  const missingFields = getMissingFields(org);
+
+  // Build details array with only non-empty fields
+  const details: Array<{ label: string; value: string }> = [];
+  if (org.legalName) details.push({ label: "Legal Name", value: org.legalName });
+  if (org.sector) details.push({ label: "Sector", value: org.sector });
+  if (org.subSector) details.push({ label: "Sub-Sector", value: org.subSector });
+  if (org.stage) details.push({ label: "Stage", value: org.stage });
+  if (org.employeeRange) details.push({ label: "Employees", value: org.employeeRange });
+  details.push({ label: "Created", value: formatDate(org.createdAt)! });
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -206,63 +273,66 @@ export default function OrganizationDetailPage() {
             </div>
           </div>
         </div>
+        <MissingDataDropdown missingFields={missingFields} />
       </div>
 
-      {/* Contact Info */}
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex flex-wrap gap-6">
-            {org.website && (
-              <a
-                href={org.website.startsWith("http") ? org.website : `https://${org.website}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-blue-600 hover:underline"
-              >
-                <Globe className="h-4 w-4" />
-                {org.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-              </a>
-            )}
-            {org.email && (
-              <a
-                href={`mailto:${org.email}`}
-                className="flex items-center gap-2 text-blue-600 hover:underline"
-              >
-                <Mail className="h-4 w-4" />
-                {org.email}
-              </a>
-            )}
-            {org.phone && (
-              <a
-                href={`tel:${org.phone}`}
-                className="flex items-center gap-2 text-blue-600 hover:underline"
-              >
-                <Phone className="h-4 w-4" />
-                {org.phone}
-              </a>
-            )}
-            {address && (
-              <span className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                {address}
-              </span>
-            )}
-            {org.linkedinUrl && (
-              <a
-                href={org.linkedinUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-blue-600 hover:underline"
-              >
-                <ExternalLink className="h-4 w-4" />
-                LinkedIn
-              </a>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Contact Info - only show if there's any contact info */}
+      {(org.website || org.email || org.phone || address || org.linkedinUrl) && (
+        <Card>
+          <CardContent className="pt-4">
+            <div className="flex flex-wrap gap-6">
+              {org.website && (
+                <a
+                  href={org.website.startsWith("http") ? org.website : `https://${org.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                >
+                  <Globe className="h-4 w-4" />
+                  {org.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                </a>
+              )}
+              {org.email && (
+                <a
+                  href={`mailto:${org.email}`}
+                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                >
+                  <Mail className="h-4 w-4" />
+                  {org.email}
+                </a>
+              )}
+              {org.phone && (
+                <a
+                  href={`tel:${org.phone}`}
+                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                >
+                  <Phone className="h-4 w-4" />
+                  {org.phone}
+                </a>
+              )}
+              {address && (
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  {address}
+                </span>
+              )}
+              {org.linkedinUrl && (
+                <a
+                  href={org.linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-blue-600 hover:underline"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  LinkedIn
+                </a>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Stats Row */}
+      {/* Stats Row - only show cards with actual data */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-4">
@@ -282,24 +352,28 @@ export default function OrganizationDetailPage() {
             <div className="text-2xl font-semibold">{org.deals.length}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <Calendar className="h-4 w-4" />
-              Last Contact
-            </div>
-            <div className="text-2xl font-semibold">{formatDate(org.lastContactedAt)}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <Calendar className="h-4 w-4" />
-              Follow Up
-            </div>
-            <div className="text-2xl font-semibold">{formatDate(org.nextFollowUpAt)}</div>
-          </CardContent>
-        </Card>
+        {org.lastContactedAt && (
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                <Calendar className="h-4 w-4" />
+                Last Contact
+              </div>
+              <div className="text-2xl font-semibold">{formatDate(org.lastContactedAt)}</div>
+            </CardContent>
+          </Card>
+        )}
+        {org.nextFollowUpAt && (
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
+                <Calendar className="h-4 w-4" />
+                Follow Up
+              </div>
+              <div className="text-2xl font-semibold">{formatDate(org.nextFollowUpAt)}</div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -328,7 +402,9 @@ export default function OrganizationDetailPage() {
                       </div>
                       <div>
                         <div className="font-medium">{person.firstName} {person.lastName}</div>
-                        <div className="text-xs text-muted-foreground">{person.title || "—"}</div>
+                        {person.title && (
+                          <div className="text-xs text-muted-foreground">{person.title}</div>
+                        )}
                       </div>
                     </div>
                     <WarmthBadge warmth={person.warmth} />
@@ -360,9 +436,11 @@ export default function OrganizationDetailPage() {
                   >
                     <div>
                       <div className="font-medium">{deal.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatCurrency(deal.committed)} committed
-                      </div>
+                      {formatCurrency(deal.committed) && (
+                        <div className="text-xs text-muted-foreground">
+                          {formatCurrency(deal.committed)} committed
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <StatusBadge status={deal.status} />
@@ -376,63 +454,45 @@ export default function OrganizationDetailPage() {
         </Card>
       </div>
 
-      {/* Details */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {org.description && (
-            <p className="text-sm mb-4">{org.description}</p>
-          )}
-          <dl className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-            {org.legalName && (
-              <div>
-                <dt className="text-muted-foreground">Legal Name</dt>
-                <dd className="font-medium">{org.legalName}</dd>
-              </div>
+      {/* Details - only show if there are any details */}
+      {(org.description || details.length > 0 || org.tags?.length > 0 || org.notes) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {org.description && (
+              <p className="text-sm mb-4">{org.description}</p>
             )}
-            <div>
-              <dt className="text-muted-foreground">Sector</dt>
-              <dd className="font-medium">{org.sector || "—"}</dd>
-            </div>
-            {org.subSector && (
-              <div>
-                <dt className="text-muted-foreground">Sub-Sector</dt>
-                <dd className="font-medium">{org.subSector}</dd>
-              </div>
-            )}
-            <div>
-              <dt className="text-muted-foreground">Stage</dt>
-              <dd className="font-medium">{org.stage || "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Employees</dt>
-              <dd className="font-medium">{org.employeeRange || "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Created</dt>
-              <dd className="font-medium">{formatDate(org.createdAt)}</dd>
-            </div>
-          </dl>
-          {org.tags.length > 0 && (
-            <div className="mt-4 pt-4 border-t">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Tag className="h-4 w-4 text-muted-foreground" />
-                {org.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary">{tag}</Badge>
+            {details.length > 0 && (
+              <dl className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                {details.map(({ label, value }) => (
+                  <div key={label}>
+                    <dt className="text-muted-foreground">{label}</dt>
+                    <dd className="font-medium">{value}</dd>
+                  </div>
                 ))}
+              </dl>
+            )}
+            {org.tags?.length > 0 && (
+              <div className={details.length > 0 || org.description ? "mt-4 pt-4 border-t" : ""}>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Tag className="h-4 w-4 text-muted-foreground" />
+                  {org.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary">{tag}</Badge>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {org.notes && (
-            <div className="mt-4 pt-4 border-t">
-              <h4 className="text-sm text-muted-foreground mb-2">Notes</h4>
-              <p className="text-sm whitespace-pre-wrap">{org.notes}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+            {org.notes && (
+              <div className={details.length > 0 || org.description || org.tags?.length > 0 ? "mt-4 pt-4 border-t" : ""}>
+                <h4 className="text-sm text-muted-foreground mb-2">Notes</h4>
+                <p className="text-sm whitespace-pre-wrap">{org.notes}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
