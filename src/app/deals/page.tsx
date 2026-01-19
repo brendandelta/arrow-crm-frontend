@@ -98,7 +98,7 @@ export default function DealsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/deals`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals`)
       .then((res) => res.json())
       .then((data) => {
         setDeals(Array.isArray(data) ? data : []);

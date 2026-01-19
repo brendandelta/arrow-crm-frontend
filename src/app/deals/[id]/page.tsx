@@ -139,7 +139,7 @@ export default function DealDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/deals/${params.id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/${params.id}`)
       .then((res) => res.json())
       .then((data) => {
         setDeal(data);

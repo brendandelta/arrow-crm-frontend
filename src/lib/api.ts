@@ -51,5 +51,5 @@ export interface HealthResponse {
 
 // API methods
 export async function getHealth(): Promise<HealthResponse> {
-  return api.get<HealthResponse>("/api/v1/health");
+  return api.get<HealthResponse>("/api/health");
 }

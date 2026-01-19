@@ -74,7 +74,7 @@ export default function MapPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/people`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/people`)
       .then((res) => res.json())
       .then((data) => {
         setPeople(Array.isArray(data) ? data : []);

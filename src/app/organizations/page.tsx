@@ -100,7 +100,7 @@ export default function OrganizationsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/organizations`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/organizations`)
       .then((res) => res.json())
       .then((data) => {
         setOrganizations(Array.isArray(data) ? data : []);

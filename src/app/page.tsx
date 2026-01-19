@@ -66,7 +66,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/dashboard`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/dashboard`)
       .then((res) => res.json())
       .then((data) => {
         setData(data);

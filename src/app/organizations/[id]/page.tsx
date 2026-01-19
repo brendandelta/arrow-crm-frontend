@@ -142,7 +142,7 @@ export default function OrganizationDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/organizations/${params.id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/organizations/${params.id}`)
       .then((res) => res.json())
       .then((data) => {
         setOrg(data);

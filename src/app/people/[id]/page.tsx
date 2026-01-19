@@ -112,7 +112,7 @@ export default function PersonDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/people/${params.id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/people/${params.id}`)
       .then((res) => res.json())
       .then((data) => {
         setPerson(data);
