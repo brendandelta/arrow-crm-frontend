@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ArrowLeft,
   Building2,
@@ -12,11 +10,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  ExternalLink,
-  Users,
-  CircleDollarSign,
-  Tag,
-  Calendar,
   ChevronDown,
   AlertCircle
 } from "lucide-react";
@@ -94,98 +87,97 @@ function formatDate(dateStr: string | null) {
   });
 }
 
-function KindBadge({ kind }: { kind: string }) {
-  const styles: Record<string, string> = {
-    fund: "bg-blue-100 text-blue-800",
-    company: "bg-purple-100 text-purple-800",
-    spv: "bg-amber-100 text-amber-800",
-    broker: "bg-slate-100 text-slate-600",
-    law_firm: "bg-emerald-100 text-emerald-800",
-  };
-  const labels: Record<string, string> = {
-    fund: "Fund",
-    company: "Company",
-    spv: "SPV",
-    broker: "Broker",
-    law_firm: "Law Firm",
-  };
+function formatDateShort(dateStr: string | null) {
+  if (!dateStr) return null;
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric"
+  });
+}
+
+const kindConfig: Record<string, { label: string; color: string }> = {
+  fund: { label: "Fund", color: "bg-blue-500" },
+  company: { label: "Company", color: "bg-purple-500" },
+  spv: { label: "SPV", color: "bg-amber-500" },
+  broker: { label: "Broker", color: "bg-slate-500" },
+  law_firm: { label: "Law Firm", color: "bg-emerald-500" },
+};
+
+const warmthConfig = [
+  { label: "Cold", color: "bg-slate-500" },
+  { label: "Warm", color: "bg-yellow-500" },
+  { label: "Hot", color: "bg-orange-500" },
+  { label: "Champion", color: "bg-green-500" },
+];
+
+function KindIndicator({ kind }: { kind: string }) {
+  const config = kindConfig[kind] || kindConfig.broker;
   return (
-    <Badge className={styles[kind] || styles.broker}>
-      {labels[kind] || kind}
-    </Badge>
+    <div className="flex items-center gap-2">
+      <div className={`w-2 h-2 rounded-full ${config.color}`} />
+      <span className="text-sm text-slate-600">{config.label}</span>
+    </div>
   );
 }
 
-function WarmthBadge({ warmth }: { warmth: number }) {
-  const labels = ["Cold", "Warm", "Hot", "Champion"];
-  const styles = [
-    "bg-slate-100 text-slate-600",
-    "bg-yellow-100 text-yellow-800",
-    "bg-orange-100 text-orange-800",
-    "bg-green-100 text-green-800",
-  ];
-  return <Badge className={styles[warmth]}>{labels[warmth]}</Badge>;
+function WarmthIndicator({ warmth }: { warmth: number }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className={`w-2 h-2 rounded-full ${warmthConfig[warmth].color}`} />
+      <span className="text-sm text-slate-600">{warmthConfig[warmth].label}</span>
+    </div>
+  );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    live: "bg-green-100 text-green-800",
-    sourcing: "bg-slate-100 text-slate-600",
-    closing: "bg-blue-100 text-blue-800",
-    closed: "bg-purple-100 text-purple-800",
-  };
-  return <Badge className={styles[status] || styles.sourcing}>{status}</Badge>;
-}
+const statusConfig: Record<string, { label: string; bg: string; text: string }> = {
+  live: { label: "Live", bg: "bg-green-100", text: "text-green-700" },
+  sourcing: { label: "Sourcing", bg: "bg-slate-100", text: "text-slate-600" },
+  closing: { label: "Closing", bg: "bg-blue-100", text: "text-blue-700" },
+  closed: { label: "Closed", bg: "bg-purple-100", text: "text-purple-700" },
+};
 
 function getMissingFields(org: Organization): string[] {
   const missing: string[] = [];
-
   if (!org.website) missing.push("Website");
   if (!org.email) missing.push("Email");
   if (!org.phone) missing.push("Phone");
   if (!org.linkedinUrl) missing.push("LinkedIn");
-  if (!org.twitterUrl) missing.push("Twitter");
   if (!org.description) missing.push("Description");
-  if (!org.legalName) missing.push("Legal Name");
   if (!org.sector) missing.push("Sector");
-  if (!org.subSector) missing.push("Sub-Sector");
   if (!org.stage) missing.push("Stage");
-  if (!org.employeeRange) missing.push("Employee Range");
-  if (!org.lastContactedAt) missing.push("Last Contacted");
-  if (!org.nextFollowUpAt) missing.push("Next Follow Up");
+  if (!org.employeeRange) missing.push("Employees");
+  if (!org.lastContactedAt) missing.push("Last Contact");
   if (!org.tags?.length) missing.push("Tags");
-  if (!org.notes) missing.push("Notes");
-  if (!org.address.line1 && !org.address.city && !org.address.country) missing.push("Address");
-
+  if (!org.address.city && !org.address.country) missing.push("Location");
   return missing;
 }
 
 function MissingDataDropdown({ missingFields }: { missingFields: string[] }) {
   const [isOpen, setIsOpen] = useState(false);
-
   if (missingFields.length === 0) return null;
 
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-amber-50 text-amber-700 border border-amber-200 rounded-md hover:bg-amber-100 transition-colors"
+        className="flex items-center gap-1.5 text-xs text-amber-600 hover:text-amber-700"
       >
-        <AlertCircle className="h-4 w-4" />
-        {missingFields.length} missing field{missingFields.length !== 1 ? "s" : ""}
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+        <AlertCircle className="h-3.5 w-3.5" />
+        {missingFields.length} missing
+        <ChevronDown className={`h-3 w-3 transition-transform ${isOpen ? "rotate-180" : ""}`} />
       </button>
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-md shadow-lg z-10">
-          <div className="p-2">
-            <div className="text-xs font-medium text-muted-foreground px-2 py-1">Missing Data</div>
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+          <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-20 py-2">
+            <div className="px-3 py-1.5 text-xs font-medium text-slate-400 uppercase tracking-wide">Missing Data</div>
             {missingFields.map((field) => (
-              <div key={field} className="px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-50 rounded">
+              <div key={field} className="px-3 py-1.5 text-sm text-slate-600">
                 {field}
               </div>
             ))}
           </div>
-        </div>
+        </>
       )}
     </div>
   );
@@ -213,7 +205,7 @@ export default function OrganizationDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <span className="text-muted-foreground">Loading...</span>
+        <div className="animate-pulse text-slate-400">Loading...</div>
       </div>
     );
   }
@@ -221,278 +213,264 @@ export default function OrganizationDetailPage() {
   if (!org) {
     return (
       <div className="flex items-center justify-center h-64">
-        <span className="text-muted-foreground">Organization not found</span>
+        <span className="text-slate-400">Organization not found</span>
       </div>
     );
   }
 
-  const address = [
-    org.address.line1,
-    org.address.line2,
-    [org.address.city, org.address.state].filter(Boolean).join(", "),
-    org.address.postalCode,
-    org.address.country
-  ].filter(Boolean).join(", ");
+  const location = [org.address.city, org.address.state, org.address.country]
+    .filter(Boolean)
+    .join(", ");
 
   const missingFields = getMissingFields(org);
 
-  // Build details array with only non-empty fields
-  const details: Array<{ label: string; value: string }> = [];
-  if (org.legalName) details.push({ label: "Legal Name", value: org.legalName });
-  if (org.sector) details.push({ label: "Sector", value: org.sector });
-  if (org.subSector) details.push({ label: "Sub-Sector", value: org.subSector });
-  if (org.stage) details.push({ label: "Stage", value: org.stage });
-  if (org.employeeRange) details.push({ label: "Employees", value: org.employeeRange });
-  details.push({ label: "Created", value: formatDate(org.createdAt)! });
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </button>
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center">
-              <Building2 className="h-6 w-6 text-slate-500" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-semibold">{org.name}</h1>
-                <KindBadge kind={org.kind} />
-                <WarmthBadge warmth={org.warmth} />
-              </div>
-              {org.sector && (
-                <p className="text-muted-foreground">{org.sector}</p>
-              )}
-            </div>
-          </div>
-        </div>
+    <div className="max-w-4xl mx-auto">
+      {/* Navigation */}
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back</span>
+        </button>
         <MissingDataDropdown missingFields={missingFields} />
       </div>
 
-      {/* Contact Info - only show if there's any contact info */}
-      {(org.website || org.email || org.phone || address || org.linkedinUrl) && (
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex flex-wrap gap-6">
-              {org.website && (
-                <a
-                  href={org.website.startsWith("http") ? org.website : `https://${org.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
-                >
-                  <Globe className="h-4 w-4" />
-                  {org.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                </a>
+      {/* Header */}
+      <div className="flex items-start gap-5 mb-8">
+        <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center flex-shrink-0">
+          <Building2 className="h-10 w-10 text-slate-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-900 mb-1">{org.name}</h1>
+              {org.sector && (
+                <p className="text-slate-600">{org.sector}</p>
               )}
-              {org.email && (
-                <a
-                  href={`mailto:${org.email}`}
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
-                >
-                  <Mail className="h-4 w-4" />
-                  {org.email}
-                </a>
-              )}
-              {org.phone && (
-                <a
-                  href={`tel:${org.phone}`}
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
-                >
-                  <Phone className="h-4 w-4" />
-                  {org.phone}
-                </a>
-              )}
-              {address && (
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  {address}
-                </span>
-              )}
-              {org.linkedinUrl && (
-                <a
-                  href={org.linkedinUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  LinkedIn
-                </a>
+              {location && (
+                <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {location}
+                </p>
               )}
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div className="flex items-center gap-4">
+              <KindIndicator kind={org.kind} />
+              <WarmthIndicator warmth={org.warmth} />
+            </div>
+          </div>
 
-      {/* Stats Row - only show cards with actual data */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <Users className="h-4 w-4" />
-              People
-            </div>
-            <div className="text-2xl font-semibold">{org.people.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-              <CircleDollarSign className="h-4 w-4" />
-              Deals
-            </div>
-            <div className="text-2xl font-semibold">{org.deals.length}</div>
-          </CardContent>
-        </Card>
+          {/* Quick Actions */}
+          <div className="flex items-center gap-3 mt-4">
+            {org.website && (
+              <a
+                href={org.website.startsWith("http") ? org.website : `https://${org.website}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+              >
+                <Globe className="h-4 w-4" />
+                Website
+              </a>
+            )}
+            {org.email && (
+              <a
+                href={`mailto:${org.email}`}
+                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+              >
+                <Mail className="h-4 w-4" />
+                Email
+              </a>
+            )}
+            {org.phone && (
+              <a
+                href={`tel:${org.phone}`}
+                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+              >
+                <Phone className="h-4 w-4" />
+                Call
+              </a>
+            )}
+            {org.linkedinUrl && (
+              <a
+                href={org.linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+              >
+                <Globe className="h-4 w-4" />
+                LinkedIn
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-4 mb-8">
+        <div className="bg-slate-50 rounded-xl p-4">
+          <div className="text-2xl font-semibold text-slate-900">{org.people.length}</div>
+          <div className="text-sm text-slate-500">People</div>
+        </div>
+        <div className="bg-slate-50 rounded-xl p-4">
+          <div className="text-2xl font-semibold text-slate-900">{org.deals.length}</div>
+          <div className="text-sm text-slate-500">Deals</div>
+        </div>
         {org.lastContactedAt && (
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                <Calendar className="h-4 w-4" />
-                Last Contact
-              </div>
-              <div className="text-2xl font-semibold">{formatDate(org.lastContactedAt)}</div>
-            </CardContent>
-          </Card>
+          <div className="bg-slate-50 rounded-xl p-4">
+            <div className="text-2xl font-semibold text-slate-900">{formatDateShort(org.lastContactedAt)}</div>
+            <div className="text-sm text-slate-500">Last Contact</div>
+          </div>
         )}
         {org.nextFollowUpAt && (
-          <Card>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                <Calendar className="h-4 w-4" />
-                Follow Up
-              </div>
-              <div className="text-2xl font-semibold">{formatDate(org.nextFollowUpAt)}</div>
-            </CardContent>
-          </Card>
+          <div className="bg-slate-50 rounded-xl p-4">
+            <div className="text-2xl font-semibold text-slate-900">{formatDateShort(org.nextFollowUpAt)}</div>
+            <div className="text-sm text-slate-500">Follow Up</div>
+          </div>
         )}
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      {/* Description */}
+      {org.description && (
+        <div className="mb-8">
+          <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">About</h2>
+          <p className="text-slate-700 leading-relaxed">{org.description}</p>
+        </div>
+      )}
+
+      {/* People & Deals */}
+      <div className="grid md:grid-cols-2 gap-6 mb-8">
         {/* People */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              People
-              <Badge variant="secondary">{org.people.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {org.people.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No people at this organization</p>
-            ) : (
-              <div className="space-y-3">
-                {org.people.map((person) => (
-                  <Link
-                    key={person.id}
-                    href={`/people/${person.id}`}
-                    className="flex items-center justify-between p-3 bg-slate-50 rounded-md hover:bg-slate-100 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium">
-                        {person.firstName.charAt(0)}{person.lastName.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="font-medium">{person.firstName} {person.lastName}</div>
-                        {person.title && (
-                          <div className="text-xs text-muted-foreground">{person.title}</div>
-                        )}
-                      </div>
-                    </div>
-                    <WarmthBadge warmth={person.warmth} />
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div>
+          <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">
+            People <span className="text-slate-300">({org.people.length})</span>
+          </h2>
+          {org.people.length === 0 ? (
+            <p className="text-slate-400 text-sm">No people at this organization</p>
+          ) : (
+            <div className="space-y-2">
+              {org.people.map((person) => (
+                <Link
+                  key={person.id}
+                  href={`/people/${person.id}`}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors -mx-3"
+                >
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-sm font-medium text-slate-500 flex-shrink-0">
+                    {person.firstName.charAt(0)}{person.lastName.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-slate-900">{person.firstName} {person.lastName}</div>
+                    {person.title && (
+                      <div className="text-sm text-slate-500 truncate">{person.title}</div>
+                    )}
+                  </div>
+                  <div className={`w-2 h-2 rounded-full ${warmthConfig[person.warmth].color}`} />
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Deals */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              Deals
-              <Badge variant="secondary">{org.deals.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {org.deals.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No deals with this organization</p>
-            ) : (
-              <div className="space-y-3">
-                {org.deals.map((deal) => (
+        <div>
+          <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">
+            Deals <span className="text-slate-300">({org.deals.length})</span>
+          </h2>
+          {org.deals.length === 0 ? (
+            <p className="text-slate-400 text-sm">No deals with this organization</p>
+          ) : (
+            <div className="space-y-2">
+              {org.deals.map((deal) => {
+                const status = statusConfig[deal.status] || statusConfig.sourcing;
+                return (
                   <Link
                     key={deal.id}
                     href={`/deals/${deal.id}`}
-                    className="flex items-center justify-between p-3 bg-slate-50 rounded-md hover:bg-slate-100 transition-colors"
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors -mx-3"
                   >
-                    <div>
-                      <div className="font-medium">{deal.name}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-slate-900">{deal.name}</div>
                       {formatCurrency(deal.committed) && (
-                        <div className="text-xs text-muted-foreground">
-                          {formatCurrency(deal.committed)} committed
-                        </div>
+                        <div className="text-sm text-slate-500">{formatCurrency(deal.committed)} committed</div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge status={deal.status} />
-                      <Badge variant="outline">{deal.kind}</Badge>
-                    </div>
+                    <span className={`text-xs px-2 py-1 rounded-full ${status.bg} ${status.text}`}>
+                      {status.label}
+                    </span>
                   </Link>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Details - only show if there are any details */}
-      {(org.description || details.length > 0 || org.tags?.length > 0 || org.notes) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {org.description && (
-              <p className="text-sm mb-4">{org.description}</p>
-            )}
-            {details.length > 0 && (
-              <dl className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                {details.map(({ label, value }) => (
-                  <div key={label}>
-                    <dt className="text-muted-foreground">{label}</dt>
-                    <dd className="font-medium">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            )}
-            {org.tags?.length > 0 && (
-              <div className={details.length > 0 || org.description ? "mt-4 pt-4 border-t" : ""}>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Tag className="h-4 w-4 text-muted-foreground" />
-                  {org.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary">{tag}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-            {org.notes && (
-              <div className={details.length > 0 || org.description || org.tags?.length > 0 ? "mt-4 pt-4 border-t" : ""}>
-                <h4 className="text-sm text-muted-foreground mb-2">Notes</h4>
-                <p className="text-sm whitespace-pre-wrap">{org.notes}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      {/* Tags */}
+      {org.tags?.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">Tags</h2>
+          <div className="flex flex-wrap gap-2">
+            {org.tags.map((tag) => (
+              <span key={tag} className="px-3 py-1 bg-slate-100 text-slate-700 text-sm rounded-full">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
       )}
+
+      {/* Notes */}
+      {org.notes && (
+        <div className="mb-8">
+          <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">Notes</h2>
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+            <p className="text-slate-700 whitespace-pre-wrap">{org.notes}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Details */}
+      {(org.legalName || org.stage || org.employeeRange || org.subSector) && (
+        <div className="mb-8">
+          <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">Details</h2>
+          <div className="grid grid-cols-2 gap-4">
+            {org.legalName && (
+              <div>
+                <div className="text-xs text-slate-400 mb-1">Legal Name</div>
+                <div className="text-slate-700">{org.legalName}</div>
+              </div>
+            )}
+            {org.subSector && (
+              <div>
+                <div className="text-xs text-slate-400 mb-1">Sub-Sector</div>
+                <div className="text-slate-700">{org.subSector}</div>
+              </div>
+            )}
+            {org.stage && (
+              <div>
+                <div className="text-xs text-slate-400 mb-1">Stage</div>
+                <div className="text-slate-700">{org.stage}</div>
+              </div>
+            )}
+            {org.employeeRange && (
+              <div>
+                <div className="text-xs text-slate-400 mb-1">Employees</div>
+                <div className="text-slate-700">{org.employeeRange}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="border-t border-slate-100 pt-4 mt-8">
+        <div className="text-xs text-slate-400">
+          Added {formatDate(org.createdAt)}
+        </div>
+      </div>
     </div>
   );
 }
