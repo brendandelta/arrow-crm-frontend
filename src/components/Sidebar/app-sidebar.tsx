@@ -16,10 +16,10 @@ import {
   Map,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+import { NavMain } from "@/components/Sidebar/nav-main"
+import { NavProjects } from "@/components/Sidebar/nav-projects"
+import { NavSecondary } from "@/components/Sidebar/nav-secondary"
+import { NavUser } from "@/components/Sidebar/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -49,8 +49,8 @@ const data = {
       icon: CircleDollarSign,
       items: [
         { title: "All Deals", url: "/deals" },
-        { title: "Live", url: "/deals?status=live" },
-        { title: "Sourcing", url: "/deals?status=sourcing" },
+        { title: "Live", url: "/deals/live" },
+        { title: "Sourcing", url: "/deals/sourcing" },
       ],
     },
     {
@@ -59,8 +59,8 @@ const data = {
       icon: Building2,
       items: [
         { title: "All", url: "/organizations" },
-        { title: "Funds", url: "/organizations?kind=fund" },
-        { title: "Companies", url: "/organizations?kind=company" },
+        { title: "Funds", url: "/organizations/funds" },
+        { title: "Companies", url: "/organizations/companies" },
       ],
     },
     {
@@ -69,8 +69,9 @@ const data = {
       icon: Users,
       items: [
         { title: "All Contacts", url: "/people" },
-        { title: "Champions", url: "/people?warmth=3" },
-        { title: "Hot", url: "/people?warmth=2" },
+        { title: "New Contact", url: "/people/new" },
+        { title: "Champions", url: "/people/champions" },
+        { title: "Hot", url: "/people/hot" },
       ],
     },
     {
@@ -79,8 +80,8 @@ const data = {
       icon: Map,
     },
     {
-      title: "Meetings",
-      url: "/meetings",
+      title: "Events",
+      url: "/events",
       icon: Calendar,
     },
     {

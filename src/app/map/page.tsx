@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Users } from "lucide-react";
 
 // Dynamically import the map component to avoid SSR issues with Leaflet
-const MapView = dynamic(() => import("@/components/map-view"), {
+const MapView = dynamic(() => import("@/components/Sidebar/map-view"), {
   ssr: false,
   loading: () => (
     <div className="h-[calc(100vh-180px)] bg-slate-100 rounded-md flex items-center justify-center">

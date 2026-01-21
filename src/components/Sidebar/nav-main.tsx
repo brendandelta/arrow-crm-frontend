@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { ChevronRight, type LucideIcon } from "lucide-react"
 
 import {
@@ -19,6 +20,8 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 
+const STORAGE_KEY = "arrow-crm-sidebar-expanded"
+
 export function NavMain({
   items,
 }: {
@@ -33,12 +36,53 @@ export function NavMain({
     }[]
   }[]
 }) {
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Load persisted state from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        setExpandedItems(JSON.parse(stored))
+      } else {
+        // Default: expand items marked as isActive
+        const defaults: Record<string, boolean> = {}
+        items.forEach((item) => {
+          if (item.isActive && item.items?.length) {
+            defaults[item.title] = true
+          }
+        })
+        setExpandedItems(defaults)
+      }
+    } catch (e) {
+      console.error("Failed to load sidebar state:", e)
+    }
+    setIsInitialized(true)
+  }, [items])
+
+  // Persist state to localStorage when it changes
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(expandedItems))
+    }
+  }, [expandedItems, isInitialized])
+
+  const handleToggle = (title: string, isOpen: boolean) => {
+    setExpandedItems((prev) => ({ ...prev, [title]: isOpen }))
+  }
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
-          <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
+          <Collapsible
+            key={item.title}
+            asChild
+            open={isInitialized ? expandedItems[item.title] ?? false : item.isActive}
+            onOpenChange={(isOpen) => handleToggle(item.title, isOpen)}
+          >
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip={item.title}>
                 <a href={item.url}>

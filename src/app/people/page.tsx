@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -11,7 +11,84 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Mail, LinkedinIcon, Building2 } from "lucide-react";
+import {
+  Mail,
+  Building2,
+  X,
+  Search,
+  Columns3,
+  ChevronDown,
+  Filter
+} from "lucide-react";
+import { LinkedInIcon, TwitterIcon, InstagramIcon } from "@/components/icons/SocialIcons";
+import { WarmthBadge } from "@/components/WarmthBadge";
+import { OrgKindBadge } from "@/components/OrgKindBadge";
+import { FilterableColumnHeader } from "./_components/FilterableColumnHeader";
+import { PhoneCell } from "./_components/PhoneCell";
+import { ActionsDropdown } from "./_components/ActionsDropdown";
+import { BulkActionBar } from "./_components/BulkActionBar";
+import {
+  ColumnFilter,
+  ColumnFilters,
+  ColumnType,
+  SortDirection,
+  SortConfig,
+  OPERATORS_BY_TYPE,
+  applyFilter,
+} from "@/lib/table-filters";
+
+// Column definitions
+const ALL_COLUMNS = [
+  { id: "name", label: "Name", required: true },
+  { id: "organization", label: "Organization", required: false },
+  { id: "title", label: "Title", required: false },
+  { id: "email", label: "Email", required: false },
+  { id: "phone", label: "Phone", required: false },
+  { id: "location", label: "Location", required: false },
+  { id: "warmth", label: "Warmth", required: false },
+  { id: "tags", label: "Tags", required: false },
+  { id: "source", label: "Source", required: false },
+  { id: "lastContact", label: "Last Contact", required: false },
+  { id: "nextFollowUp", label: "Next Follow-up", required: false },
+  { id: "contactCount", label: "# Contacts", required: false },
+  { id: "links", label: "Links", required: false },
+  { id: "createdAt", label: "Created", required: false },
+] as const;
+
+type ColumnId = typeof ALL_COLUMNS[number]["id"];
+
+// Default visible columns (not all are shown by default)
+const DEFAULT_VISIBLE_COLUMNS: ColumnId[] = [
+  "name", "organization", "email", "phone", "location", "warmth", "lastContact", "links"
+];
+
+const WARMTH_OPTIONS = [
+  { value: "all", label: "All Warmth" },
+  { value: "0", label: "Cold" },
+  { value: "1", label: "Warm" },
+  { value: "2", label: "Hot" },
+  { value: "3", label: "Champion" },
+];
+
+const ORG_KIND_OPTIONS = [
+  { value: "all", label: "All Types" },
+  { value: "fund", label: "Fund" },
+  { value: "company", label: "Company" },
+  { value: "bank", label: "Bank" },
+  { value: "broker", label: "Broker" },
+  { value: "service_provider", label: "Service Provider" },
+  { value: "other", label: "Other" },
+];
+
+const SOURCE_OPTIONS = [
+  { value: "all", label: "All Sources" },
+  { value: "referral", label: "Referral" },
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "conference", label: "Conference" },
+  { value: "cold_outreach", label: "Cold Outreach" },
+  { value: "inbound", label: "Inbound" },
+  { value: "other", label: "Other" },
+];
 
 interface Person {
   id: number;
@@ -19,44 +96,83 @@ interface Person {
   lastName: string;
   title: string | null;
   org: string | null;
+  orgId: number | null;
   orgKind: string | null;
   email: string | null;
+  phone: string | null;
   warmth: number;
   city: string | null;
+  state: string | null;
   country: string | null;
   linkedin: string | null;
+  twitter: string | null;
+  instagram: string | null;
+  source: string | null;
   lastContactedAt: string | null;
+  nextFollowUpAt: string | null;
+  contactCount: number;
   tags: string[];
+  createdAt: string;
 }
 
-function WarmthBadge({ warmth }: { warmth: number }) {
-  const labels = ["Cold", "Warm", "Hot", "Champion"];
-  const styles = [
-    "bg-slate-100 text-slate-600 hover:bg-slate-100",
-    "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
-    "bg-orange-100 text-orange-800 hover:bg-orange-100",
-    "bg-green-100 text-green-800 hover:bg-green-100",
-  ];
-  return (
-    <Badge className={styles[warmth]}>
-      {labels[warmth]}
-    </Badge>
-  );
+// Column configuration with types
+const COLUMN_TYPES: Record<string, ColumnType> = {
+  name: "text",
+  organization: "select",
+  title: "text",
+  email: "text",
+  phone: "text",
+  location: "text",
+  warmth: "warmth",
+  tags: "multi_select",
+  source: "select",
+  lastContact: "date",
+  nextFollowUp: "date",
+  contactCount: "number",
+  links: "text",
+  createdAt: "date",
+};
+
+// Helper to get field value from person for filtering
+function getPersonFieldValue(person: Person, columnId: string): string | number | null | string[] {
+  switch (columnId) {
+    case "name":
+      return `${person.firstName} ${person.lastName}`;
+    case "organization":
+      return person.org;
+    case "title":
+      return person.title;
+    case "email":
+      return person.email;
+    case "phone":
+      return person.phone;
+    case "location":
+      return [person.city, person.state, person.country].filter(Boolean).join(", ") || null;
+    case "warmth":
+      return person.warmth.toString();
+    case "tags":
+      return person.tags;
+    case "source":
+      return person.source;
+    case "lastContact":
+      return person.lastContactedAt;
+    case "nextFollowUp":
+      return person.nextFollowUpAt;
+    case "contactCount":
+      return person.contactCount;
+    case "createdAt":
+      return person.createdAt;
+    default:
+      return null;
+  }
 }
 
-function OrgKindBadge({ kind }: { kind: string | null }) {
-  if (!kind) return null;
-  const styles: Record<string, string> = {
-    fund: "bg-blue-50 text-blue-700",
-    company: "bg-purple-50 text-purple-700",
-    spv: "bg-amber-50 text-amber-700",
-    broker: "bg-slate-50 text-slate-600",
-  };
-  return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded ${styles[kind] || styles.broker}`}>
-      {kind}
-    </span>
-  );
+const DATE_COLUMNS = ["lastContact", "nextFollowUp", "createdAt"];
+
+function matchesColumnFilter(person: Person, columnId: string, filter: ColumnFilter): boolean {
+  const fieldValue = getPersonFieldValue(person, columnId);
+  if (fieldValue === null && columnId === "default") return true;
+  return applyFilter(fieldValue, filter, DATE_COLUMNS.includes(columnId));
 }
 
 function formatDate(dateStr: string | null) {
@@ -76,10 +192,124 @@ function getInitials(firstName: string, lastName: string) {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 }
 
+// localStorage keys for persisting user preferences
+const STORAGE_KEYS = {
+  visibleColumns: "arrow-crm-people-columns",
+  columnFilters: "arrow-crm-people-column-filters",
+  sortConfig: "arrow-crm-people-sort",
+  warmthFilter: "arrow-crm-people-warmth-filter",
+  orgKindFilter: "arrow-crm-people-org-kind-filter",
+  sourceFilter: "arrow-crm-people-source-filter",
+};
+
+// Helper to safely parse JSON from localStorage
+function getStoredValue<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error(`Failed to parse stored value for ${key}:`, e);
+  }
+  return fallback;
+}
+
 export default function PeoplePage() {
   const router = useRouter();
   const [people, setPeople] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Search and filter state - initialized from localStorage
+  const [searchQuery, setSearchQuery] = useState("");
+  const [warmthFilter, setWarmthFilter] = useState("all");
+  const [orgKindFilter, setOrgKindFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
+  const [visibleColumns, setVisibleColumns] = useState<Set<ColumnId>>(
+    new Set(DEFAULT_VISIBLE_COLUMNS)
+  );
+
+  // Column-level filters and sorting
+  const [columnFilters, setColumnFilters] = useState<ColumnFilters>({});
+  const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+
+  // Dropdown state
+  const [showColumnDropdown, setShowColumnDropdown] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const columnDropdownRef = useRef<HTMLDivElement>(null);
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Load persisted preferences from localStorage on mount
+  useEffect(() => {
+    const storedColumns = getStoredValue<ColumnId[]>(STORAGE_KEYS.visibleColumns, []);
+    if (storedColumns.length > 0) {
+      setVisibleColumns(new Set(storedColumns));
+    }
+
+    const storedColumnFilters = getStoredValue<ColumnFilters>(STORAGE_KEYS.columnFilters, {});
+    if (Object.keys(storedColumnFilters).length > 0) {
+      setColumnFilters(storedColumnFilters);
+    }
+
+    const storedSortConfig = getStoredValue<SortConfig>(STORAGE_KEYS.sortConfig, null);
+    if (storedSortConfig) {
+      setSortConfig(storedSortConfig);
+    }
+
+    const storedWarmthFilter = getStoredValue<string>(STORAGE_KEYS.warmthFilter, "all");
+    setWarmthFilter(storedWarmthFilter);
+
+    const storedOrgKindFilter = getStoredValue<string>(STORAGE_KEYS.orgKindFilter, "all");
+    setOrgKindFilter(storedOrgKindFilter);
+
+    const storedSourceFilter = getStoredValue<string>(STORAGE_KEYS.sourceFilter, "all");
+    setSourceFilter(storedSourceFilter);
+
+    setIsInitialized(true);
+  }, []);
+
+  // Persist visible columns to localStorage
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEYS.visibleColumns, JSON.stringify(Array.from(visibleColumns)));
+    }
+  }, [visibleColumns, isInitialized]);
+
+  // Persist column filters to localStorage
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEYS.columnFilters, JSON.stringify(columnFilters));
+    }
+  }, [columnFilters, isInitialized]);
+
+  // Persist sort config to localStorage
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEYS.sortConfig, JSON.stringify(sortConfig));
+    }
+  }, [sortConfig, isInitialized]);
+
+  // Persist global filters to localStorage
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEYS.warmthFilter, JSON.stringify(warmthFilter));
+    }
+  }, [warmthFilter, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEYS.orgKindFilter, JSON.stringify(orgKindFilter));
+    }
+  }, [orgKindFilter, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEYS.sourceFilter, JSON.stringify(sourceFilter));
+    }
+  }, [sourceFilter, isInitialized]);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/people`)
@@ -94,8 +324,249 @@ export default function PeoplePage() {
       });
   }, []);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (columnDropdownRef.current && !columnDropdownRef.current.contains(event.target as Node)) {
+        setShowColumnDropdown(false);
+      }
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setShowFilterDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Filter people based on search, global filters, and column filters
+  const filteredPeople = people.filter((person) => {
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const searchableText = [
+        person.firstName,
+        person.lastName,
+        person.email,
+        person.org,
+        person.title,
+        person.city,
+        person.country,
+        ...(person.tags || []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      if (!searchableText.includes(query)) return false;
+    }
+
+    // Warmth filter (global)
+    if (warmthFilter !== "all" && person.warmth !== parseInt(warmthFilter)) {
+      return false;
+    }
+
+    // Org kind filter (global)
+    if (orgKindFilter !== "all" && person.orgKind !== orgKindFilter) {
+      return false;
+    }
+
+    // Source filter (global)
+    if (sourceFilter !== "all" && person.source !== sourceFilter) {
+      return false;
+    }
+
+    // Column-level filters
+    for (const [columnId, filter] of Object.entries(columnFilters)) {
+      if (!matchesColumnFilter(person, columnId, filter)) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  // Apply sorting
+  const sortedPeople = [...filteredPeople].sort((a, b) => {
+    if (!sortConfig) return 0;
+
+    const { columnId, direction } = sortConfig;
+    if (!direction) return 0;
+
+    let aValue: string | number | null = null;
+    let bValue: string | number | null = null;
+
+    switch (columnId) {
+      case "name":
+        aValue = `${a.firstName} ${a.lastName}`.toLowerCase();
+        bValue = `${b.firstName} ${b.lastName}`.toLowerCase();
+        break;
+      case "organization":
+        aValue = a.org?.toLowerCase() || "";
+        bValue = b.org?.toLowerCase() || "";
+        break;
+      case "title":
+        aValue = a.title?.toLowerCase() || "";
+        bValue = b.title?.toLowerCase() || "";
+        break;
+      case "email":
+        aValue = a.email?.toLowerCase() || "";
+        bValue = b.email?.toLowerCase() || "";
+        break;
+      case "location":
+        aValue = [a.city, a.country].filter(Boolean).join(", ").toLowerCase();
+        bValue = [b.city, b.country].filter(Boolean).join(", ").toLowerCase();
+        break;
+      case "warmth":
+        aValue = a.warmth;
+        bValue = b.warmth;
+        break;
+      case "source":
+        aValue = a.source?.toLowerCase() || "";
+        bValue = b.source?.toLowerCase() || "";
+        break;
+      case "lastContact":
+        aValue = a.lastContactedAt || "";
+        bValue = b.lastContactedAt || "";
+        break;
+      case "nextFollowUp":
+        aValue = a.nextFollowUpAt || "";
+        bValue = b.nextFollowUpAt || "";
+        break;
+      case "contactCount":
+        aValue = a.contactCount;
+        bValue = b.contactCount;
+        break;
+      case "createdAt":
+        aValue = a.createdAt;
+        bValue = b.createdAt;
+        break;
+      default:
+        return 0;
+    }
+
+    if (aValue === null || aValue === "") aValue = direction === "asc" ? "\uffff" : "";
+    if (bValue === null || bValue === "") bValue = direction === "asc" ? "\uffff" : "";
+
+    let comparison = 0;
+    if (typeof aValue === "number" && typeof bValue === "number") {
+      comparison = aValue - bValue;
+    } else {
+      comparison = String(aValue).localeCompare(String(bValue));
+    }
+
+    return direction === "asc" ? comparison : -comparison;
+  });
+
   const championsCount = people.filter((p) => p.warmth === 3).length;
   const hotCount = people.filter((p) => p.warmth === 2).length;
+
+  const selectedPeople = sortedPeople.filter(p => selectedIds.has(p.id));
+  const allSelected = sortedPeople.length > 0 && sortedPeople.every(p => selectedIds.has(p.id));
+  const someSelected = selectedIds.size > 0 && !allSelected;
+
+  const activeFiltersCount =
+    (warmthFilter !== "all" ? 1 : 0) +
+    (orgKindFilter !== "all" ? 1 : 0) +
+    (sourceFilter !== "all" ? 1 : 0);
+
+  const columnFiltersCount = Object.keys(columnFilters).length;
+
+  // Helper to get column values for filter dropdowns
+  const getColumnValues = (columnId: string): string[] => {
+    switch (columnId) {
+      case "name":
+        return people.map((p) => `${p.firstName} ${p.lastName}`);
+      case "organization":
+        return people.map((p) => p.org).filter(Boolean) as string[];
+      case "title":
+        return people.map((p) => p.title).filter(Boolean) as string[];
+      case "email":
+        return people.map((p) => p.email).filter(Boolean) as string[];
+      case "location":
+        return people.map((p) => [p.city, p.country].filter(Boolean).join(", ")).filter(Boolean);
+      case "source":
+        return people.map((p) => p.source).filter(Boolean) as string[];
+      case "tags":
+        return people.flatMap((p) => p.tags || []);
+      default:
+        return [];
+    }
+  };
+
+  const handleColumnFilterChange = (columnId: string, filter: ColumnFilter | undefined) => {
+    setColumnFilters((prev) => {
+      const newFilters = { ...prev };
+      if (filter) {
+        newFilters[columnId] = filter;
+      } else {
+        delete newFilters[columnId];
+      }
+      return newFilters;
+    });
+  };
+
+  const handleSortChange = (columnId: string, direction: SortDirection) => {
+    setSortConfig(direction ? { columnId, direction } : null);
+  };
+
+  const toggleColumn = (columnId: ColumnId) => {
+    const column = ALL_COLUMNS.find(c => c.id === columnId);
+    if (column?.required) return;
+
+    const newVisible = new Set(visibleColumns);
+    if (newVisible.has(columnId)) {
+      newVisible.delete(columnId);
+    } else {
+      newVisible.add(columnId);
+    }
+    setVisibleColumns(newVisible);
+  };
+
+  const resetFilters = () => {
+    setWarmthFilter("all");
+    setOrgKindFilter("all");
+    setSourceFilter("all");
+    setColumnFilters({});
+    setSortConfig(null);
+  };
+
+  const toggleSelect = (id: number) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      // Deselect all filtered people
+      const newSelected = new Set(selectedIds);
+      sortedPeople.forEach(p => newSelected.delete(p.id));
+      setSelectedIds(newSelected);
+    } else {
+      // Select all filtered people
+      const newSelected = new Set(selectedIds);
+      sortedPeople.forEach(p => newSelected.add(p.id));
+      setSelectedIds(newSelected);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkUpdate = (updates: Partial<Person>) => {
+    // Update local state immediately for responsiveness
+    setPeople(prevPeople =>
+      prevPeople.map(person =>
+        selectedIds.has(person.id) ? { ...person, ...updates } : person
+      )
+    );
+  };
+
+  const visibleColumnCount = visibleColumns.size + 1; // +1 for checkbox column
 
   return (
     <div className="space-y-4">
@@ -112,104 +583,617 @@ export default function PeoplePage() {
         </div>
       </div>
 
+      {/* Toolbar */}
+      <div className="flex items-center gap-3 flex-wrap">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search people..."
+            className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Columns Dropdown */}
+        <div ref={columnDropdownRef} className="relative">
+          <button
+            onClick={() => setShowColumnDropdown(!showColumnDropdown)}
+            className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+          >
+            <Columns3 className="h-4 w-4" />
+            <span>Columns</span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${showColumnDropdown ? "rotate-180" : ""}`} />
+          </button>
+
+          {showColumnDropdown && (
+            <div className="absolute z-50 top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg overflow-hidden">
+              <div className="p-2">
+                <div className="text-xs font-medium text-slate-500 uppercase tracking-wide px-2 py-1">
+                  Show Columns
+                </div>
+                {ALL_COLUMNS.map((column) => (
+                  <div
+                    key={column.id}
+                    onClick={() => !column.required && toggleColumn(column.id)}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded transition-colors ${
+                      column.required ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 cursor-pointer"
+                    }`}
+                  >
+                    <Checkbox
+                      checked={visibleColumns.has(column.id)}
+                      disabled={column.required}
+                      onCheckedChange={() => !column.required && toggleColumn(column.id)}
+                    />
+                    <span>{column.label}</span>
+                    {column.required && (
+                      <span className="text-xs text-slate-400 ml-auto">Required</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Filters Dropdown */}
+        <div ref={filterDropdownRef} className="relative">
+          <button
+            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${
+              activeFiltersCount > 0
+                ? "border-blue-500 bg-blue-50 text-blue-700"
+                : "border-slate-200 text-slate-700 hover:bg-slate-50"
+            }`}
+          >
+            <Filter className="h-4 w-4" />
+            <span>Filters</span>
+            {activeFiltersCount > 0 && (
+              <span className="flex items-center justify-center h-5 w-5 bg-blue-600 text-white text-xs rounded-full">
+                {activeFiltersCount}
+              </span>
+            )}
+            <ChevronDown className={`h-4 w-4 transition-transform ${showFilterDropdown ? "rotate-180" : ""}`} />
+          </button>
+
+          {showFilterDropdown && (
+            <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-white border border-slate-200 rounded-lg overflow-hidden">
+              <div className="p-3 space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                    Warmth
+                  </label>
+                  <select
+                    value={warmthFilter}
+                    onChange={(e) => setWarmthFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {WARMTH_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                    Organization Type
+                  </label>
+                  <select
+                    value={orgKindFilter}
+                    onChange={(e) => setOrgKindFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {ORG_KIND_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                    Source
+                  </label>
+                  <select
+                    value={sourceFilter}
+                    onChange={(e) => setSourceFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {SOURCE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {activeFiltersCount > 0 && (
+                  <button
+                    onClick={resetFilters}
+                    className="w-full text-sm text-blue-600 hover:text-blue-800 py-1.5"
+                  >
+                    Clear all filters
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Results count when filtered */}
+        {(searchQuery || activeFiltersCount > 0 || columnFiltersCount > 0) && (
+          <div className="text-sm text-slate-500">
+            Showing {sortedPeople.length} of {people.length} people
+          </div>
+        )}
+
+        {/* Active column filters indicator */}
+        {columnFiltersCount > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {Object.entries(columnFilters).map(([columnId, filter]) => {
+              const column = ALL_COLUMNS.find((c) => c.id === columnId);
+              const operatorLabel = OPERATORS_BY_TYPE[COLUMN_TYPES[columnId]]?.find(
+                (o) => o.value === filter.operator
+              )?.label;
+              return (
+                <span
+                  key={columnId}
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-200"
+                >
+                  <span className="font-medium">{column?.label}:</span>
+                  <span>{operatorLabel}</span>
+                  {filter.values && filter.values.length > 0 && (
+                    <span>({filter.values.length})</span>
+                  )}
+                  {filter.value && !filter.values && (
+                    <span className="truncate max-w-[100px]">{filter.value}</span>
+                  )}
+                  <button
+                    onClick={() => handleColumnFilterChange(columnId, undefined)}
+                    className="ml-1 hover:text-blue-900"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              );
+            })}
+            <button
+              onClick={() => setColumnFilters({})}
+              className="text-xs text-blue-600 hover:text-blue-800"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
+
+        {/* Spacer to push Actions to the right */}
+        <div className="flex-1" />
+
+        {/* Actions Dropdown - only show when contacts are selected */}
+        {selectedIds.size > 0 && (
+          <ActionsDropdown
+            selectedPeople={selectedPeople}
+            onClearSelection={clearSelection}
+            onBulkUpdate={handleBulkUpdate}
+          />
+        )}
+      </div>
+
       <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[280px]">Name</TableHead>
-              <TableHead>Organization</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Warmth</TableHead>
-              <TableHead>Last Contact</TableHead>
-              <TableHead>Links</TableHead>
+              <TableHead className="w-[50px]">
+                <Checkbox
+                  checked={allSelected}
+                  ref={(el) => {
+                    if (el) {
+                      (el as HTMLButtonElement & { indeterminate: boolean }).indeterminate = someSelected;
+                    }
+                  }}
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all"
+                />
+              </TableHead>
+              {visibleColumns.has("name") && (
+                <TableHead className="w-[200px]">
+                  <FilterableColumnHeader
+                    label="Name"
+                    columnId="name"
+                    columnType={COLUMN_TYPES.name}
+                    values={getColumnValues("name")}
+                    filter={columnFilters.name}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "name" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("organization") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="Organization"
+                    columnId="organization"
+                    columnType={COLUMN_TYPES.organization}
+                    values={getColumnValues("organization")}
+                    filter={columnFilters.organization}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "organization" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("title") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="Title"
+                    columnId="title"
+                    columnType={COLUMN_TYPES.title}
+                    values={getColumnValues("title")}
+                    filter={columnFilters.title}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "title" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("email") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="Email"
+                    columnId="email"
+                    columnType={COLUMN_TYPES.email}
+                    values={getColumnValues("email")}
+                    filter={columnFilters.email}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "email" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("phone") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="Phone"
+                    columnId="phone"
+                    columnType={COLUMN_TYPES.phone}
+                    values={[]}
+                    filter={columnFilters.phone}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "phone" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("location") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="Location"
+                    columnId="location"
+                    columnType={COLUMN_TYPES.location}
+                    values={getColumnValues("location")}
+                    filter={columnFilters.location}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "location" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("warmth") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="Warmth"
+                    columnId="warmth"
+                    columnType={COLUMN_TYPES.warmth}
+                    values={[]}
+                    filter={columnFilters.warmth}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "warmth" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("tags") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="Tags"
+                    columnId="tags"
+                    columnType={COLUMN_TYPES.tags}
+                    values={getColumnValues("tags")}
+                    filter={columnFilters.tags}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "tags" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("source") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="Source"
+                    columnId="source"
+                    columnType={COLUMN_TYPES.source}
+                    values={getColumnValues("source")}
+                    filter={columnFilters.source}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "source" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("lastContact") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="Last Contact"
+                    columnId="lastContact"
+                    columnType={COLUMN_TYPES.lastContact}
+                    values={[]}
+                    filter={columnFilters.lastContact}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "lastContact" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("nextFollowUp") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="Next Follow-up"
+                    columnId="nextFollowUp"
+                    columnType={COLUMN_TYPES.nextFollowUp}
+                    values={[]}
+                    filter={columnFilters.nextFollowUp}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "nextFollowUp" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("contactCount") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="# Contacts"
+                    columnId="contactCount"
+                    columnType={COLUMN_TYPES.contactCount}
+                    values={[]}
+                    filter={columnFilters.contactCount}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "contactCount" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
+              {visibleColumns.has("links") && <TableHead className="text-xs uppercase tracking-wide text-slate-500">Links</TableHead>}
+              {visibleColumns.has("createdAt") && (
+                <TableHead>
+                  <FilterableColumnHeader
+                    label="Created"
+                    columnId="createdAt"
+                    columnType={COLUMN_TYPES.createdAt}
+                    values={[]}
+                    filter={columnFilters.createdAt}
+                    onFilterChange={handleColumnFilterChange}
+                    sortDirection={sortConfig?.columnId === "createdAt" ? sortConfig.direction : null}
+                    onSortChange={handleSortChange}
+                  />
+                </TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell colSpan={visibleColumnCount} className="text-center text-muted-foreground">
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : people.length === 0 ? (
+            ) : sortedPeople.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
-                  No people found
+                <TableCell colSpan={visibleColumnCount} className="text-center text-muted-foreground">
+                  {people.length === 0 ? "No people found" : "No results match your filters"}
                 </TableCell>
               </TableRow>
             ) : (
-              people.map((person) => (
-                <TableRow key={person.id} className="cursor-pointer" onClick={() => router.push(`/people/${person.id}`)}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">
-                        {getInitials(person.firstName, person.lastName)}
-                      </div>
-                      <div>
+              sortedPeople.map((person) => (
+                <TableRow
+                  key={person.id}
+                  className={`cursor-pointer ${selectedIds.has(person.id) ? "bg-blue-50" : ""}`}
+                  onClick={() => router.push(`/people/${person.id}`)}
+                >
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedIds.has(person.id)}
+                      onCheckedChange={() => toggleSelect(person.id)}
+                      aria-label={`Select ${person.firstName} ${person.lastName}`}
+                    />
+                  </TableCell>
+                  {visibleColumns.has("name") && (
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">
+                          {getInitials(person.firstName, person.lastName)}
+                        </div>
                         <div className="font-medium">{person.firstName} {person.lastName}</div>
-                        <div className="text-xs text-muted-foreground">{person.title || "—"}</div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {person.org ? (
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span>{person.org}</span>
-                        <OrgKindBadge kind={person.orgKind} />
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {person.email ? (
-                      <a
-                        href={`mailto:${person.email}`}
-                        className="text-sm text-blue-600 hover:underline flex items-center gap-1.5"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Mail className="h-3.5 w-3.5" />
-                        {person.email}
-                      </a>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {person.city && person.country
-                      ? `${person.city}, ${person.country}`
-                      : person.city || person.country || "—"}
-                  </TableCell>
-                  <TableCell>
-                    <WarmthBadge warmth={person.warmth} />
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {formatDate(person.lastContactedAt)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {person.linkedin && (
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("organization") && (
+                    <TableCell>
+                      {person.org ? (
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span>{person.org}</span>
+                          <OrgKindBadge kind={person.orgKind} />
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("title") && (
+                    <TableCell className="text-sm">
+                      {person.title || <span className="text-muted-foreground">—</span>}
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("email") && (
+                    <TableCell>
+                      {person.email ? (
                         <a
-                          href={person.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800"
+                          href={`mailto:${person.email}`}
+                          className="text-sm text-blue-600 hover:underline flex items-center gap-1.5"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <LinkedinIcon className="h-4 w-4" />
+                          <Mail className="h-3.5 w-3.5" />
+                          {person.email}
                         </a>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
                       )}
-                      {!person.linkedin && <span className="text-muted-foreground">—</span>}
-                    </div>
-                  </TableCell>
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("phone") && (
+                    <TableCell>
+                      <PhoneCell phone={person.phone} />
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("location") && (
+                    <TableCell className="text-muted-foreground text-sm">
+                      {person.city && person.country
+                        ? `${person.city}, ${person.country}`
+                        : person.city || person.state || person.country || "—"}
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("warmth") && (
+                    <TableCell>
+                      <WarmthBadge warmth={person.warmth} />
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("tags") && (
+                    <TableCell>
+                      {person.tags && person.tags.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {person.tags.slice(0, 2).map((tag) => (
+                            <span
+                              key={tag}
+                              className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                          {person.tags.length > 2 && (
+                            <span className="text-xs text-muted-foreground">
+                              +{person.tags.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("source") && (
+                    <TableCell className="text-sm">
+                      {person.source ? (
+                        <span className="capitalize">{person.source.replace(/_/g, " ")}</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("lastContact") && (
+                    <TableCell className="text-muted-foreground text-sm">
+                      {formatDate(person.lastContactedAt)}
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("nextFollowUp") && (
+                    <TableCell className="text-sm">
+                      {person.nextFollowUpAt ? (
+                        <span className={new Date(person.nextFollowUpAt) < new Date() ? "text-red-600" : "text-muted-foreground"}>
+                          {formatDate(person.nextFollowUpAt)}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("contactCount") && (
+                    <TableCell className="text-sm text-muted-foreground text-center">
+                      {person.contactCount || 0}
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("links") && (
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {person.linkedin && (
+                          <a
+                            href={person.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#0A66C2] hover:text-[#004182]"
+                            onClick={(e) => e.stopPropagation()}
+                            title="LinkedIn"
+                          >
+                            <LinkedInIcon className="h-4 w-4" />
+                          </a>
+                        )}
+                        {person.twitter && (
+                          <a
+                            href={person.twitter}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-slate-800 hover:text-black"
+                            onClick={(e) => e.stopPropagation()}
+                            title="X (Twitter)"
+                          >
+                            <TwitterIcon className="h-4 w-4" />
+                          </a>
+                        )}
+                        {person.instagram && (
+                          <a
+                            href={person.instagram}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[#E4405F] hover:text-[#C13584]"
+                            onClick={(e) => e.stopPropagation()}
+                            title="Instagram"
+                          >
+                            <InstagramIcon className="h-4 w-4" />
+                          </a>
+                        )}
+                        {!person.linkedin && !person.twitter && !person.instagram && (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+                  {visibleColumns.has("createdAt") && (
+                    <TableCell className="text-muted-foreground text-sm">
+                      {formatDate(person.createdAt)}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </div>
+
+      {selectedPeople.length > 0 && (
+        <BulkActionBar selectedPeople={selectedPeople} onClear={clearSelection} />
+      )}
     </div>
   );
 }

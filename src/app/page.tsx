@@ -18,7 +18,7 @@ interface DashboardData {
     deals: { total: number; live: number; sourcing: number };
     organizations: { total: number; funds: number; companies: number };
     people: { total: number; champions: number; hot: number };
-    meetings: { total: number; thisWeek: number };
+    activities: { total: number; thisWeek: number; scheduled: number };
     pipeline: { committed: number; closed: number };
   };
   liveDeals: Array<{
@@ -29,12 +29,14 @@ interface DashboardData {
     blocks: number;
     interests: number;
   }>;
-  recentMeetings: Array<{
+  recentActivities: Array<{
     id: number;
-    title: string;
+    kind: string;
+    subject: string | null;
     deal: string | null;
     attendees: number;
-    startsAt: string;
+    occurredAt: string;
+    startsAt: string | null;
   }>;
 }
 
@@ -94,7 +96,7 @@ export default function Home() {
     );
   }
 
-  const { stats, liveDeals, recentMeetings } = data;
+  const { stats, liveDeals, recentActivities } = data;
 
   return (
     <div className="space-y-4">
@@ -191,34 +193,38 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        {/* Recent Meetings */}
+        {/* Recent Activity */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              Recent Meetings
-              <Badge variant="secondary">{stats.meetings.thisWeek} this week</Badge>
+              Recent Activity
+              <Badge variant="secondary">{stats.activities.thisWeek} this week</Badge>
             </CardTitle>
             <CardDescription>Your latest interactions</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentMeetings.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No recent meetings</p>
+              {recentActivities.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No recent activity</p>
               ) : (
-                recentMeetings.map((meeting) => (
+                recentActivities.map((activity) => (
                   <div
-                    key={meeting.id}
+                    key={activity.id}
                     className="flex items-center justify-between cursor-pointer hover:bg-slate-50 -mx-2 px-2 py-1 rounded transition-colors"
-                    onClick={() => router.push(`/meetings/${meeting.id}`)}
+                    onClick={() => router.push(`/events`)}
                   >
                     <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">{meeting.title}</p>
+                      <p className="text-sm font-medium leading-none">
+                        {activity.subject || activity.kind.replace(/_/g, " ")}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        {meeting.deal || "Internal"} · {meeting.attendees} attendees
+                        {activity.deal || "Internal"} · {activity.kind.replace(/_/g, " ")}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">{formatDate(meeting.startsAt)}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(activity.startsAt || activity.occurredAt)}
+                      </span>
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </div>
