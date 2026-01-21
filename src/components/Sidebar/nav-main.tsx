@@ -38,6 +38,12 @@ export function NavMain({
 }) {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
   const [isInitialized, setIsInitialized] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Mark as mounted after hydration to prevent ID mismatch
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Load persisted state from localStorage on mount
   useEffect(() => {
@@ -72,6 +78,13 @@ export function NavMain({
     setExpandedItems((prev) => ({ ...prev, [title]: isOpen }))
   }
 
+  // Determine if an item should be expanded
+  const isItemOpen = (item: typeof items[0]) => {
+    if (!isMounted) return false // Return consistent false during SSR
+    if (isInitialized) return expandedItems[item.title] ?? false
+    return item.isActive ?? false
+  }
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
@@ -80,7 +93,7 @@ export function NavMain({
           <Collapsible
             key={item.title}
             asChild
-            open={isInitialized ? expandedItems[item.title] ?? false : item.isActive}
+            open={isItemOpen(item)}
             onOpenChange={(isOpen) => handleToggle(item.title, isOpen)}
           >
             <SidebarMenuItem>

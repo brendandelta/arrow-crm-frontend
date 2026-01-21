@@ -4,15 +4,16 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
 
-// Import new components
-import { DealHeader } from "@/components/deals/DealHeader";
-import { TruthPanel } from "@/components/deals/TruthPanel";
-import { BlocksSection } from "@/components/deals/BlocksSection";
-import { InterestsSection } from "@/components/deals/InterestsSection";
-import { ActivityFeed } from "@/components/deals/ActivityFeed";
-import { DealSidebar } from "@/components/deals/DealSidebar";
+// Import page-specific components
+import { DealHeader } from "./_components/DealHeader";
+import { TruthPanel } from "./_components/TruthPanel";
+import { BlocksSection } from "./_components/BlocksSection";
+import { InterestsSection } from "./_components/InterestsSection";
+import { ActivityFeed } from "./_components/ActivityFeed";
+import { DealSidebar } from "./_components/DealSidebar";
+import { BlockSlideOut } from "./_components/BlockSlideOut";
+// Import shared components
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
 import { useLPMode } from "@/contexts/LPModeContext";
 
@@ -269,105 +270,6 @@ interface Deal {
   };
   createdAt: string;
   updatedAt: string;
-}
-
-// Block Slide-out Component (kept from original)
-function BlockSlideOut({
-  block,
-  onClose,
-  onUpdate,
-}: {
-  block: Block;
-  onClose: () => void;
-  onUpdate: (block: Block) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    heat: block.heat,
-    terms: block.terms || "",
-    status: block.status,
-    internalNotes: block.internalNotes || "",
-  });
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blocks/${block.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }
-      );
-      if (res.ok) {
-        const updated = await res.json();
-        onUpdate(updated);
-        setEditing(false);
-      }
-    } catch (err) {
-      console.error("Failed to save:", err);
-    }
-    setSaving(false);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white shadow-xl overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Block Details</h2>
-          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-6">
-          {/* Block details - simplified for space */}
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">Seller</h3>
-              <p className="font-medium">{block.seller?.name || "—"}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">Total</h3>
-              <p className="text-2xl font-semibold">
-                {block.totalCents
-                  ? `$${(block.totalCents / 100).toLocaleString()}`
-                  : "—"}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Shares</h3>
-                <p>{block.shares?.toLocaleString() || "—"}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Price</h3>
-                <p>{block.priceCents ? `$${(block.priceCents / 100).toFixed(2)}` : "—"}</p>
-              </div>
-            </div>
-            {block.terms && (
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Terms</h3>
-                <p className="text-sm">{block.terms}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex items-center justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // Main Page Component

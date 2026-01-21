@@ -9,15 +9,12 @@ import {
   LifeBuoy,
   Settings,
   Users,
-  Briefcase,
   Calendar,
   TrendingUp,
-  PieChart,
   Map,
 } from "lucide-react"
 
 import { NavMain } from "@/components/Sidebar/nav-main"
-import { NavProjects } from "@/components/Sidebar/nav-projects"
 import { NavSecondary } from "@/components/Sidebar/nav-secondary"
 import { NavUser } from "@/components/Sidebar/nav-user"
 import {
@@ -102,23 +99,6 @@ const data = {
       icon: Settings,
     },
   ],
-  projects: [
-    {
-      name: "SpaceX",
-      url: "/deals/spacex",
-      icon: TrendingUp,
-    },
-    {
-      name: "Tether Q4",
-      url: "/deals/tether",
-      icon: Briefcase,
-    },
-    {
-      name: "Pipeline",
-      url: "/pipeline",
-      icon: PieChart,
-    },
-  ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -143,7 +123,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

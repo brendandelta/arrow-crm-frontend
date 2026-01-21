@@ -30,6 +30,7 @@ import {
   ExternalLink,
   MoreHorizontal,
 } from "lucide-react";
+import NewEventModal from "@/components/NewEventModal";
 
 // Activity/Event interface matching the backend API
 interface Activity {
@@ -278,6 +279,8 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [isInitialized, setIsInitialized] = useState(false);
+  const [showNewEventModal, setShowNewEventModal] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -359,7 +362,7 @@ export default function EventsPage() {
     }
 
     fetchActivities();
-  }, [kindFilter, timeFilter]);
+  }, [kindFilter, timeFilter, refreshKey]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -462,7 +465,10 @@ export default function EventsPage() {
             {todayCount > 0 && ` \u00b7 ${todayCount} today`}
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+        <button
+          onClick={() => setShowNewEventModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+        >
           <Plus className="h-4 w-4" />
           New Event
         </button>
@@ -796,6 +802,14 @@ export default function EventsPage() {
             Cancel
           </button>
         </div>
+      )}
+
+      {/* New Event Modal */}
+      {showNewEventModal && (
+        <NewEventModal
+          onClose={() => setShowNewEventModal(false)}
+          onSuccess={() => setRefreshKey((k) => k + 1)}
+        />
       )}
     </div>
   );

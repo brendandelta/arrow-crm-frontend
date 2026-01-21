@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -160,9 +160,8 @@ export function BlocksSection({ blocks, onBlockClick, onAddBlock }: BlocksSectio
             </TableHeader>
             <TableBody>
               {blocks.map((block) => (
-                <>
+                <Fragment key={block.id}>
                   <TableRow
-                    key={block.id}
                     className="cursor-pointer hover:bg-slate-50"
                     onClick={() => onBlockClick(block)}
                   >
@@ -264,7 +263,7 @@ export function BlocksSection({ blocks, onBlockClick, onAddBlock }: BlocksSectio
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </Fragment>
               ))}
             </TableBody>
           </Table>

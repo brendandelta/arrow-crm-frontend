@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Fragment } from "react";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -11,13 +10,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Circle, Search, Calendar, Users, CheckSquare, AlertTriangle, ChevronRight, ChevronDown } from "lucide-react";
-import { KPIStrip } from "@/components/deals/KPIStrip";
+import { Search, ChevronRight, ChevronDown } from "lucide-react";
+import { KPIStrip } from "./_components/KPIStrip";
+import { DealsFilters } from "./_components/DealsFilters";
+import { ExpandedRowContent } from "./_components/ExpandableTableRow";
+import { ViewToggle } from "./_components/ViewToggle";
+import { StatusBadge } from "./_components/StatusBadge";
+import { PriorityIndicator } from "./_components/PriorityIndicator";
+import { CloseCountdown } from "./_components/CloseCountdown";
+import { TaskSummary } from "./_components/TaskSummary";
+import { OutreachSummary } from "./_components/OutreachSummary";
+import { formatCurrency } from "./_components/utils";
 import { DemandProgressBar } from "@/components/deals/DemandProgressBar";
 import { RiskFlagIndicator } from "@/components/deals/RiskFlagIndicator";
-import { DealsFilters } from "@/components/deals/DealsFilters";
-import { ExpandedRowContent } from "@/components/deals/ExpandableTableRow";
-import { ViewToggle } from "@/components/deals/ViewToggle";
 
 interface Owner {
   id: number;
@@ -160,117 +165,6 @@ interface Filters {
 }
 
 type ViewMode = "table" | "board" | "pipeline";
-
-function formatCurrency(cents: number) {
-  if (!cents || cents === 0) return "—";
-  const dollars = cents / 100;
-  if (dollars >= 1_000_000_000) {
-    return `$${(dollars / 1_000_000_000).toFixed(1).replace(/\.0$/, "")}B`;
-  }
-  if (dollars >= 1_000_000) {
-    return `$${(dollars / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  }
-  if (dollars >= 1_000) {
-    return `$${(dollars / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  }
-  return `$${dollars.toFixed(0)}`;
-}
-
-function formatDate(dateStr: string | null) {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    live: "bg-green-100 text-green-800 hover:bg-green-100",
-    sourcing: "bg-slate-100 text-slate-600 hover:bg-slate-100",
-    closing: "bg-blue-100 text-blue-800 hover:bg-blue-100",
-    closed: "bg-purple-100 text-purple-800 hover:bg-purple-100",
-    dead: "bg-red-100 text-red-800 hover:bg-red-100",
-  };
-  return (
-    <Badge className={styles[status] || styles.sourcing}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </Badge>
-  );
-}
-
-function PriorityIndicator({ priority }: { priority: number }) {
-  const colors = ["text-slate-300", "text-yellow-500", "text-orange-500", "text-red-500"];
-  return (
-    <div className="flex gap-0.5">
-      {[1, 2, 3].map((i) => (
-        <Circle
-          key={i}
-          className={`h-2 w-2 ${i <= priority ? colors[priority] : "text-slate-200"}`}
-          fill={i <= priority ? "currentColor" : "none"}
-        />
-      ))}
-    </div>
-  );
-}
-
-function CloseCountdown({ daysUntilClose, expectedClose }: { daysUntilClose: number | null; expectedClose: string | null }) {
-  if (daysUntilClose === null || expectedClose === null) return <span className="text-muted-foreground">—</span>;
-
-  const isUrgent = daysUntilClose <= 7;
-  const isPast = daysUntilClose < 0;
-
-  return (
-    <div className={`text-sm ${isPast ? "text-red-600" : isUrgent ? "text-amber-600" : ""}`}>
-      <div className="font-medium">{formatDate(expectedClose)}</div>
-      <div className="text-xs text-muted-foreground">
-        {isPast
-          ? `${Math.abs(daysUntilClose)}d overdue`
-          : daysUntilClose === 0
-          ? "Today"
-          : `${daysUntilClose}d`}
-      </div>
-    </div>
-  );
-}
-
-function TaskSummary({ overdue, dueThisWeek }: { overdue: number; dueThisWeek: number }) {
-  if (overdue === 0 && dueThisWeek === 0) return <span className="text-muted-foreground text-sm">—</span>;
-
-  return (
-    <div className="flex items-center gap-2 text-sm">
-      {overdue > 0 && (
-        <span className="flex items-center gap-1 text-red-600">
-          <AlertTriangle className="h-3 w-3" />
-          {overdue}
-        </span>
-      )}
-      {dueThisWeek > 0 && (
-        <span className="flex items-center gap-1 text-amber-600">
-          <CheckSquare className="h-3 w-3" />
-          {dueThisWeek}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function OutreachSummary({ targetsNeedingFollowup, activeTargets }: { targetsNeedingFollowup: number; activeTargets: number }) {
-  if (activeTargets === 0) return <span className="text-muted-foreground text-sm">—</span>;
-
-  return (
-    <div className="text-sm">
-      {targetsNeedingFollowup > 0 ? (
-        <span className="flex items-center gap-1 text-amber-600">
-          <Users className="h-3 w-3" />
-          {targetsNeedingFollowup}/{activeTargets}
-        </span>
-      ) : (
-        <span className="text-muted-foreground">{activeTargets} active</span>
-      )}
-    </div>
-  );
-}
 
 const defaultFilters: Filters = {
   stages: [],
