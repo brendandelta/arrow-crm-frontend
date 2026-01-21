@@ -44,7 +44,8 @@ const personIcon = L.divIcon({
 });
 
 // Custom cluster icon
-function createClusterCustomIcon(cluster: L.MarkerCluster) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function createClusterCustomIcon(cluster: any) {
   const count = cluster.getChildCount();
   const size = count > 50 ? 56 : count > 20 ? 48 : count > 10 ? 40 : 32;
 

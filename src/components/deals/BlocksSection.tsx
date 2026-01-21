@@ -22,15 +22,27 @@ interface MappedInterest {
 interface Block {
   id: number;
   seller: { id: number; name: string; kind: string } | null;
-  contact: { id: number; firstName: string; lastName: string; email?: string } | null;
-  shareClass: string | null;
-  shares: number | null;
-  priceCents: number | null;
-  totalCents: number | null;
+  sellerType?: string | null;
+  contact?: { id: number; firstName: string; lastName: string; email?: string; title?: string; phone?: string } | null;
+  broker?: { id: number; name: string } | null;
+  brokerContact?: { id: number; firstName: string; lastName: string; email?: string; title?: string; phone?: string } | null;
+  shareClass?: string | null;
+  shares?: number | null;
+  priceCents?: number | null;
+  totalCents?: number | null;
+  minSizeCents?: number | null;
+  impliedValuationCents?: number | null;
+  discountPct?: number | null;
   status: string;
   heat: number;
   heatLabel: string;
-  terms: string | null;
+  terms?: string | null;
+  expiresAt?: string | null;
+  source?: string | null;
+  sourceDetail?: string | null;
+  verified?: boolean;
+  internalNotes?: string | null;
+  createdAt?: string;
   mappedInterests?: MappedInterest[];
   mappedInterestsCount?: number;
   mappedCommittedCents?: number;
@@ -42,8 +54,8 @@ interface BlocksSectionProps {
   onAddBlock: () => void;
 }
 
-function formatCurrency(cents: number | null) {
-  if (!cents || cents === 0) return "—";
+function formatCurrency(cents: number | null | undefined) {
+  if (cents === null || cents === undefined || cents === 0) return "—";
   const dollars = cents / 100;
   if (dollars >= 1_000_000) {
     return `$${(dollars / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;

@@ -198,7 +198,9 @@ export function InterestsSection({
                           </div>
                         </div>
                         {interest.isStale && (
-                          <AlertCircle className="h-4 w-4 text-amber-500" title="Stale - no activity in 7+ days" />
+                          <span title="Stale - no activity in 7+ days">
+                            <AlertCircle className="h-4 w-4 text-amber-500" />
+                          </span>
                         )}
                       </div>
                     ) : (

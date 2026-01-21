@@ -68,7 +68,7 @@ export function RiskFlagIndicator({
   const [hoveredFlag, setHoveredFlag] = useState<string | null>(null);
 
   const activeFlags = Object.entries(riskFlags).filter(
-    ([_, flag]) => flag && flag.active
+    (entry): entry is [string, RiskFlag] => entry[1] !== undefined && entry[1].active
   );
 
   if (activeFlags.length === 0) {
@@ -172,7 +172,7 @@ export function RiskFlagsPanel({
   onDismiss?: (key: string) => void;
 }) {
   const activeFlags = Object.entries(riskFlags).filter(
-    ([_, flag]) => flag && flag.active
+    (entry): entry is [string, RiskFlag] => entry[1] !== undefined && entry[1].active
   );
 
   if (activeFlags.length === 0) {

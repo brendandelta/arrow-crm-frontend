@@ -12,8 +12,9 @@ import { TruthPanel } from "@/components/deals/TruthPanel";
 import { BlocksSection } from "@/components/deals/BlocksSection";
 import { InterestsSection } from "@/components/deals/InterestsSection";
 import { ActivityFeed } from "@/components/deals/ActivityFeed";
-import { DealSidebar, TaskList, OutreachTracker, DocumentChecklist, AdvantagesPanel } from "@/components/deals/DealSidebar";
+import { DealSidebar } from "@/components/deals/DealSidebar";
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
+import { useLPMode } from "@/contexts/LPModeContext";
 
 // Types
 interface Company {
@@ -51,27 +52,27 @@ interface MappedInterest {
 interface Block {
   id: number;
   seller: { id: number; name: string; kind: string } | null;
-  sellerType: string | null;
-  contact: Person | null;
-  broker: { id: number; name: string } | null;
-  brokerContact: Person | null;
-  shareClass: string | null;
-  shares: number | null;
-  priceCents: number | null;
-  totalCents: number | null;
-  minSizeCents: number | null;
-  impliedValuationCents: number | null;
-  discountPct: number | null;
+  sellerType?: string | null;
+  contact?: Person | null;
+  broker?: { id: number; name: string } | null;
+  brokerContact?: Person | null;
+  shareClass?: string | null;
+  shares?: number | null;
+  priceCents?: number | null;
+  totalCents?: number | null;
+  minSizeCents?: number | null;
+  impliedValuationCents?: number | null;
+  discountPct?: number | null;
   status: string;
   heat: number;
   heatLabel: string;
-  terms: string | null;
-  expiresAt: string | null;
-  source: string | null;
-  sourceDetail: string | null;
-  verified: boolean;
-  internalNotes: string | null;
-  createdAt: string;
+  terms?: string | null;
+  expiresAt?: string | null;
+  source?: string | null;
+  sourceDetail?: string | null;
+  verified?: boolean;
+  internalNotes?: string | null;
+  createdAt?: string;
   mappedInterests?: MappedInterest[];
   mappedInterestsCount?: number;
   mappedCommittedCents?: number;
@@ -373,11 +374,11 @@ function BlockSlideOut({
 export default function DealDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { lpMode, toggleLpMode } = useLPMode();
   const [deal, setDeal] = useState<Deal | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
   const [showAddBlock, setShowAddBlock] = useState(false);
-  const [lpMode, setLpMode] = useState(false);
   const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "activity">("blocks");
 
   useEffect(() => {
@@ -458,7 +459,7 @@ export default function DealDetailPage() {
         dataRoomUrl={deal.dataRoomUrl}
         deckUrl={deal.deckUrl}
         lpMode={lpMode}
-        onLpModeToggle={() => setLpMode(!lpMode)}
+        onLpModeToggle={toggleLpMode}
         onBack={() => router.back()}
       />
 
@@ -507,7 +508,7 @@ export default function DealDetailPage() {
           {activeTab === "blocks" && (
             <BlocksSection
               blocks={deal.blocks}
-              onBlockClick={setSelectedBlock}
+              onBlockClick={(block) => setSelectedBlock(block)}
               onAddBlock={() => setShowAddBlock(true)}
             />
           )}
