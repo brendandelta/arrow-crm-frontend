@@ -42,7 +42,7 @@ export function ViewToggle({
         const config = viewConfig[view];
         const Icon = config.icon;
         const isActive = activeView === view;
-        const isDisabled = view !== "table"; // Only table is functional initially
+        const isDisabled = view === "pipeline"; // Table and board are functional
 
         return (
           <button
@@ -86,7 +86,7 @@ export function ViewToggleCompact({
         const config = viewConfig[view];
         const Icon = config.icon;
         const isActive = activeView === view;
-        const isDisabled = view !== "table";
+        const isDisabled = view === "pipeline";
 
         return (
           <button

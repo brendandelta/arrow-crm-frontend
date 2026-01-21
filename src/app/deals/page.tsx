@@ -21,6 +21,7 @@ import { CloseCountdown } from "./_components/CloseCountdown";
 import { TaskSummary } from "./_components/TaskSummary";
 import { OutreachSummary } from "./_components/OutreachSummary";
 import { formatCurrency } from "./_components/utils";
+import { BoardView } from "./_components/BoardView";
 import { DemandProgressBar } from "@/components/deals/DemandProgressBar";
 import { RiskFlagIndicator } from "@/components/deals/RiskFlagIndicator";
 
@@ -400,157 +401,163 @@ export default function DealsPage() {
         />
       </div>
 
-      {/* Deals Table */}
-      <div className="rounded-md border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[40px]"></TableHead>
-              <TableHead className="w-[200px]">Deal</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Close Date</TableHead>
-              <TableHead className="text-right">Blocks</TableHead>
-              <TableHead className="text-right">Best Price</TableHead>
-              <TableHead className="w-[140px]">Demand</TableHead>
-              <TableHead>Outreach</TableHead>
-              <TableHead>Tasks</TableHead>
-              <TableHead>Risk</TableHead>
-              <TableHead>Owner</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+      {/* Content View */}
+      {loading ? (
+        <div className="flex items-center justify-center h-64 text-muted-foreground">
+          Loading...
+        </div>
+      ) : viewMode === "board" ? (
+        <BoardView
+          deals={filteredDeals}
+          onDealClick={(dealId) => router.push(`/deals/${dealId}`)}
+        />
+      ) : (
+        /* Table View */
+        <div className="rounded-md border overflow-hidden">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={11} className="text-center text-muted-foreground">
-                  Loading...
-                </TableCell>
+                <TableHead className="w-[40px]"></TableHead>
+                <TableHead className="w-[200px]">Deal</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Close Date</TableHead>
+                <TableHead className="text-right">Blocks</TableHead>
+                <TableHead className="text-right">Best Price</TableHead>
+                <TableHead className="w-[140px]">Demand</TableHead>
+                <TableHead>Outreach</TableHead>
+                <TableHead>Tasks</TableHead>
+                <TableHead>Risk</TableHead>
+                <TableHead>Owner</TableHead>
               </TableRow>
-            ) : filteredDeals.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={11} className="text-center text-muted-foreground">
-                  No deals found
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredDeals.map((deal) => (
-                <Fragment key={deal.id}>
-                  <TableRow
-                    className="cursor-pointer hover:bg-slate-50"
-                    onClick={() => router.push(`/deals/${deal.id}`)}
-                  >
-                    <TableCell className="p-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleExpanded(deal.id);
-                        }}
-                        className="p-1 hover:bg-slate-100 rounded"
-                      >
-                        {expandedDealId === deal.id ? (
-                          <ChevronDown className="h-4 w-4 text-slate-400" />
-                        ) : (
-                          <ChevronRight className="h-4 w-4 text-slate-400" />
-                        )}
-                      </button>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{deal.name}</div>
-                      <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-                        <span>{deal.company || "—"}</span>
-                        {deal.sector && (
-                          <>
-                            <span>·</span>
-                            <span>{deal.sector}</span>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <StatusBadge status={deal.status} />
-                        <PriorityIndicator priority={deal.priority} />
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <CloseCountdown
-                        daysUntilClose={deal.daysUntilClose}
-                        expectedClose={deal.expectedClose}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="text-sm font-medium">{deal.blocks || "—"}</div>
-                      {deal.blocksValue > 0 && (
-                        <div className="text-xs text-muted-foreground">
-                          {formatCurrency(deal.blocksValue)}
+            </TableHeader>
+            <TableBody>
+              {filteredDeals.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={11} className="text-center text-muted-foreground">
+                    No deals found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredDeals.map((deal) => (
+                  <Fragment key={deal.id}>
+                    <TableRow
+                      className="cursor-pointer hover:bg-slate-50"
+                      onClick={() => router.push(`/deals/${deal.id}`)}
+                    >
+                      <TableCell className="p-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleExpanded(deal.id);
+                          }}
+                          className="p-1 hover:bg-slate-100 rounded"
+                        >
+                          {expandedDealId === deal.id ? (
+                            <ChevronDown className="h-4 w-4 text-slate-400" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-slate-400" />
+                          )}
+                        </button>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{deal.name}</div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <span>{deal.company || "—"}</span>
+                          {deal.sector && (
+                            <>
+                              <span>·</span>
+                              <span>{deal.sector}</span>
+                            </>
+                          )}
                         </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {deal.bestPrice ? (
-                        <span className="font-medium tabular-nums">
-                          {formatCurrency(deal.bestPrice)}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="w-[120px]">
-                        <DemandProgressBar
-                          softCircled={deal.softCircled}
-                          committed={deal.totalCommitted - deal.softCircled - deal.wired}
-                          wired={deal.wired}
-                          inventory={deal.inventory}
-                          size="sm"
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <StatusBadge status={deal.status} />
+                          <PriorityIndicator priority={deal.priority} />
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <CloseCountdown
+                          daysUntilClose={deal.daysUntilClose}
+                          expectedClose={deal.expectedClose}
                         />
-                        {deal.coverageRatio !== null && (
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {deal.coverageRatio}% coverage
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="text-sm font-medium">{deal.blocks || "—"}</div>
+                        {deal.blocksValue > 0 && (
+                          <div className="text-xs text-muted-foreground">
+                            {formatCurrency(deal.blocksValue)}
                           </div>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <OutreachSummary
-                        targetsNeedingFollowup={deal.targetsNeedingFollowup}
-                        activeTargets={deal.activeTargets}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <TaskSummary
-                        overdue={deal.overdueTasksCount}
-                        dueThisWeek={deal.dueThisWeekCount}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {deal.riskFlagsSummary.count > 0 ? (
-                        <RiskFlagIndicator riskFlags={deal.riskFlags} size="sm" />
-                      ) : (
-                        <span className="text-xs text-green-600">OK</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {deal.owner ? (
-                        <div className="text-sm">
-                          {deal.owner.firstName} {deal.owner.lastName.charAt(0)}.
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {deal.bestPrice ? (
+                          <span className="font-medium tabular-nums">
+                            {formatCurrency(deal.bestPrice)}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="w-[120px]">
+                          <DemandProgressBar
+                            softCircled={deal.softCircled}
+                            committed={deal.totalCommitted - deal.softCircled - deal.wired}
+                            wired={deal.wired}
+                            inventory={deal.inventory}
+                            size="sm"
+                          />
+                          {deal.coverageRatio !== null && (
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              {deal.coverageRatio}% coverage
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">—</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                  {expandedDealId === deal.id && (
-                    <ExpandedRowContent
-                      data={expandedData[deal.id] || null}
-                      loading={loadingExpanded === deal.id}
-                    />
-                  )}
-                </Fragment>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                      </TableCell>
+                      <TableCell>
+                        <OutreachSummary
+                          targetsNeedingFollowup={deal.targetsNeedingFollowup}
+                          activeTargets={deal.activeTargets}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TaskSummary
+                          overdue={deal.overdueTasksCount}
+                          dueThisWeek={deal.dueThisWeekCount}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {deal.riskFlagsSummary.count > 0 ? (
+                          <RiskFlagIndicator riskFlags={deal.riskFlags} size="sm" />
+                        ) : (
+                          <span className="text-xs text-green-600">OK</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {deal.owner ? (
+                          <div className="text-sm">
+                            {deal.owner.firstName} {deal.owner.lastName.charAt(0)}.
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                    {expandedDealId === deal.id && (
+                      <ExpandedRowContent
+                        data={expandedData[deal.id] || null}
+                        loading={loadingExpanded === deal.id}
+                      />
+                    )}
+                  </Fragment>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 }
