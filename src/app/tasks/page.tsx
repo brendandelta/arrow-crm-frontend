@@ -123,7 +123,7 @@ const ATTACHMENT_FILTERS: { id: AttachmentFilter; label: string; icon: React.Ele
   { id: "all", label: "All", icon: ListFilter },
   { id: "deal", label: "Deal Tasks", icon: Building2 },
   { id: "project", label: "Project Tasks", icon: FolderKanban },
-  { id: "general", label: "General", icon: CheckSquare },
+  { id: "general", label: "Get Shit Done", icon: CheckSquare },
 ];
 
 function formatDate(dateStr: string | null | undefined) {

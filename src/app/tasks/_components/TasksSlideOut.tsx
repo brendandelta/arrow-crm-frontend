@@ -540,7 +540,7 @@ export function TasksSlideOut({
                     }`}
                   >
                     <CheckSquare className="h-4 w-4" />
-                    General
+                    Get Shit Done
                   </button>
                   <button
                     onClick={() =>
