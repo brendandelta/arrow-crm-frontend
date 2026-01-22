@@ -42,12 +42,12 @@ interface TaskListProps {
     backlog: Task[];
     completed: Task[];
   };
-  onTaskComplete?: (taskId: number) => void;
+  onTaskToggle?: (taskId: number, currentlyCompleted: boolean) => void;
   onTaskClick?: (task: Task) => void;
   onAddTask?: () => void;
 }
 
-export function TaskList({ tasks, onTaskComplete, onTaskClick, onAddTask }: TaskListProps) {
+export function TaskList({ tasks, onTaskToggle, onTaskClick, onAddTask }: TaskListProps) {
   const [showCompleted, setShowCompleted] = useState(false);
 
   const formatDate = (dateStr: string | null) => {
@@ -74,12 +74,12 @@ export function TaskList({ tasks, onTaskComplete, onTaskClick, onAddTask }: Task
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onTaskComplete?.(task.id);
+            onTaskToggle?.(task.id, task.completed);
           }}
-          className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+          className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
             task.completed
-              ? "bg-green-500 border-green-500 text-white"
-              : "border-slate-300 hover:border-slate-400"
+              ? "bg-green-500 border-green-500 text-white hover:bg-green-600"
+              : "border-slate-300 hover:border-slate-400 hover:bg-slate-50"
           }`}
         >
           {task.completed && <Check className="h-3 w-3" />}
@@ -515,7 +515,7 @@ interface DealSidebarProps {
   advantages: Advantage[];
   riskFlags: Record<string, { active: boolean; message: string; severity: string }>;
   lpMode: boolean;
-  onTaskComplete?: (taskId: number) => void;
+  onTaskToggle?: (taskId: number, currentlyCompleted: boolean) => void;
   onTaskClick?: (task: Task) => void;
   onAddTask?: () => void;
   onTargetClick?: (target: DealTarget) => void;
@@ -530,7 +530,7 @@ export function DealSidebar({
   advantages,
   riskFlags,
   lpMode,
-  onTaskComplete,
+  onTaskToggle,
   onTaskClick,
   onAddTask,
   onTargetClick,
@@ -574,7 +574,7 @@ export function DealSidebar({
         {expandedSection === "tasks" && (
           <TaskList
             tasks={tasks}
-            onTaskComplete={onTaskComplete}
+            onTaskToggle={onTaskToggle}
             onTaskClick={onTaskClick}
             onAddTask={onAddTask}
           />

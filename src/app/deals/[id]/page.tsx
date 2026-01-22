@@ -418,15 +418,16 @@ export default function DealDetailPage() {
       .catch((err) => console.error("Failed to refresh deal:", err));
   };
 
-  const handleTaskComplete = async (taskId: number) => {
+  const handleTaskToggle = async (taskId: number, currentlyCompleted: boolean) => {
     try {
+      const endpoint = currentlyCompleted ? "uncomplete_task" : "complete_task";
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/activities/${taskId}/complete_task`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/activities/${taskId}/${endpoint}`,
         { method: "POST" }
       );
       refreshDeal();
     } catch (err) {
-      console.error("Failed to complete task:", err);
+      console.error("Failed to toggle task:", err);
     }
   };
 
@@ -610,7 +611,7 @@ export default function DealDetailPage() {
                 advantages={deal.advantages}
                 riskFlags={deal.riskFlags}
                 lpMode={lpMode}
-                onTaskComplete={handleTaskComplete}
+                onTaskToggle={handleTaskToggle}
                 onTaskClick={(task) => setSelectedTask(task)}
                 onAddTask={() => setShowAddTask(true)}
                 onTargetClick={(target) => {
