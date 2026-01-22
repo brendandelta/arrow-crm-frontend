@@ -22,6 +22,7 @@ import { TaskSummary } from "./_components/TaskSummary";
 import { OutreachSummary } from "./_components/OutreachSummary";
 import { formatCurrency } from "./_components/utils";
 import { BoardView } from "./_components/BoardView";
+import { PipelineView } from "./_components/PipelineView";
 import { DemandProgressBar } from "@/components/deals/DemandProgressBar";
 import { RiskFlagIndicator } from "@/components/deals/RiskFlagIndicator";
 
@@ -408,6 +409,11 @@ export default function DealsPage() {
         </div>
       ) : viewMode === "board" ? (
         <BoardView
+          deals={filteredDeals}
+          onDealClick={(dealId) => router.push(`/deals/${dealId}`)}
+        />
+      ) : viewMode === "pipeline" ? (
+        <PipelineView
           deals={filteredDeals}
           onDealClick={(dealId) => router.push(`/deals/${dealId}`)}
         />
