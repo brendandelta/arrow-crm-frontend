@@ -13,11 +13,12 @@ import {
   ChevronRight,
   Check,
   ExternalLink,
+  Plus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 // ============ TaskList Component ============
-interface Task {
+export interface Task {
   id: number;
   subject: string;
   body?: string | null;
@@ -29,6 +30,9 @@ interface Task {
     firstName: string;
     lastName: string;
   } | null;
+  parentTaskId?: number | null;
+  isSubtask?: boolean;
+  dealId?: number;
 }
 
 interface TaskListProps {
@@ -40,9 +44,10 @@ interface TaskListProps {
   };
   onTaskComplete?: (taskId: number) => void;
   onTaskClick?: (task: Task) => void;
+  onAddTask?: () => void;
 }
 
-export function TaskList({ tasks, onTaskComplete, onTaskClick }: TaskListProps) {
+export function TaskList({ tasks, onTaskComplete, onTaskClick, onAddTask }: TaskListProps) {
   const [showCompleted, setShowCompleted] = useState(false);
 
   const formatDate = (dateStr: string | null) => {
@@ -101,6 +106,17 @@ export function TaskList({ tasks, onTaskComplete, onTaskClick }: TaskListProps) 
 
   return (
     <div className="space-y-4">
+      {/* Add Task Button */}
+      {onAddTask && (
+        <button
+          onClick={onAddTask}
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 border-dashed transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+          Add Task
+        </button>
+      )}
+
       {/* Overdue */}
       {tasks.overdue.length > 0 && (
         <div>
@@ -500,6 +516,8 @@ interface DealSidebarProps {
   riskFlags: Record<string, { active: boolean; message: string; severity: string }>;
   lpMode: boolean;
   onTaskComplete?: (taskId: number) => void;
+  onTaskClick?: (task: Task) => void;
+  onAddTask?: () => void;
   onTargetClick?: (target: DealTarget) => void;
   onDocumentUpload?: (kind: string) => void;
   onAddAdvantage?: () => void;
@@ -513,6 +531,8 @@ export function DealSidebar({
   riskFlags,
   lpMode,
   onTaskComplete,
+  onTaskClick,
+  onAddTask,
   onTargetClick,
   onDocumentUpload,
   onAddAdvantage,
@@ -552,7 +572,12 @@ export function DealSidebar({
       {/* Section Content */}
       <div className="min-h-[300px]">
         {expandedSection === "tasks" && (
-          <TaskList tasks={tasks} onTaskComplete={onTaskComplete} />
+          <TaskList
+            tasks={tasks}
+            onTaskComplete={onTaskComplete}
+            onTaskClick={onTaskClick}
+            onAddTask={onAddTask}
+          />
         )}
         {expandedSection === "outreach" && (
           <OutreachTracker targets={targets} onTargetClick={onTargetClick} />

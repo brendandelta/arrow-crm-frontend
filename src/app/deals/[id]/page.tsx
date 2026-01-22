@@ -15,7 +15,9 @@ import { DealSidebar } from "./_components/DealSidebar";
 import { BlockSlideOut } from "./_components/BlockSlideOut";
 import { InterestSlideOut } from "./_components/InterestSlideOut";
 import { ActivitySlideOut } from "./_components/ActivitySlideOut";
+import { TaskSlideOut } from "./_components/TaskSlideOut";
 import { EditableDealDetails } from "./_components/EditableDealDetails";
+import { Task as SidebarTask } from "./_components/DealSidebar";
 // Import shared components
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
 import { useLPMode } from "@/contexts/LPModeContext";
@@ -288,6 +290,8 @@ export default function DealDetailPage() {
   const [showAddInterest, setShowAddInterest] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [showAddActivity, setShowAddActivity] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<SidebarTask | null>(null);
+  const [showAddTask, setShowAddTask] = useState(false);
   const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "activity">("blocks");
 
   useEffect(() => {
@@ -391,6 +395,20 @@ export default function DealDetailPage() {
       activities: deal.activities.filter((a) => a.id !== activityId),
     });
     setSelectedActivity(null);
+  };
+
+  const handleTaskUpdate = (updatedTask: SidebarTask) => {
+    if (!deal) return;
+    // Refresh deal to get updated task lists (since tasks are grouped by status)
+    refreshDeal();
+    setShowAddTask(false);
+    setSelectedTask(null);
+  };
+
+  const handleTaskDelete = (taskId: number) => {
+    if (!deal) return;
+    refreshDeal();
+    setSelectedTask(null);
   };
 
   const refreshDeal = () => {
@@ -593,6 +611,8 @@ export default function DealDetailPage() {
                 riskFlags={deal.riskFlags}
                 lpMode={lpMode}
                 onTaskComplete={handleTaskComplete}
+                onTaskClick={(task) => setSelectedTask(task)}
+                onAddTask={() => setShowAddTask(true)}
                 onTargetClick={(target) => {
                   // Could open target slide-out
                 }}
@@ -683,6 +703,25 @@ export default function DealDetailPage() {
           }}
           onSave={handleActivityUpdate}
           onDelete={handleActivityDelete}
+        />
+      )}
+
+      {/* Task Slide-out */}
+      {(selectedTask || showAddTask) && (
+        <TaskSlideOut
+          task={selectedTask}
+          dealId={deal.id}
+          existingTasks={[
+            ...deal.tasks.overdue,
+            ...deal.tasks.dueThisWeek,
+            ...deal.tasks.backlog,
+          ]}
+          onClose={() => {
+            setSelectedTask(null);
+            setShowAddTask(false);
+          }}
+          onSave={handleTaskUpdate}
+          onDelete={handleTaskDelete}
         />
       )}
     </div>
