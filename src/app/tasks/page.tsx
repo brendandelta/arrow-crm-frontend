@@ -21,6 +21,7 @@ import {
   Check,
   Loader2,
   UserPlus,
+  FileText,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TasksSlideOut } from "./_components/TasksSlideOut";
@@ -379,15 +380,23 @@ function TaskRow({
   const [editedDate, setEditedDate] = useState(task.dueAt?.split("T")[0] || "");
   const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [editedDescription, setEditedDescription] = useState(task.body || "");
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [priorityPosition, setPriorityPosition] = useState({ top: 0, left: 0 });
   const [datePosition, setDatePosition] = useState({ top: 0, left: 0 });
+  const [statusPosition, setStatusPosition] = useState({ top: 0, left: 0 });
+  const [descriptionPosition, setDescriptionPosition] = useState({ top: 0, left: 0 });
 
   const assigneeButtonRef = useRef<HTMLButtonElement>(null);
   const priorityButtonRef = useRef<HTMLButtonElement>(null);
+  const statusButtonRef = useRef<HTMLButtonElement>(null);
+  const descriptionButtonRef = useRef<HTMLButtonElement>(null);
   const subjectInputRef = useRef<HTMLInputElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
   const dateButtonRef = useRef<HTMLButtonElement>(null);
+  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
 
   const [addingSubtask, setAddingSubtask] = useState(false);
   const [newSubtaskSubject, setNewSubtaskSubject] = useState("");
@@ -405,6 +414,21 @@ function TaskRow({
     { value: 1, label: "Low", color: "text-slate-500" },
   ];
 
+  const statusOptions = [
+    { value: "open", label: "Open", color: "bg-blue-100 text-blue-700" },
+    { value: "in_progress", label: "In Progress", color: "bg-purple-100 text-purple-700" },
+    { value: "blocked", label: "Blocked", color: "bg-red-100 text-red-700" },
+    { value: "waiting", label: "Waiting", color: "bg-amber-100 text-amber-700" },
+  ];
+
+  const getStatusColor = (status: string) => {
+    return statusOptions.find(s => s.value === status)?.color || "bg-slate-100 text-slate-600";
+  };
+
+  const getStatusLabel = (status: string) => {
+    return statusOptions.find(s => s.value === status)?.label || status;
+  };
+
   // Focus input when entering edit mode
   useEffect(() => {
     if (editingSubject && subjectInputRef.current) {
@@ -421,7 +445,7 @@ function TaskRow({
 
   // Close dropdowns when clicking outside
   useEffect(() => {
-    if (!showAssigneeDropdown && !showPriorityDropdown) return;
+    if (!showAssigneeDropdown && !showPriorityDropdown && !showStatusDropdown && !editingDescription) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (showAssigneeDropdown && assigneeButtonRef.current && !assigneeButtonRef.current.contains(e.target as Node)) {
         setShowAssigneeDropdown(false);
@@ -429,10 +453,20 @@ function TaskRow({
       if (showPriorityDropdown && priorityButtonRef.current && !priorityButtonRef.current.contains(e.target as Node)) {
         setShowPriorityDropdown(false);
       }
+      if (showStatusDropdown && statusButtonRef.current && !statusButtonRef.current.contains(e.target as Node)) {
+        setShowStatusDropdown(false);
+      }
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
-  }, [showAssigneeDropdown, showPriorityDropdown]);
+  }, [showAssigneeDropdown, showPriorityDropdown, showStatusDropdown, editingDescription]);
+
+  // Focus description when editing
+  useEffect(() => {
+    if (editingDescription && descriptionInputRef.current) {
+      descriptionInputRef.current.focus();
+    }
+  }, [editingDescription]);
 
   const handleAssigneeButtonClick = () => {
     if (!showAssigneeDropdown && assigneeButtonRef.current) {
@@ -456,6 +490,44 @@ function TaskRow({
     }
     setShowPriorityDropdown(!showPriorityDropdown);
     setShowAssigneeDropdown(false);
+    setShowStatusDropdown(false);
+  };
+
+  const handleStatusButtonClick = () => {
+    if (!showStatusDropdown && statusButtonRef.current) {
+      const rect = statusButtonRef.current.getBoundingClientRect();
+      setStatusPosition({
+        top: rect.bottom + 4,
+        left: Math.max(8, rect.left),
+      });
+    }
+    setShowStatusDropdown(!showStatusDropdown);
+    setShowAssigneeDropdown(false);
+    setShowPriorityDropdown(false);
+  };
+
+  const handleDescriptionButtonClick = () => {
+    if (!editingDescription && descriptionButtonRef.current) {
+      const rect = descriptionButtonRef.current.getBoundingClientRect();
+      setDescriptionPosition({
+        top: rect.bottom + 4,
+        left: Math.max(8, rect.left - 150),
+      });
+    }
+    setEditedDescription(task.body || "");
+    setEditingDescription(!editingDescription);
+  };
+
+  const handleStatusChange = (status: string) => {
+    updateTask({ status });
+    setShowStatusDropdown(false);
+  };
+
+  const handleDescriptionSave = () => {
+    if (editedDescription !== (task.body || "")) {
+      updateTask({ body: editedDescription || null });
+    }
+    setEditingDescription(false);
   };
 
   const updateTask = async (updates: Record<string, unknown>) => {
@@ -803,6 +875,96 @@ function TaskRow({
                   <span className={option.color}>{option.label}</span>
                 </button>
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* Inline Status */}
+        <div>
+          <button
+            ref={statusButtonRef}
+            onClick={handleStatusButtonClick}
+            className={`px-2 py-1 text-xs rounded-full transition-colors cursor-pointer ${getStatusColor(task.status)}`}
+          >
+            {getStatusLabel(task.status)}
+          </button>
+          {showStatusDropdown && (
+            <div
+              className="fixed w-36 bg-white border rounded-lg shadow-lg z-50 py-1"
+              style={{ top: statusPosition.top, left: statusPosition.left }}
+            >
+              {statusOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleStatusChange(option.value)}
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                    task.status === option.value ? "bg-slate-100 font-medium" : ""
+                  }`}
+                >
+                  <span className={`px-1.5 py-0.5 rounded text-xs ${option.color}`}>
+                    {option.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Inline Description */}
+        <div>
+          <button
+            ref={descriptionButtonRef}
+            onClick={handleDescriptionButtonClick}
+            className={`p-1 rounded transition-colors ${
+              task.body
+                ? "text-slate-500 hover:bg-slate-100"
+                : "text-slate-300 hover:text-slate-500 hover:bg-slate-100 opacity-0 group-hover:opacity-100"
+            }`}
+            title={task.body || "Add description"}
+          >
+            <FileText className="h-4 w-4" />
+          </button>
+          {editingDescription && (
+            <div
+              className="fixed z-50 bg-white border rounded-lg shadow-lg p-3 w-80"
+              style={{ top: descriptionPosition.top, left: descriptionPosition.left }}
+            >
+              <textarea
+                ref={descriptionInputRef}
+                value={editedDescription}
+                onChange={(e) => setEditedDescription(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setEditedDescription(task.body || "");
+                    setEditingDescription(false);
+                  }
+                  if (e.key === "Enter" && e.metaKey) {
+                    handleDescriptionSave();
+                  }
+                }}
+                placeholder="Add a description..."
+                className="w-full text-sm border border-slate-300 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 min-h-[80px] resize-none"
+              />
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-xs text-slate-400">⌘+Enter to save</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setEditedDescription(task.body || "");
+                      setEditingDescription(false);
+                    }}
+                    className="px-2 py-1 text-xs text-slate-600 hover:bg-slate-100 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDescriptionSave}
+                    className="px-2 py-1 text-xs font-medium text-white bg-slate-700 hover:bg-slate-800 rounded"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
