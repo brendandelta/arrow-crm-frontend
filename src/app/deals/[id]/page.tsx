@@ -299,11 +299,32 @@ export default function DealDetailPage() {
 
   const handleBlockUpdate = (updatedBlock: Block) => {
     if (!deal) return;
+    const existingBlock = deal.blocks.find((b) => b.id === updatedBlock.id);
+    if (existingBlock) {
+      // Update existing block
+      setDeal({
+        ...deal,
+        blocks: deal.blocks.map((b) => (b.id === updatedBlock.id ? updatedBlock : b)),
+      });
+      setSelectedBlock(updatedBlock);
+    } else {
+      // New block created
+      setDeal({
+        ...deal,
+        blocks: [...deal.blocks, updatedBlock],
+      });
+      setShowAddBlock(false);
+      setSelectedBlock(null);
+    }
+  };
+
+  const handleBlockDelete = (blockId: number) => {
+    if (!deal) return;
     setDeal({
       ...deal,
-      blocks: deal.blocks.map((b) => (b.id === updatedBlock.id ? updatedBlock : b)),
+      blocks: deal.blocks.filter((b) => b.id !== blockId),
     });
-    setSelectedBlock(updatedBlock);
+    setSelectedBlock(null);
   };
 
   const refreshDeal = () => {
@@ -551,11 +572,16 @@ export default function DealDetailPage() {
       </div>
 
       {/* Block Slide-out */}
-      {selectedBlock && (
+      {(selectedBlock || showAddBlock) && (
         <BlockSlideOut
           block={selectedBlock}
-          onClose={() => setSelectedBlock(null)}
-          onUpdate={handleBlockUpdate}
+          dealId={deal.id}
+          onClose={() => {
+            setSelectedBlock(null);
+            setShowAddBlock(false);
+          }}
+          onSave={handleBlockUpdate}
+          onDelete={handleBlockDelete}
         />
       )}
     </div>
