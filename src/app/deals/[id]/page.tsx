@@ -610,6 +610,7 @@ export default function DealDetailPage() {
             <CardContent className="pt-6">
               <DealSidebar
                 tasks={deal.tasks}
+                dealId={deal.id}
                 targets={deal.targets}
                 documentChecklist={deal.documentChecklist}
                 advantages={deal.advantages}

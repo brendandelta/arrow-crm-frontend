@@ -12,6 +12,8 @@ import {
   Calendar,
   TrendingUp,
   Map,
+  CheckSquare,
+  FolderKanban,
 } from "lucide-react"
 
 import { NavMain } from "@/components/Sidebar/nav-main"
@@ -70,6 +72,22 @@ const data = {
         { title: "Champions", url: "/people/champions" },
         { title: "Hot", url: "/people/hot" },
       ],
+    },
+    {
+      title: "Tasks",
+      url: "/tasks",
+      icon: CheckSquare,
+      items: [
+        { title: "All Tasks", url: "/tasks" },
+        { title: "My Tasks", url: "/tasks/my" },
+        { title: "By Deal", url: "/tasks/by-deal" },
+        { title: "By Project", url: "/tasks/by-project" },
+      ],
+    },
+    {
+      title: "Projects",
+      url: "/projects",
+      icon: FolderKanban,
     },
     {
       title: "Map",

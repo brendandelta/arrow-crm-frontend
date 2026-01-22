@@ -49,12 +49,13 @@ interface TaskListProps {
     backlog: Task[];
     completed: Task[];
   };
+  dealId?: number;
   onTaskToggle?: (taskId: number, currentlyCompleted: boolean) => void;
   onTaskClick?: (task: Task) => void;
   onAddTask?: () => void;
 }
 
-export function TaskList({ tasks, onTaskToggle, onTaskClick, onAddTask }: TaskListProps) {
+export function TaskList({ tasks, dealId, onTaskToggle, onTaskClick, onAddTask }: TaskListProps) {
   const [showCompleted, setShowCompleted] = useState(false);
   const [expandedTasks, setExpandedTasks] = useState<Set<number>>(new Set());
 
@@ -345,6 +346,17 @@ export function TaskList({ tasks, onTaskToggle, onTaskClick, onAddTask }: TaskLi
 
       {tasks.overdue.length === 0 && tasks.dueThisWeek.length === 0 && tasks.backlog.length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-4">No tasks</p>
+      )}
+
+      {/* View All Link */}
+      {dealId && (tasks.overdue.length > 0 || tasks.dueThisWeek.length > 0 || tasks.backlog.length > 0 || tasks.completed.length > 0) && (
+        <a
+          href={`/tasks?deal_id=${dealId}`}
+          className="flex items-center justify-center gap-1 text-xs text-blue-600 hover:text-blue-800 pt-2 border-t mt-2"
+        >
+          View all in Tasks
+          <ExternalLink className="h-3 w-3" />
+        </a>
       )}
     </div>
   );
@@ -671,6 +683,7 @@ export function AdvantagesPanel({ advantages, onAddAdvantage }: AdvantagesPanelP
 // ============ Combined DealSidebar Component ============
 interface DealSidebarProps {
   tasks: TaskListProps["tasks"];
+  dealId?: number;
   targets: DealTarget[];
   documentChecklist: DocumentChecklistProps["checklist"];
   advantages: Advantage[];
@@ -686,6 +699,7 @@ interface DealSidebarProps {
 
 export function DealSidebar({
   tasks,
+  dealId,
   targets,
   documentChecklist,
   advantages,
@@ -735,6 +749,7 @@ export function DealSidebar({
         {expandedSection === "tasks" && (
           <TaskList
             tasks={tasks}
+            dealId={dealId}
             onTaskToggle={onTaskToggle}
             onTaskClick={onTaskClick}
             onAddTask={onAddTask}
