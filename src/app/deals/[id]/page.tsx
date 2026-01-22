@@ -14,6 +14,7 @@ import { ActivityFeed } from "./_components/ActivityFeed";
 import { DealSidebar } from "./_components/DealSidebar";
 import { BlockSlideOut } from "./_components/BlockSlideOut";
 import { InterestSlideOut } from "./_components/InterestSlideOut";
+import { ActivitySlideOut } from "./_components/ActivitySlideOut";
 import { EditableDealDetails } from "./_components/EditableDealDetails";
 // Import shared components
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
@@ -285,6 +286,8 @@ export default function DealDetailPage() {
   const [showAddBlock, setShowAddBlock] = useState(false);
   const [selectedInterest, setSelectedInterest] = useState<Interest | null>(null);
   const [showAddInterest, setShowAddInterest] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [showAddActivity, setShowAddActivity] = useState(false);
   const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "activity">("blocks");
 
   useEffect(() => {
@@ -358,6 +361,36 @@ export default function DealDetailPage() {
       interests: deal.interests.filter((i) => i.id !== interestId),
     });
     setSelectedInterest(null);
+  };
+
+  const handleActivityUpdate = (updatedActivity: Activity) => {
+    if (!deal) return;
+    const existingActivity = deal.activities.find((a) => a.id === updatedActivity.id);
+    if (existingActivity) {
+      // Update existing activity
+      setDeal({
+        ...deal,
+        activities: deal.activities.map((a) => (a.id === updatedActivity.id ? updatedActivity : a)),
+      });
+      setSelectedActivity(updatedActivity);
+    } else {
+      // New activity created - add to beginning of list
+      setDeal({
+        ...deal,
+        activities: [updatedActivity, ...deal.activities],
+      });
+      setShowAddActivity(false);
+      setSelectedActivity(null);
+    }
+  };
+
+  const handleActivityDelete = (activityId: number) => {
+    if (!deal) return;
+    setDeal({
+      ...deal,
+      activities: deal.activities.filter((a) => a.id !== activityId),
+    });
+    setSelectedActivity(null);
   };
 
   const refreshDeal = () => {
@@ -528,11 +561,21 @@ export default function DealDetailPage() {
 
           {activeTab === "activity" && (
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-base">Activity Feed</CardTitle>
+                <button
+                  onClick={() => setShowAddActivity(true)}
+                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                >
+                  <span className="text-lg leading-none">+</span>
+                  Log Activity
+                </button>
               </CardHeader>
               <CardContent>
-                <ActivityFeed activities={deal.activities} />
+                <ActivityFeed
+                  activities={deal.activities}
+                  onActivityClick={(activity) => setSelectedActivity(activity)}
+                />
               </CardContent>
             </Card>
           )}
@@ -626,6 +669,20 @@ export default function DealDetailPage() {
           }}
           onSave={handleInterestUpdate}
           onDelete={handleInterestDelete}
+        />
+      )}
+
+      {/* Activity Slide-out */}
+      {(selectedActivity || showAddActivity) && (
+        <ActivitySlideOut
+          activity={selectedActivity}
+          dealId={deal.id}
+          onClose={() => {
+            setSelectedActivity(null);
+            setShowAddActivity(false);
+          }}
+          onSave={handleActivityUpdate}
+          onDelete={handleActivityDelete}
         />
       )}
     </div>
