@@ -13,6 +13,7 @@ import { InterestsSection } from "./_components/InterestsSection";
 import { ActivityFeed } from "./_components/ActivityFeed";
 import { DealSidebar } from "./_components/DealSidebar";
 import { BlockSlideOut } from "./_components/BlockSlideOut";
+import { EditableDealDetails } from "./_components/EditableDealDetails";
 // Import shared components
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
 import { useLPMode } from "@/contexts/LPModeContext";
@@ -324,6 +325,53 @@ export default function DealDetailPage() {
     }
   };
 
+  const handleDealUpdate = async (data: Partial<{
+    stage: string | null;
+    confidence: number | null;
+    sharePrice: number | null;
+    valuation: number | null;
+    source: string | null;
+    sourceDetail: string | null;
+    expectedClose: string | null;
+    deadline: string | null;
+    tags: string[] | null;
+    notes: string | null;
+    driveUrl: string | null;
+    dataRoomUrl: string | null;
+    deckUrl: string | null;
+    notionUrl: string | null;
+  }>) => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/${params.id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deal: {
+            stage: data.stage,
+            confidence: data.confidence,
+            share_price_cents: data.sharePrice,
+            target_valuation_cents: data.valuation,
+            source: data.source,
+            source_detail: data.sourceDetail,
+            expected_close: data.expectedClose,
+            deadline: data.deadline,
+            tags: data.tags,
+            notes: data.notes,
+            drive_url: data.driveUrl,
+            data_room_url: data.dataRoomUrl,
+            deck_url: data.deckUrl,
+            notion_url: data.notionUrl,
+          },
+        }),
+      }
+    );
+    if (!res.ok) {
+      throw new Error("Failed to update deal");
+    }
+    refreshDeal();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -478,68 +526,27 @@ export default function DealDetailPage() {
           )}
 
           {/* Deal Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Deal Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="space-y-3 text-sm">
-                {deal.stage && (
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Stage</dt>
-                    <dd className="font-medium">{deal.stage}</dd>
-                  </div>
-                )}
-                {deal.confidence && (
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Confidence</dt>
-                    <dd className="font-medium">{deal.confidence}%</dd>
-                  </div>
-                )}
-                {deal.sharePrice && (
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Share Price</dt>
-                    <dd className="font-medium">
-                      ${(deal.sharePrice / 100).toFixed(2)}
-                    </dd>
-                  </div>
-                )}
-                {deal.valuation && (
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Valuation</dt>
-                    <dd className="font-medium">
-                      ${(deal.valuation / 100_000_000).toFixed(1)}B
-                    </dd>
-                  </div>
-                )}
-                {deal.source && (
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Source</dt>
-                    <dd className="font-medium">{deal.source}</dd>
-                  </div>
-                )}
-                {deal.tags && deal.tags.length > 0 && (
-                  <div>
-                    <dt className="text-muted-foreground mb-1">Tags</dt>
-                    <dd className="flex flex-wrap gap-1">
-                      {deal.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-
-              {!lpMode && deal.notes && (
-                <div className="mt-4 pt-4 border-t">
-                  <h4 className="text-sm text-muted-foreground mb-2">Internal Notes</h4>
-                  <p className="text-sm whitespace-pre-wrap">{deal.notes}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <EditableDealDetails
+            deal={{
+              stage: deal.stage,
+              confidence: deal.confidence,
+              sharePrice: deal.sharePrice,
+              valuation: deal.valuation,
+              source: deal.source,
+              sourceDetail: deal.sourceDetail,
+              expectedClose: deal.expectedClose,
+              deadline: deal.deadline,
+              tags: deal.tags,
+              notes: deal.notes,
+              driveUrl: deal.driveUrl,
+              dataRoomUrl: deal.dataRoomUrl,
+              deckUrl: deal.deckUrl,
+              notionUrl: deal.notionUrl,
+              owner: deal.owner,
+            }}
+            lpMode={lpMode}
+            onSave={handleDealUpdate}
+          />
         </div>
       </div>
 
