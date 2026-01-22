@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   CheckSquare,
@@ -164,9 +164,34 @@ function TaskRow({
   const [localSubtasks, setLocalSubtasks] = useState<Task[]>(task.subtasks || []);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const assigneeButtonRef = useRef<HTMLButtonElement>(null);
   const [addingSubtask, setAddingSubtask] = useState(false);
   const [newSubtaskSubject, setNewSubtaskSubject] = useState("");
   const [savingSubtask, setSavingSubtask] = useState(false);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!showAssigneeDropdown) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (assigneeButtonRef.current && !assigneeButtonRef.current.contains(e.target as Node)) {
+        setShowAssigneeDropdown(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [showAssigneeDropdown]);
+
+  const handleAssigneeButtonClick = () => {
+    if (!showAssigneeDropdown && assigneeButtonRef.current) {
+      const rect = assigneeButtonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 4,
+        left: rect.right - 192, // 192px = w-48
+      });
+    }
+    setShowAssigneeDropdown(!showAssigneeDropdown);
+  };
 
   const priorityColors: Record<number, string> = {
     3: "bg-red-100 text-red-700",
@@ -373,9 +398,10 @@ function TaskRow({
         </div>
 
         {/* Inline Assignee */}
-        <div className="relative" onClick={(e) => e.stopPropagation()}>
+        <div onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={() => setShowAssigneeDropdown(!showAssigneeDropdown)}
+            ref={assigneeButtonRef}
+            onClick={handleAssigneeButtonClick}
             className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full transition-colors ${
               task.assignedTo
                 ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -395,7 +421,10 @@ function TaskRow({
             )}
           </button>
           {showAssigneeDropdown && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-white border rounded-lg shadow-lg z-20 py-1">
+            <div
+              className="fixed w-48 bg-white border rounded-lg shadow-lg z-50 py-1 max-h-64 overflow-y-auto"
+              style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
+            >
               <button
                 onClick={() => {
                   onAssigneeChange(task.id, null);
