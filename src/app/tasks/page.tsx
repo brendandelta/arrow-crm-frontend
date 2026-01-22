@@ -143,6 +143,165 @@ function formatDate(dateStr: string | null | undefined) {
   });
 }
 
+function SubtaskRow({
+  subtask,
+  users,
+  onToggle,
+  onAssigneeChange,
+  onDateChange,
+  onClick,
+  isToggling,
+  onRefresh,
+}: {
+  subtask: Task;
+  users: User[];
+  onToggle: () => void;
+  onAssigneeChange: (userId: number | null) => void;
+  onDateChange: (date: string) => void;
+  onClick: () => void;
+  isToggling: boolean;
+  onRefresh: () => void;
+}) {
+  const [editingSubject, setEditingSubject] = useState(false);
+  const [editedSubject, setEditedSubject] = useState(subtask.subject);
+  const [editingDate, setEditingDate] = useState(false);
+  const subjectInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingSubject && subjectInputRef.current) {
+      subjectInputRef.current.focus();
+      subjectInputRef.current.select();
+    }
+  }, [editingSubject]);
+
+  const handleSubjectSave = async () => {
+    if (editedSubject.trim() && editedSubject !== subtask.subject) {
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${subtask.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task: { subject: editedSubject.trim() } }),
+        });
+        onRefresh();
+      } catch (err) {
+        console.error("Failed to update subtask:", err);
+        setEditedSubject(subtask.subject);
+      }
+    } else {
+      setEditedSubject(subtask.subject);
+    }
+    setEditingSubject(false);
+  };
+
+  return (
+    <div className="group flex items-center gap-2 pl-12 pr-4 py-2 hover:bg-slate-100 border-b border-slate-100 last:border-b-0">
+      {/* Subtask checkbox */}
+      <button
+        onClick={onToggle}
+        disabled={isToggling}
+        className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 ${
+          subtask.completed
+            ? "bg-green-500 border-green-500 text-white"
+            : "border-slate-300 hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
+        } ${isToggling ? "opacity-50" : ""}`}
+      >
+        {isToggling ? (
+          <Loader2 className="h-2.5 w-2.5 animate-spin" />
+        ) : subtask.completed ? (
+          <Check className="h-2.5 w-2.5" />
+        ) : (
+          <Check className="h-2.5 w-2.5 opacity-0 group-hover:opacity-30 text-green-500" />
+        )}
+      </button>
+
+      {/* Editable subject */}
+      {editingSubject ? (
+        <input
+          ref={subjectInputRef}
+          type="text"
+          value={editedSubject}
+          onChange={(e) => setEditedSubject(e.target.value)}
+          onBlur={handleSubjectSave}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSubjectSave();
+            if (e.key === "Escape") {
+              setEditedSubject(subtask.subject);
+              setEditingSubject(false);
+            }
+          }}
+          className="flex-1 text-sm bg-white border border-blue-400 rounded px-2 py-0.5 outline-none focus:ring-2 focus:ring-blue-200"
+        />
+      ) : (
+        <span
+          onClick={() => {
+            setEditingSubject(true);
+            setEditedSubject(subtask.subject);
+          }}
+          className={`flex-1 text-sm cursor-text hover:bg-blue-50 hover:text-blue-700 px-1 -mx-1 rounded transition-colors ${
+            subtask.completed ? "line-through text-muted-foreground" : ""
+          }`}
+        >
+          {subtask.subject}
+        </span>
+      )}
+
+      {/* Subtask assignee */}
+      <select
+        value={subtask.assignedTo?.id || ""}
+        onChange={(e) => onAssigneeChange(e.target.value ? parseInt(e.target.value) : null)}
+        onClick={(e) => e.stopPropagation()}
+        className="text-xs bg-transparent border-0 text-slate-500 hover:text-slate-700 cursor-pointer focus:ring-0 py-0 pr-6 pl-1 hover:bg-slate-200 rounded"
+      >
+        <option value="">Unassigned</option>
+        {users.map((user) => (
+          <option key={user.id} value={user.id}>
+            {user.firstName}
+          </option>
+        ))}
+      </select>
+
+      {/* Subtask due date */}
+      {editingDate ? (
+        <input
+          type="date"
+          value={subtask.dueAt?.split("T")[0] || ""}
+          onChange={(e) => {
+            onDateChange(e.target.value);
+            setEditingDate(false);
+          }}
+          onBlur={() => setEditingDate(false)}
+          className="text-xs border border-blue-400 rounded px-1 py-0.5 w-28"
+          autoFocus
+        />
+      ) : (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setEditingDate(true);
+          }}
+          className={`text-xs w-16 text-right hover:bg-blue-50 px-1 rounded transition-colors ${
+            subtask.overdue ? "text-red-600" : subtask.dueAt ? "text-muted-foreground" : "text-slate-400"
+          }`}
+        >
+          {subtask.dueAt ? formatDate(subtask.dueAt) : (
+            <span className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 justify-end">
+              <Calendar className="h-3 w-3" />
+            </span>
+          )}
+        </button>
+      )}
+
+      {/* Open detail */}
+      <button
+        onClick={onClick}
+        className="p-0.5 text-slate-400 hover:text-slate-600 opacity-0 group-hover:opacity-100"
+      >
+        <ChevronRight className="h-3 w-3" />
+      </button>
+    </div>
+  );
+}
+
 function TaskRow({
   task,
   users,
@@ -163,40 +322,121 @@ function TaskRow({
   const [expanded, setExpanded] = useState(false);
   const [localSubtasks, setLocalSubtasks] = useState<Task[]>(task.subtasks || []);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+
+  // Inline editing states
+  const [editingSubject, setEditingSubject] = useState(false);
+  const [editedSubject, setEditedSubject] = useState(task.subject);
+  const [editingDate, setEditingDate] = useState(false);
+  const [editedDate, setEditedDate] = useState(task.dueAt?.split("T")[0] || "");
+  const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [priorityPosition, setPriorityPosition] = useState({ top: 0, left: 0 });
+
   const assigneeButtonRef = useRef<HTMLButtonElement>(null);
+  const priorityButtonRef = useRef<HTMLButtonElement>(null);
+  const subjectInputRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+
   const [addingSubtask, setAddingSubtask] = useState(false);
   const [newSubtaskSubject, setNewSubtaskSubject] = useState("");
   const [savingSubtask, setSavingSubtask] = useState(false);
 
-  // Close dropdown when clicking outside
+  const priorityColors: Record<number, string> = {
+    3: "bg-red-100 text-red-700 hover:bg-red-200",
+    2: "bg-amber-100 text-amber-700 hover:bg-amber-200",
+    1: "bg-slate-100 text-slate-600 hover:bg-slate-200",
+  };
+
+  const priorityOptions = [
+    { value: 3, label: "High", color: "text-red-600" },
+    { value: 2, label: "Medium", color: "text-amber-600" },
+    { value: 1, label: "Low", color: "text-slate-500" },
+  ];
+
+  // Focus input when entering edit mode
   useEffect(() => {
-    if (!showAssigneeDropdown) return;
+    if (editingSubject && subjectInputRef.current) {
+      subjectInputRef.current.focus();
+      subjectInputRef.current.select();
+    }
+  }, [editingSubject]);
+
+  useEffect(() => {
+    if (editingDate && dateInputRef.current) {
+      dateInputRef.current.showPicker?.();
+    }
+  }, [editingDate]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    if (!showAssigneeDropdown && !showPriorityDropdown) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (assigneeButtonRef.current && !assigneeButtonRef.current.contains(e.target as Node)) {
+      if (showAssigneeDropdown && assigneeButtonRef.current && !assigneeButtonRef.current.contains(e.target as Node)) {
         setShowAssigneeDropdown(false);
+      }
+      if (showPriorityDropdown && priorityButtonRef.current && !priorityButtonRef.current.contains(e.target as Node)) {
+        setShowPriorityDropdown(false);
       }
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
-  }, [showAssigneeDropdown]);
+  }, [showAssigneeDropdown, showPriorityDropdown]);
 
   const handleAssigneeButtonClick = () => {
     if (!showAssigneeDropdown && assigneeButtonRef.current) {
       const rect = assigneeButtonRef.current.getBoundingClientRect();
       setDropdownPosition({
         top: rect.bottom + 4,
-        left: rect.right - 192, // 192px = w-48
+        left: Math.max(8, rect.right - 192),
       });
     }
     setShowAssigneeDropdown(!showAssigneeDropdown);
+    setShowPriorityDropdown(false);
   };
 
-  const priorityColors: Record<number, string> = {
-    3: "bg-red-100 text-red-700",
-    2: "bg-amber-100 text-amber-700",
-    1: "bg-slate-100 text-slate-600",
+  const handlePriorityButtonClick = () => {
+    if (!showPriorityDropdown && priorityButtonRef.current) {
+      const rect = priorityButtonRef.current.getBoundingClientRect();
+      setPriorityPosition({
+        top: rect.bottom + 4,
+        left: Math.max(8, rect.left),
+      });
+    }
+    setShowPriorityDropdown(!showPriorityDropdown);
+    setShowAssigneeDropdown(false);
+  };
+
+  const updateTask = async (updates: Record<string, unknown>) => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: updates }),
+      });
+      onRefresh();
+    } catch (err) {
+      console.error("Failed to update task:", err);
+    }
+  };
+
+  const handleSubjectSave = () => {
+    if (editedSubject.trim() && editedSubject !== task.subject) {
+      updateTask({ subject: editedSubject.trim() });
+    } else {
+      setEditedSubject(task.subject);
+    }
+    setEditingSubject(false);
+  };
+
+  const handleDateSave = (newDate: string) => {
+    updateTask({ due_at: newDate || null });
+    setEditingDate(false);
+  };
+
+  const handlePriorityChange = (priority: number) => {
+    updateTask({ priority });
+    setShowPriorityDropdown(false);
   };
 
   // Fetch subtasks when expanded
@@ -237,7 +477,6 @@ function TaskRow({
         { method: "POST" }
       );
       if (!res.ok) {
-        // Revert on failure
         setLocalSubtasks((prev) =>
           prev.map((st) =>
             st.id === subtask.id ? { ...st, completed: subtask.completed } : st
@@ -267,7 +506,6 @@ function TaskRow({
           body: JSON.stringify({ task: { assigned_to_id: userId } }),
         }
       );
-      // Update local state
       setLocalSubtasks((prev) =>
         prev.map((st) =>
           st.id === subtaskId
@@ -288,6 +526,23 @@ function TaskRow({
       );
     } catch (err) {
       console.error("Failed to update assignee:", err);
+    }
+  };
+
+  const handleSubtaskDateChange = async (subtaskId: number, newDate: string) => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${subtaskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: { due_at: newDate || null } }),
+      });
+      setLocalSubtasks((prev) =>
+        prev.map((st) =>
+          st.id === subtaskId ? { ...st, dueAt: newDate || null } : st
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update subtask date:", err);
     }
   };
 
@@ -325,17 +580,11 @@ function TaskRow({
   return (
     <div className="border-b border-slate-100 last:border-b-0">
       {/* Main Task Row */}
-      <div
-        className="group flex items-center gap-2 px-4 py-3 hover:bg-slate-50 cursor-pointer"
-        onClick={() => onClick(task)}
-      >
+      <div className="group flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50">
         {/* Expand Arrow */}
         {task.subtaskCount > 0 ? (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded(!expanded);
-            }}
+            onClick={() => setExpanded(!expanded)}
             className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-slate-400 hover:text-slate-600"
           >
             {expanded ? (
@@ -350,10 +599,7 @@ function TaskRow({
 
         {/* Checkbox */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleComplete(task);
-          }}
+          onClick={() => onToggleComplete(task)}
           className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
             task.completed
               ? "bg-green-500 border-green-500 text-white"
@@ -367,38 +613,62 @@ function TaskRow({
           )}
         </button>
 
-        {/* Main content */}
+        {/* Editable Subject */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span
-              className={`font-medium truncate ${
-                task.completed ? "line-through text-muted-foreground" : ""
-              }`}
+          {editingSubject ? (
+            <input
+              ref={subjectInputRef}
+              type="text"
+              value={editedSubject}
+              onChange={(e) => setEditedSubject(e.target.value)}
+              onBlur={handleSubjectSave}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSubjectSave();
+                if (e.key === "Escape") {
+                  setEditedSubject(task.subject);
+                  setEditingSubject(false);
+                }
+              }}
+              className="w-full font-medium text-sm bg-white border border-blue-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          ) : (
+            <div
+              onClick={() => {
+                setEditingSubject(true);
+                setEditedSubject(task.subject);
+              }}
+              className="cursor-text"
             >
-              {task.subject}
-            </span>
-            {task.subtaskCount > 0 && (
-              <span className="text-xs text-muted-foreground bg-slate-100 px-1.5 py-0.5 rounded">
-                {completedSubtaskCount}/{task.subtaskCount}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            {showAttachment && task.attachmentName && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                {task.attachmentType === "deal" ? (
-                  <Building2 className="h-3 w-3" />
-                ) : task.attachmentType === "project" ? (
-                  <FolderKanban className="h-3 w-3" />
-                ) : null}
-                {task.attachmentName}
-              </span>
-            )}
-          </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`font-medium text-sm hover:bg-blue-50 hover:text-blue-700 px-1 -mx-1 rounded transition-colors ${
+                    task.completed ? "line-through text-muted-foreground" : ""
+                  }`}
+                >
+                  {task.subject}
+                </span>
+                {task.subtaskCount > 0 && (
+                  <span className="text-xs text-muted-foreground bg-slate-100 px-1.5 py-0.5 rounded">
+                    {completedSubtaskCount}/{task.subtaskCount}
+                  </span>
+                )}
+              </div>
+              {showAttachment && task.attachmentName && (
+                <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                  {task.attachmentType === "deal" ? (
+                    <Building2 className="h-3 w-3" />
+                  ) : task.attachmentType === "project" ? (
+                    <FolderKanban className="h-3 w-3" />
+                  ) : null}
+                  {task.attachmentName}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Inline Assignee */}
-        <div onClick={(e) => e.stopPropagation()}>
+        <div>
           <button
             ref={assigneeButtonRef}
             onClick={handleAssigneeButtonClick}
@@ -452,103 +722,105 @@ function TaskRow({
           )}
         </div>
 
-        {/* Priority */}
-        {task.priority > 1 && (
-          <Badge className={`text-xs ${priorityColors[task.priority]}`}>
-            {task.priorityLabel}
-          </Badge>
-        )}
+        {/* Inline Priority */}
+        <div>
+          <button
+            ref={priorityButtonRef}
+            onClick={handlePriorityButtonClick}
+            className={`px-2 py-1 text-xs rounded-full transition-colors cursor-pointer ${
+              priorityColors[task.priority] || priorityColors[2]
+            }`}
+          >
+            {task.priorityLabel || "Medium"}
+          </button>
+          {showPriorityDropdown && (
+            <div
+              className="fixed w-32 bg-white border rounded-lg shadow-lg z-50 py-1"
+              style={{ top: priorityPosition.top, left: priorityPosition.left }}
+            >
+              {priorityOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handlePriorityChange(option.value)}
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                    task.priority === option.value ? "bg-slate-100 font-medium" : ""
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${
+                    option.value === 3 ? "bg-red-500" : option.value === 2 ? "bg-amber-500" : "bg-slate-400"
+                  }`} />
+                  <span className={option.color}>{option.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
-        {/* Due date */}
-        <div className="flex-shrink-0 text-right w-20">
-          {task.dueAt && (
-            <span
-              className={`text-sm ${
+        {/* Inline Due Date */}
+        <div className="flex-shrink-0 w-24">
+          {editingDate ? (
+            <input
+              ref={dateInputRef}
+              type="date"
+              value={editedDate}
+              onChange={(e) => {
+                setEditedDate(e.target.value);
+                handleDateSave(e.target.value);
+              }}
+              onBlur={() => setEditingDate(false)}
+              className="w-full text-xs border border-blue-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          ) : (
+            <button
+              onClick={() => {
+                setEditedDate(task.dueAt?.split("T")[0] || "");
+                setEditingDate(true);
+              }}
+              className={`w-full text-left text-sm px-2 py-1 rounded transition-colors hover:bg-blue-50 ${
                 task.overdue
                   ? "text-red-600 font-medium"
                   : task.dueToday
                   ? "text-amber-600 font-medium"
-                  : "text-muted-foreground"
+                  : task.dueAt
+                  ? "text-muted-foreground"
+                  : "text-slate-400 hover:text-slate-600"
               }`}
             >
-              {formatDate(task.dueAt)}
-            </span>
+              {task.dueAt ? formatDate(task.dueAt) : (
+                <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                  <Calendar className="h-3 w-3" />
+                  <span className="text-xs">Add</span>
+                </span>
+              )}
+            </button>
           )}
         </div>
+
+        {/* Open detail button */}
+        <button
+          onClick={() => onClick(task)}
+          className="p-1 text-slate-400 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity"
+          title="Open details"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Expanded Subtasks */}
       {expanded && (
         <div className="bg-slate-50 border-t border-slate-100">
           {localSubtasks.map((subtask) => (
-            <div
+            <SubtaskRow
               key={subtask.id}
-              className="group flex items-center gap-2 pl-12 pr-4 py-2 hover:bg-slate-100 cursor-pointer border-b border-slate-100 last:border-b-0"
+              subtask={subtask}
+              users={users}
+              onToggle={() => handleToggleSubtask(subtask)}
+              onAssigneeChange={(userId) => handleSubtaskAssigneeChange(subtask.id, userId)}
+              onDateChange={(date) => handleSubtaskDateChange(subtask.id, date)}
               onClick={() => onClick(subtask)}
-            >
-              {/* Subtask checkbox */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleToggleSubtask(subtask);
-                }}
-                disabled={togglingId === subtask.id}
-                className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 ${
-                  subtask.completed
-                    ? "bg-green-500 border-green-500 text-white"
-                    : "border-slate-300 hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
-                } ${togglingId === subtask.id ? "opacity-50" : ""}`}
-              >
-                {togglingId === subtask.id ? (
-                  <Loader2 className="h-2.5 w-2.5 animate-spin" />
-                ) : subtask.completed ? (
-                  <Check className="h-2.5 w-2.5" />
-                ) : (
-                  <Check className="h-2.5 w-2.5 opacity-0 group-hover:opacity-30 text-green-500" />
-                )}
-              </button>
-
-              {/* Subtask subject */}
-              <span
-                className={`flex-1 text-sm ${
-                  subtask.completed ? "line-through text-muted-foreground" : ""
-                }`}
-              >
-                {subtask.subject}
-              </span>
-
-              {/* Subtask assignee - inline dropdown */}
-              <div className="relative" onClick={(e) => e.stopPropagation()}>
-                <select
-                  value={subtask.assignedTo?.id || ""}
-                  onChange={(e) =>
-                    handleSubtaskAssigneeChange(
-                      subtask.id,
-                      e.target.value ? parseInt(e.target.value) : null
-                    )
-                  }
-                  className="text-xs bg-transparent border-0 text-slate-500 hover:text-slate-700 cursor-pointer focus:ring-0 py-0 pr-6 pl-1"
-                >
-                  <option value="">Unassigned</option>
-                  {users.map((user) => (
-                    <option key={user.id} value={user.id}>
-                      {user.firstName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Subtask due date */}
-              {subtask.dueAt && (
-                <span
-                  className={`text-xs w-16 text-right ${
-                    subtask.overdue ? "text-red-600" : "text-muted-foreground"
-                  }`}
-                >
-                  {formatDate(subtask.dueAt)}
-                </span>
-              )}
-            </div>
+              isToggling={togglingId === subtask.id}
+              onRefresh={onRefresh}
+            />
           ))}
 
           {/* Add subtask form */}
