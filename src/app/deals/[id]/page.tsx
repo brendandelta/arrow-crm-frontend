@@ -12,6 +12,7 @@ import { BlocksSection } from "./_components/BlocksSection";
 import { InterestsSection } from "./_components/InterestsSection";
 import { ActivityFeed } from "./_components/ActivityFeed";
 import { DealSidebar } from "./_components/DealSidebar";
+import { DealTargetsSection } from "./_components/DealTargetsSection";
 import { BlockSlideOut } from "./_components/BlockSlideOut";
 import { InterestSlideOut } from "./_components/InterestSlideOut";
 import { ActivitySlideOut } from "./_components/ActivitySlideOut";
@@ -292,7 +293,7 @@ export default function DealDetailPage() {
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [selectedTask, setSelectedTask] = useState<SidebarTask | null>(null);
   const [showAddTask, setShowAddTask] = useState(false);
-  const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "activity">("blocks");
+  const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "activity" | "targets">("blocks");
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/${params.id}`)
@@ -545,6 +546,7 @@ export default function DealDetailPage() {
             {[
               { key: "blocks", label: "Blocks", count: deal.blocks.length },
               { key: "interests", label: "Interests", count: deal.interests.length },
+              { key: "targets", label: "Targets", count: deal.targets.length },
               { key: "activity", label: "Activity", count: deal.activities.length },
             ].map((tab) => (
               <button
@@ -579,6 +581,14 @@ export default function DealDetailPage() {
               funnel={deal.demandFunnel}
               onInterestClick={(interest) => setSelectedInterest(interest)}
               onAddInterest={() => setShowAddInterest(true)}
+            />
+          )}
+
+          {activeTab === "targets" && (
+            <DealTargetsSection
+              targets={deal.targets}
+              dealId={deal.id}
+              onTargetUpdated={refreshDeal}
             />
           )}
 
@@ -628,6 +638,7 @@ export default function DealDetailPage() {
                 onAddAdvantage={() => {
                   // Could open add advantage modal
                 }}
+                onSwitchToTargetsTab={() => setActiveTab("targets")}
               />
             </CardContent>
           </Card>

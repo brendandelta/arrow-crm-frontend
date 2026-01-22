@@ -1,8 +1,8 @@
 "use client";
 
-import { LayoutList, LayoutGrid, GitBranch } from "lucide-react";
+import { LayoutList, LayoutGrid, GitBranch, Network } from "lucide-react";
 
-type ViewMode = "table" | "board" | "pipeline";
+type ViewMode = "table" | "board" | "pipeline" | "mindmap";
 
 interface ViewToggleProps {
   activeView: ViewMode;
@@ -29,12 +29,17 @@ const viewConfig: Record<
     label: "Pipeline",
     description: "Pipeline funnel view",
   },
+  mindmap: {
+    icon: Network,
+    label: "Mind Map",
+    description: "Visual graph of deals and relationships",
+  },
 };
 
 export function ViewToggle({
   activeView,
   onViewChange,
-  availableViews = ["table", "board", "pipeline"],
+  availableViews = ["table", "board", "pipeline", "mindmap"],
 }: ViewToggleProps) {
   return (
     <div className="inline-flex items-center rounded-lg border border-slate-200 p-1 bg-white">
@@ -78,7 +83,7 @@ export function ViewToggleCompact({
   activeView: ViewMode;
   onViewChange: (view: ViewMode) => void;
 }) {
-  const views: ViewMode[] = ["table", "board", "pipeline"];
+  const views: ViewMode[] = ["table", "board", "pipeline", "mindmap"];
 
   return (
     <div className="inline-flex items-center rounded-md border border-slate-200 bg-white">
@@ -103,7 +108,7 @@ export function ViewToggleCompact({
                   : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
               }
               ${view === "table" ? "rounded-l-md" : ""}
-              ${view === "pipeline" ? "rounded-r-md" : ""}
+              ${view === "mindmap" ? "rounded-r-md" : ""}
             `}
             title={isDisabled ? `${config.label} (Coming soon)` : config.label}
           >

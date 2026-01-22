@@ -23,6 +23,7 @@ import { OutreachSummary } from "./_components/OutreachSummary";
 import { formatCurrency } from "./_components/utils";
 import { BoardView } from "./_components/BoardView";
 import { PipelineView } from "./_components/PipelineView";
+import { MindMapView } from "./_components/MindMapView";
 import { DemandProgressBar } from "@/components/deals/DemandProgressBar";
 import { RiskFlagIndicator } from "@/components/deals/RiskFlagIndicator";
 
@@ -166,7 +167,7 @@ interface Filters {
   pricingStale: boolean;
 }
 
-type ViewMode = "table" | "board" | "pipeline";
+type ViewMode = "table" | "board" | "pipeline" | "mindmap";
 
 const defaultFilters: Filters = {
   stages: [],
@@ -403,10 +404,12 @@ export default function DealsPage() {
       </div>
 
       {/* Content View */}
-      {loading ? (
+      {loading && viewMode !== "mindmap" ? (
         <div className="flex items-center justify-center h-64 text-muted-foreground">
           Loading...
         </div>
+      ) : viewMode === "mindmap" ? (
+        <MindMapView />
       ) : viewMode === "board" ? (
         <BoardView
           deals={filteredDeals}

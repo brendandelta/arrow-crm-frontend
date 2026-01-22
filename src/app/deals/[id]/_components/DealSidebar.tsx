@@ -378,9 +378,10 @@ interface DealTarget {
 interface OutreachTrackerProps {
   targets: DealTarget[];
   onTargetClick?: (target: DealTarget) => void;
+  onViewAllTargets?: () => void;
 }
 
-export function OutreachTracker({ targets, onTargetClick }: OutreachTrackerProps) {
+export function OutreachTracker({ targets, onTargetClick, onViewAllTargets }: OutreachTrackerProps) {
   const staleTargets = targets.filter((t) => t.isStale);
   const activeTargets = targets.filter((t) => !t.isStale && t.status !== "passed" && t.status !== "on_hold");
 
@@ -452,6 +453,16 @@ export function OutreachTracker({ targets, onTargetClick }: OutreachTrackerProps
 
       {targets.length === 0 && (
         <p className="text-sm text-muted-foreground text-center py-4">No outreach targets</p>
+      )}
+
+      {/* View all targets link */}
+      {onViewAllTargets && targets.length > 0 && (
+        <button
+          onClick={onViewAllTargets}
+          className="w-full text-center text-xs text-blue-600 hover:text-blue-800 pt-2 border-t mt-2"
+        >
+          View all targets →
+        </button>
       )}
     </div>
   );
@@ -695,6 +706,7 @@ interface DealSidebarProps {
   onTargetClick?: (target: DealTarget) => void;
   onDocumentUpload?: (kind: string) => void;
   onAddAdvantage?: () => void;
+  onSwitchToTargetsTab?: () => void;
 }
 
 export function DealSidebar({
@@ -711,6 +723,7 @@ export function DealSidebar({
   onTargetClick,
   onDocumentUpload,
   onAddAdvantage,
+  onSwitchToTargetsTab,
 }: DealSidebarProps) {
   const [expandedSection, setExpandedSection] = useState<string>("tasks");
 
@@ -756,7 +769,7 @@ export function DealSidebar({
           />
         )}
         {expandedSection === "outreach" && (
-          <OutreachTracker targets={targets} onTargetClick={onTargetClick} />
+          <OutreachTracker targets={targets} onTargetClick={onTargetClick} onViewAllTargets={onSwitchToTargetsTab} />
         )}
         {expandedSection === "documents" && (
           <DocumentChecklist checklist={documentChecklist} onUpload={onDocumentUpload} />
