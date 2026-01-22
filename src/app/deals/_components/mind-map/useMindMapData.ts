@@ -14,11 +14,12 @@ export function useMindMapData() {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/mind_map`)
       .then((res) => res.json())
       .then((d) => {
-        setData(d);
+        setData(d && d.groups ? d : { groups: [] });
         setLoading(false);
       })
       .catch((err) => {
         console.error("Failed to fetch mind map data:", err);
+        setData({ groups: [] });
         setLoading(false);
       });
   }, []);
@@ -45,7 +46,7 @@ export function useMindMapData() {
     const rawNodes: Node[] = [];
     const rawEdges: Edge[] = [];
 
-    const groups = data.groups;
+    const groups = data.groups || [];
 
     // Filter for focus mode
     const filteredGroups = focusDealId
