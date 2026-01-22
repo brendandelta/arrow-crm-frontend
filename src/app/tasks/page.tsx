@@ -18,6 +18,9 @@ import {
   FolderKanban,
   Calendar,
   ListFilter,
+  Check,
+  Loader2,
+  UserPlus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TasksSlideOut } from "./_components/TasksSlideOut";
@@ -142,99 +145,438 @@ function formatDate(dateStr: string | null | undefined) {
 
 function TaskRow({
   task,
+  users,
   onToggleComplete,
   onClick,
+  onAssigneeChange,
+  onRefresh,
   showAttachment = true,
 }: {
   task: Task;
+  users: User[];
   onToggleComplete: (task: Task) => void;
   onClick: (task: Task) => void;
+  onAssigneeChange: (taskId: number, userId: number | null) => void;
+  onRefresh: () => void;
   showAttachment?: boolean;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const [localSubtasks, setLocalSubtasks] = useState<Task[]>(task.subtasks || []);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [addingSubtask, setAddingSubtask] = useState(false);
+  const [newSubtaskSubject, setNewSubtaskSubject] = useState("");
+  const [savingSubtask, setSavingSubtask] = useState(false);
+
   const priorityColors: Record<number, string> = {
     3: "bg-red-100 text-red-700",
     2: "bg-amber-100 text-amber-700",
     1: "bg-slate-100 text-slate-600",
   };
 
+  // Fetch subtasks when expanded
+  useEffect(() => {
+    if (expanded && task.subtaskCount > 0 && localSubtasks.length === 0) {
+      fetchSubtasks();
+    }
+  }, [expanded]);
+
+  const fetchSubtasks = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${task.id}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setLocalSubtasks(data.subtasks || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch subtasks:", err);
+    }
+  };
+
+  const handleToggleSubtask = async (subtask: Task) => {
+    const endpoint = subtask.completed ? "uncomplete" : "complete";
+    setTogglingId(subtask.id);
+
+    // Optimistic update
+    setLocalSubtasks((prev) =>
+      prev.map((st) =>
+        st.id === subtask.id ? { ...st, completed: !st.completed } : st
+      )
+    );
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${subtask.id}/${endpoint}`,
+        { method: "POST" }
+      );
+      if (!res.ok) {
+        // Revert on failure
+        setLocalSubtasks((prev) =>
+          prev.map((st) =>
+            st.id === subtask.id ? { ...st, completed: subtask.completed } : st
+          )
+        );
+      } else {
+        onRefresh();
+      }
+    } catch (err) {
+      console.error("Failed to toggle subtask:", err);
+      setLocalSubtasks((prev) =>
+        prev.map((st) =>
+          st.id === subtask.id ? { ...st, completed: subtask.completed } : st
+        )
+      );
+    }
+    setTogglingId(null);
+  };
+
+  const handleSubtaskAssigneeChange = async (subtaskId: number, userId: number | null) => {
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${subtaskId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task: { assigned_to_id: userId } }),
+        }
+      );
+      // Update local state
+      setLocalSubtasks((prev) =>
+        prev.map((st) =>
+          st.id === subtaskId
+            ? {
+                ...st,
+                assignedTo: userId
+                  ? users.find((u) => u.id === userId)
+                    ? {
+                        id: userId,
+                        firstName: users.find((u) => u.id === userId)!.firstName,
+                        lastName: users.find((u) => u.id === userId)!.lastName,
+                      }
+                    : null
+                  : null,
+              }
+            : st
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update assignee:", err);
+    }
+  };
+
+  const handleAddSubtask = async () => {
+    if (!newSubtaskSubject.trim()) return;
+    setSavingSubtask(true);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task: {
+            subject: newSubtaskSubject.trim(),
+            parent_task_id: task.id,
+            priority: 2,
+          },
+        }),
+      });
+
+      if (res.ok) {
+        const newSubtask = await res.json();
+        setLocalSubtasks((prev) => [...prev, newSubtask]);
+        setNewSubtaskSubject("");
+        onRefresh();
+      }
+    } catch (err) {
+      console.error("Failed to add subtask:", err);
+    }
+    setSavingSubtask(false);
+  };
+
+  const completedSubtaskCount = localSubtasks.filter((st) => st.completed).length;
+
   return (
-    <div
-      className="group flex items-center gap-3 px-4 py-3 hover:bg-slate-50 border-b border-slate-100 cursor-pointer"
-      onClick={() => onClick(task)}
-    >
-      {/* Checkbox */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleComplete(task);
-        }}
-        className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-          task.completed
-            ? "bg-green-500 border-green-500 text-white"
-            : "border-slate-300 hover:border-slate-400"
-        }`}
+    <div className="border-b border-slate-100 last:border-b-0">
+      {/* Main Task Row */}
+      <div
+        className="group flex items-center gap-2 px-4 py-3 hover:bg-slate-50 cursor-pointer"
+        onClick={() => onClick(task)}
       >
-        {task.completed && <CheckSquare className="h-3 w-3" />}
-      </button>
-
-      {/* Main content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span
-            className={`font-medium truncate ${
-              task.completed ? "line-through text-muted-foreground" : ""
-            }`}
+        {/* Expand Arrow */}
+        {task.subtaskCount > 0 ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded(!expanded);
+            }}
+            className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-slate-400 hover:text-slate-600"
           >
-            {task.subject}
-          </span>
-          {task.subtaskCount > 0 && (
-            <span className="text-xs text-muted-foreground">
-              ({task.completedSubtaskCount}/{task.subtaskCount})
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2 mt-0.5">
-          {showAttachment && task.attachmentName && (
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              {task.attachmentType === "deal" ? (
-                <Building2 className="h-3 w-3" />
-              ) : task.attachmentType === "project" ? (
-                <FolderKanban className="h-3 w-3" />
-              ) : null}
-              {task.attachmentName}
-            </span>
-          )}
-          {task.assignedTo && (
-            <span className="text-xs text-muted-foreground">
-              {task.assignedTo.firstName} {task.assignedTo.lastName[0]}.
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Priority */}
-      {task.priority > 1 && (
-        <Badge className={`text-xs ${priorityColors[task.priority]}`}>
-          {task.priorityLabel}
-        </Badge>
-      )}
-
-      {/* Due date */}
-      <div className="flex-shrink-0 text-right">
-        {task.dueAt && (
-          <span
-            className={`text-sm ${
-              task.overdue
-                ? "text-red-600 font-medium"
-                : task.dueToday
-                ? "text-amber-600 font-medium"
-                : "text-muted-foreground"
-            }`}
-          >
-            {formatDate(task.dueAt)}
-          </span>
+            {expanded ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </button>
+        ) : (
+          <div className="w-5" />
         )}
+
+        {/* Checkbox */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleComplete(task);
+          }}
+          className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
+            task.completed
+              ? "bg-green-500 border-green-500 text-white"
+              : "border-slate-300 hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
+          }`}
+        >
+          {task.completed ? (
+            <Check className="h-3 w-3" />
+          ) : (
+            <Check className="h-3 w-3 opacity-0 group-hover:opacity-30 text-green-500" />
+          )}
+        </button>
+
+        {/* Main content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span
+              className={`font-medium truncate ${
+                task.completed ? "line-through text-muted-foreground" : ""
+              }`}
+            >
+              {task.subject}
+            </span>
+            {task.subtaskCount > 0 && (
+              <span className="text-xs text-muted-foreground bg-slate-100 px-1.5 py-0.5 rounded">
+                {completedSubtaskCount}/{task.subtaskCount}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5">
+            {showAttachment && task.attachmentName && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                {task.attachmentType === "deal" ? (
+                  <Building2 className="h-3 w-3" />
+                ) : task.attachmentType === "project" ? (
+                  <FolderKanban className="h-3 w-3" />
+                ) : null}
+                {task.attachmentName}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Inline Assignee */}
+        <div className="relative" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => setShowAssigneeDropdown(!showAssigneeDropdown)}
+            className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full transition-colors ${
+              task.assignedTo
+                ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            }`}
+          >
+            {task.assignedTo ? (
+              <>
+                <User className="h-3 w-3" />
+                {task.assignedTo.firstName}
+              </>
+            ) : (
+              <>
+                <UserPlus className="h-3 w-3" />
+                <span className="hidden group-hover:inline">Assign</span>
+              </>
+            )}
+          </button>
+          {showAssigneeDropdown && (
+            <div className="absolute right-0 top-full mt-1 w-48 bg-white border rounded-lg shadow-lg z-20 py-1">
+              <button
+                onClick={() => {
+                  onAssigneeChange(task.id, null);
+                  setShowAssigneeDropdown(false);
+                }}
+                className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 text-slate-500"
+              >
+                Unassigned
+              </button>
+              {users.map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => {
+                    onAssigneeChange(task.id, user.id);
+                    setShowAssigneeDropdown(false);
+                  }}
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
+                    task.assignedTo?.id === user.id ? "bg-slate-100 font-medium" : ""
+                  }`}
+                >
+                  {user.firstName} {user.lastName}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Priority */}
+        {task.priority > 1 && (
+          <Badge className={`text-xs ${priorityColors[task.priority]}`}>
+            {task.priorityLabel}
+          </Badge>
+        )}
+
+        {/* Due date */}
+        <div className="flex-shrink-0 text-right w-20">
+          {task.dueAt && (
+            <span
+              className={`text-sm ${
+                task.overdue
+                  ? "text-red-600 font-medium"
+                  : task.dueToday
+                  ? "text-amber-600 font-medium"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {formatDate(task.dueAt)}
+            </span>
+          )}
+        </div>
       </div>
+
+      {/* Expanded Subtasks */}
+      {expanded && (
+        <div className="bg-slate-50 border-t border-slate-100">
+          {localSubtasks.map((subtask) => (
+            <div
+              key={subtask.id}
+              className="group flex items-center gap-2 pl-12 pr-4 py-2 hover:bg-slate-100 cursor-pointer border-b border-slate-100 last:border-b-0"
+              onClick={() => onClick(subtask)}
+            >
+              {/* Subtask checkbox */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleSubtask(subtask);
+                }}
+                disabled={togglingId === subtask.id}
+                className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 ${
+                  subtask.completed
+                    ? "bg-green-500 border-green-500 text-white"
+                    : "border-slate-300 hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
+                } ${togglingId === subtask.id ? "opacity-50" : ""}`}
+              >
+                {togglingId === subtask.id ? (
+                  <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                ) : subtask.completed ? (
+                  <Check className="h-2.5 w-2.5" />
+                ) : (
+                  <Check className="h-2.5 w-2.5 opacity-0 group-hover:opacity-30 text-green-500" />
+                )}
+              </button>
+
+              {/* Subtask subject */}
+              <span
+                className={`flex-1 text-sm ${
+                  subtask.completed ? "line-through text-muted-foreground" : ""
+                }`}
+              >
+                {subtask.subject}
+              </span>
+
+              {/* Subtask assignee - inline dropdown */}
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <select
+                  value={subtask.assignedTo?.id || ""}
+                  onChange={(e) =>
+                    handleSubtaskAssigneeChange(
+                      subtask.id,
+                      e.target.value ? parseInt(e.target.value) : null
+                    )
+                  }
+                  className="text-xs bg-transparent border-0 text-slate-500 hover:text-slate-700 cursor-pointer focus:ring-0 py-0 pr-6 pl-1"
+                >
+                  <option value="">Unassigned</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.firstName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Subtask due date */}
+              {subtask.dueAt && (
+                <span
+                  className={`text-xs w-16 text-right ${
+                    subtask.overdue ? "text-red-600" : "text-muted-foreground"
+                  }`}
+                >
+                  {formatDate(subtask.dueAt)}
+                </span>
+              )}
+            </div>
+          ))}
+
+          {/* Add subtask form */}
+          {addingSubtask ? (
+            <div className="flex items-center gap-2 pl-12 pr-4 py-2 bg-white border-t border-slate-200">
+              <div className="w-4 h-4 rounded border-2 border-slate-300 flex items-center justify-center">
+                <Plus className="h-2.5 w-2.5 text-slate-400" />
+              </div>
+              <input
+                type="text"
+                value={newSubtaskSubject}
+                onChange={(e) => setNewSubtaskSubject(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddSubtask();
+                  if (e.key === "Escape") {
+                    setAddingSubtask(false);
+                    setNewSubtaskSubject("");
+                  }
+                }}
+                placeholder="Add a subtask..."
+                className="flex-1 text-sm bg-transparent outline-none"
+                autoFocus
+                disabled={savingSubtask}
+              />
+              {newSubtaskSubject.trim() && (
+                <button
+                  onClick={handleAddSubtask}
+                  disabled={savingSubtask}
+                  className="px-2 py-1 text-xs font-medium text-white bg-slate-700 hover:bg-slate-800 rounded disabled:opacity-50"
+                >
+                  {savingSubtask ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setAddingSubtask(false);
+                  setNewSubtaskSubject("");
+                }}
+                className="text-xs text-slate-500 hover:text-slate-700"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setAddingSubtask(true);
+              }}
+              className="w-full flex items-center gap-2 pl-12 pr-4 py-2 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              Add subtask
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -242,17 +584,23 @@ function TaskRow({
 function TaskGroup({
   title,
   tasks,
+  users,
   defaultExpanded = true,
   onToggleComplete,
   onTaskClick,
+  onAssigneeChange,
+  onRefresh,
   showAttachment = true,
   variant = "default",
 }: {
   title: string;
   tasks: Task[];
+  users: User[];
   defaultExpanded?: boolean;
   onToggleComplete: (task: Task) => void;
   onTaskClick: (task: Task) => void;
+  onAssigneeChange: (taskId: number, userId: number | null) => void;
+  onRefresh: () => void;
   showAttachment?: boolean;
   variant?: "default" | "danger" | "warning";
 }) {
@@ -289,13 +637,16 @@ function TaskGroup({
         </Badge>
       </button>
       {expanded && (
-        <div className="divide-y divide-slate-100">
+        <div>
           {tasks.map((task) => (
             <TaskRow
               key={task.id}
               task={task}
+              users={users}
               onToggleComplete={onToggleComplete}
               onClick={onTaskClick}
+              onAssigneeChange={onAssigneeChange}
+              onRefresh={onRefresh}
               showAttachment={showAttachment}
             />
           ))}
@@ -419,6 +770,27 @@ export default function TasksPage() {
   const handleTaskDelete = () => {
     setSlideOutOpen(false);
     setSelectedTask(null);
+    fetchTasks();
+    fetchStats();
+  };
+
+  const handleAssigneeChange = async (taskId: number, userId: number | null) => {
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${taskId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task: { assigned_to_id: userId } }),
+        }
+      );
+      fetchTasks();
+    } catch (err) {
+      console.error("Failed to update assignee:", err);
+    }
+  };
+
+  const handleRefresh = () => {
     fetchTasks();
     fetchStats();
   };
@@ -627,8 +999,11 @@ export default function TasksPage() {
                 <TaskRow
                   key={task.id}
                   task={task}
+                  users={users}
                   onToggleComplete={handleToggleComplete}
                   onClick={handleTaskClick}
+                  onAssigneeChange={handleAssigneeChange}
+                  onRefresh={handleRefresh}
                 />
               ))}
             </div>
@@ -639,8 +1014,11 @@ export default function TasksPage() {
                 <TaskGroup
                   title="Overdue"
                   tasks={overdueTasks}
+                  users={users}
                   onToggleComplete={handleToggleComplete}
                   onTaskClick={handleTaskClick}
+                  onAssigneeChange={handleAssigneeChange}
+                  onRefresh={handleRefresh}
                   variant="danger"
                 />
               )}
@@ -648,8 +1026,11 @@ export default function TasksPage() {
                 <TaskGroup
                   title="Due Today"
                   tasks={dueTodayTasks}
+                  users={users}
                   onToggleComplete={handleToggleComplete}
                   onTaskClick={handleTaskClick}
+                  onAssigneeChange={handleAssigneeChange}
+                  onRefresh={handleRefresh}
                   variant="warning"
                 />
               )}
@@ -657,17 +1038,23 @@ export default function TasksPage() {
                 <TaskGroup
                   title="Upcoming"
                   tasks={upcomingTasks}
+                  users={users}
                   onToggleComplete={handleToggleComplete}
                   onTaskClick={handleTaskClick}
+                  onAssigneeChange={handleAssigneeChange}
+                  onRefresh={handleRefresh}
                 />
               )}
               {noDueDateTasks.length > 0 && (
                 <TaskGroup
                   title="No Due Date"
                   tasks={noDueDateTasks}
+                  users={users}
                   defaultExpanded={overdueTasks.length === 0 && dueTodayTasks.length === 0}
                   onToggleComplete={handleToggleComplete}
                   onTaskClick={handleTaskClick}
+                  onAssigneeChange={handleAssigneeChange}
+                  onRefresh={handleRefresh}
                 />
               )}
             </>
