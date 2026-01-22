@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   X,
@@ -17,6 +17,7 @@ import {
   Check,
   Building2,
   FolderKanban,
+  Plus,
 } from "lucide-react";
 
 interface Owner {
@@ -129,6 +130,94 @@ function FieldRow({
   );
 }
 
+function InlineSubtaskForm({
+  parentTaskId,
+  onSave,
+  onCancel,
+}: {
+  parentTaskId: number;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [saving, setSaving] = useState(false);
+  const [subject, setSubject] = useState("");
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!subject.trim()) return;
+
+    setSaving(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task: {
+            subject: subject.trim(),
+            parent_task_id: parentTaskId,
+            priority: 2,
+          },
+        }),
+      });
+
+      if (res.ok) {
+        setSubject("");
+        onSave();
+        // Keep form open for rapid entry - focus again
+        setTimeout(() => inputRef.current?.focus(), 50);
+      }
+    } catch (err) {
+      console.error("Failed to create subtask:", err);
+    }
+    setSaving(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      onCancel();
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex items-center gap-2 mt-2 bg-slate-50 rounded-md p-2">
+      <div className="w-4 h-4 rounded border border-slate-300 flex items-center justify-center">
+        <Plus className="h-2.5 w-2.5 text-slate-400" />
+      </div>
+      <input
+        ref={inputRef}
+        type="text"
+        value={subject}
+        onChange={(e) => setSubject(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder="Add a subtask..."
+        className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+        disabled={saving}
+      />
+      {subject.trim() && (
+        <button
+          type="submit"
+          disabled={saving}
+          className="px-2 py-1 text-xs font-medium text-white bg-slate-700 hover:bg-slate-800 rounded disabled:opacity-50"
+        >
+          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={onCancel}
+        className="p-1 text-slate-400 hover:text-slate-600"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+    </form>
+  );
+}
+
 export function TasksSlideOut({
   task,
   users,
@@ -144,6 +233,9 @@ export function TasksSlideOut({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [showSubtaskForm, setShowSubtaskForm] = useState(false);
+  const [togglingSubtaskId, setTogglingSubtaskId] = useState<number | null>(null);
+  const [localSubtasks, setLocalSubtasks] = useState<Task[]>(task?.subtasks || []);
 
   const [formData, setFormData] = useState({
     subject: task?.subject || "",
@@ -197,7 +289,62 @@ export function TasksSlideOut({
     });
     setEditing(!task);
     setShowDeleteConfirm(false);
+    setShowSubtaskForm(false);
+    setLocalSubtasks(task?.subtasks || []);
   }, [task]);
+
+  const handleToggleSubtask = async (subtask: Task) => {
+    const endpoint = subtask.completed ? "uncomplete" : "complete";
+    setTogglingSubtaskId(subtask.id);
+
+    // Optimistic update
+    setLocalSubtasks((prev) =>
+      prev.map((st) =>
+        st.id === subtask.id ? { ...st, completed: !st.completed } : st
+      )
+    );
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${subtask.id}/${endpoint}`,
+        { method: "POST" }
+      );
+      if (!res.ok) {
+        // Revert on failure
+        setLocalSubtasks((prev) =>
+          prev.map((st) =>
+            st.id === subtask.id ? { ...st, completed: subtask.completed } : st
+          )
+        );
+      }
+    } catch (err) {
+      console.error("Failed to toggle subtask:", err);
+      // Revert on error
+      setLocalSubtasks((prev) =>
+        prev.map((st) =>
+          st.id === subtask.id ? { ...st, completed: subtask.completed } : st
+        )
+      );
+    }
+    setTogglingSubtaskId(null);
+  };
+
+  const handleSubtaskCreated = async () => {
+    // Refresh task to get updated subtasks
+    if (task) {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${task.id}`
+        );
+        if (res.ok) {
+          const updated = await res.json();
+          setLocalSubtasks(updated.subtasks || []);
+        }
+      } catch (err) {
+        console.error("Failed to refresh subtasks:", err);
+      }
+    }
+  };
 
   const handleSave = async () => {
     if (!formData.subject.trim()) return;
@@ -678,47 +825,91 @@ export function TasksSlideOut({
                 )}
               </FieldRow>
 
-              {/* Subtasks */}
-              {task && task.subtaskCount > 0 && (
+              {/* Subtasks - always show for non-subtasks so user can add */}
+              {task && !task.isSubtask && (
                 <FieldRow label="Subtasks" icon={ListTree}>
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
-                        <div
-                          className="h-full bg-green-500 transition-all"
-                          style={{ width: `${task.subtaskCompletionPercent}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {task.completedSubtaskCount}/{task.subtaskCount}
-                      </span>
-                    </div>
-                    {task.subtasks && task.subtasks.length > 0 && (
-                      <div className="space-y-1 mt-2">
-                        {task.subtasks.map((st) => (
-                          <div
-                            key={st.id}
-                            className="flex items-center gap-2 text-sm py-1"
-                          >
+                    {localSubtasks.length > 0 && (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
                             <div
-                              className={`w-4 h-4 rounded border flex items-center justify-center ${
-                                st.completed
-                                  ? "bg-green-500 border-green-500 text-white"
-                                  : "border-slate-300"
-                              }`}
-                            >
-                              {st.completed && <Check className="h-2.5 w-2.5" />}
-                            </div>
-                            <span
-                              className={
-                                st.completed ? "line-through text-muted-foreground" : ""
-                              }
-                            >
-                              {st.subject}
-                            </span>
+                              className="h-full bg-green-500 transition-all"
+                              style={{
+                                width: `${
+                                  localSubtasks.length > 0
+                                    ? (localSubtasks.filter((st) => st.completed).length /
+                                        localSubtasks.length) *
+                                      100
+                                    : 0
+                                }%`,
+                              }}
+                            />
                           </div>
-                        ))}
-                      </div>
+                          <span className="text-xs text-muted-foreground">
+                            {localSubtasks.filter((st) => st.completed).length}/{localSubtasks.length}
+                          </span>
+                        </div>
+                        <div className="space-y-1 mt-2">
+                          {localSubtasks.map((st) => (
+                            <div
+                              key={st.id}
+                              className="group flex items-center gap-2 text-sm py-1.5 px-2 -mx-2 rounded hover:bg-slate-50 transition-colors"
+                            >
+                              <button
+                                onClick={() => handleToggleSubtask(st)}
+                                disabled={togglingSubtaskId === st.id}
+                                className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                                  st.completed
+                                    ? "bg-green-500 border-green-500 text-white"
+                                    : "border-slate-300 hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
+                                } ${togglingSubtaskId === st.id ? "opacity-50" : ""}`}
+                              >
+                                {togglingSubtaskId === st.id ? (
+                                  <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                                ) : st.completed ? (
+                                  <Check className="h-2.5 w-2.5" />
+                                ) : (
+                                  <Check className="h-2.5 w-2.5 opacity-0 group-hover:opacity-30 text-green-500" />
+                                )}
+                              </button>
+                              <span
+                                className={`flex-1 ${
+                                  st.completed ? "line-through text-muted-foreground" : ""
+                                }`}
+                              >
+                                {st.subject}
+                              </span>
+                              {st.dueAt && (
+                                <span
+                                  className={`text-xs ${
+                                    st.overdue ? "text-red-600" : "text-muted-foreground"
+                                  }`}
+                                >
+                                  {formatDateDisplay(st.dueAt)?.split(",")[0]}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Inline subtask form */}
+                    {showSubtaskForm ? (
+                      <InlineSubtaskForm
+                        parentTaskId={task.id}
+                        onSave={handleSubtaskCreated}
+                        onCancel={() => setShowSubtaskForm(false)}
+                      />
+                    ) : (
+                      <button
+                        onClick={() => setShowSubtaskForm(true)}
+                        className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 py-1.5 transition-colors"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add subtask
+                      </button>
                     )}
                   </div>
                 </FieldRow>
