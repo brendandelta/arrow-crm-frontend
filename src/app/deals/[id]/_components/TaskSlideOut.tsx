@@ -49,9 +49,9 @@ interface TaskSlideOutProps {
 
 // Team members - in a real app these would come from an API
 const TEAM_MEMBERS = [
-  { id: 1, firstName: "Chris", lastName: "Hartley" },
-  { id: 2, firstName: "Gabe", lastName: "Santos" },
-  { id: 3, firstName: "Brendan", lastName: "Conn" },
+  { id: 22, firstName: "Gabe", lastName: "Borden" },
+  { id: 23, firstName: "Chris", lastName: "Clifford" },
+  { id: 24, firstName: "Brendan", lastName: "Conn" },
 ];
 
 function formatDate(dateStr: string | null | undefined) {
