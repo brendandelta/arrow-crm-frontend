@@ -420,12 +420,13 @@ export default function DealDetailPage() {
 
   const handleTaskToggle = async (taskId: number, currentlyCompleted: boolean) => {
     try {
+      // Use the dedicated tasks API - complete or uncomplete endpoint
+      const action = currentlyCompleted ? "uncomplete" : "complete";
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${taskId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${taskId}/${action}`,
         {
-          method: "PATCH",
+          method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ task: { completed: !currentlyCompleted } }),
         }
       );
       refreshDeal();

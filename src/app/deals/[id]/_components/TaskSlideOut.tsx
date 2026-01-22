@@ -126,8 +126,7 @@ export function TaskSlideOut({
 
     setSaving(true);
     try {
-      const assignee = TEAM_MEMBERS.find((m) => m.id.toString() === formData.assignedToId);
-
+      // Use the dedicated tasks API
       const payload = {
         task: {
           deal_id: dealId,
@@ -152,15 +151,24 @@ export function TaskSlideOut({
 
       if (res.ok) {
         const updated = await res.json();
-        // Ensure the response includes assignedTo in the expected format
-        const taskWithAssignee = {
-          ...updated,
-          assignedTo: assignee ? { id: assignee.id, firstName: assignee.firstName, lastName: assignee.lastName } : null,
+        // Map API response to our Task interface
+        const savedTask: Task = {
+          id: updated.id,
+          subject: updated.subject,
+          body: updated.body,
+          dueAt: updated.dueAt,
+          completed: updated.completed,
+          overdue: updated.overdue,
+          assignedTo: updated.assignedTo,
+          isSubtask: updated.isSubtask,
+          parentTaskId: updated.parentTaskId,
+          dealId: updated.dealId,
         };
-        onSave(taskWithAssignee);
+        onSave(savedTask);
         if (!isNew) setEditing(false);
       } else {
-        console.error("Failed to save task");
+        const errorText = await res.text();
+        console.error("Failed to save task:", errorText);
       }
     } catch (err) {
       console.error("Failed to save:", err);
