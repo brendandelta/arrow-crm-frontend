@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   CheckSquare,
   Clock,
@@ -14,6 +14,7 @@ import {
   Check,
   ExternalLink,
   Plus,
+  ListTree,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -32,7 +33,13 @@ export interface Task {
   } | null;
   parentTaskId?: number | null;
   isSubtask?: boolean;
+  subtaskCount?: number;
+  completedSubtaskCount?: number;
   dealId?: number;
+}
+
+interface TaskWithSubtasks extends Task {
+  subtasks: Task[];
 }
 
 interface TaskListProps {
@@ -49,6 +56,7 @@ interface TaskListProps {
 
 export function TaskList({ tasks, onTaskToggle, onTaskClick, onAddTask }: TaskListProps) {
   const [showCompleted, setShowCompleted] = useState(false);
+  const [expandedTasks, setExpandedTasks] = useState<Set<number>>(new Set());
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "No date";
@@ -58,7 +66,86 @@ export function TaskList({ tasks, onTaskToggle, onTaskClick, onAddTask }: TaskLi
     });
   };
 
-  const TaskItem = ({ task, variant }: { task: Task; variant: "overdue" | "upcoming" | "backlog" | "completed" }) => {
+  // Build hierarchy: group subtasks under their parent tasks
+  const buildHierarchy = (taskList: Task[]): TaskWithSubtasks[] => {
+    const taskMap = new Map<number, Task>();
+    const subtasksByParent = new Map<number, Task[]>();
+
+    // First pass: index all tasks and identify subtasks
+    taskList.forEach(task => {
+      taskMap.set(task.id, task);
+      if (task.parentTaskId) {
+        const existing = subtasksByParent.get(task.parentTaskId) || [];
+        existing.push(task);
+        subtasksByParent.set(task.parentTaskId, existing);
+      }
+    });
+
+    // Second pass: build hierarchy with parent tasks containing their subtasks
+    const result: TaskWithSubtasks[] = [];
+    const processedSubtasks = new Set<number>();
+
+    taskList.forEach(task => {
+      // Skip if this is a subtask (will be included under parent)
+      if (task.isSubtask || task.parentTaskId) {
+        processedSubtasks.add(task.id);
+        return;
+      }
+
+      // This is a parent task or standalone task
+      const subtasks = subtasksByParent.get(task.id) || [];
+      result.push({
+        ...task,
+        subtasks: subtasks.sort((a, b) => {
+          // Sort subtasks: incomplete first, then by due date
+          if (a.completed !== b.completed) return a.completed ? 1 : -1;
+          if (!a.dueAt && !b.dueAt) return 0;
+          if (!a.dueAt) return 1;
+          if (!b.dueAt) return -1;
+          return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
+        }),
+      });
+    });
+
+    // Add any orphan subtasks (parent not in this list) as standalone
+    taskList.forEach(task => {
+      if ((task.isSubtask || task.parentTaskId) && !processedSubtasks.has(task.id)) {
+        // Check if parent is in this list
+        if (!taskMap.has(task.parentTaskId!)) {
+          result.push({ ...task, subtasks: [] });
+        }
+      }
+    });
+
+    return result;
+  };
+
+  const toggleExpanded = (taskId: number) => {
+    setExpandedTasks(prev => {
+      const next = new Set(prev);
+      if (next.has(taskId)) {
+        next.delete(taskId);
+      } else {
+        next.add(taskId);
+      }
+      return next;
+    });
+  };
+
+  const TaskItem = ({
+    task,
+    variant,
+    isSubtask = false,
+  }: {
+    task: TaskWithSubtasks;
+    variant: "overdue" | "upcoming" | "backlog" | "completed";
+    isSubtask?: boolean;
+  }) => {
+    const hasSubtasks = task.subtasks && task.subtasks.length > 0;
+    const isExpanded = expandedTasks.has(task.id);
+    const completedSubtasks = task.subtasks?.filter(st => st.completed).length || 0;
+    const totalSubtasks = task.subtasks?.length || 0;
+
     const bgColors = {
       overdue: "bg-red-50 border-red-200",
       upcoming: "bg-amber-50 border-amber-200",
@@ -66,43 +153,117 @@ export function TaskList({ tasks, onTaskToggle, onTaskClick, onAddTask }: TaskLi
       completed: "bg-slate-50 border-slate-200",
     };
 
+    const subtaskBgColors = {
+      overdue: "bg-red-25 border-red-150",
+      upcoming: "bg-amber-25 border-amber-150",
+      backlog: "bg-slate-50 border-slate-150",
+      completed: "bg-slate-25 border-slate-150",
+    };
+
     return (
-      <div
-        className={`flex items-start gap-2 p-2 rounded-lg border ${bgColors[variant]} cursor-pointer hover:opacity-80 transition-opacity`}
-        onClick={() => onTaskClick?.(task)}
-      >
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onTaskToggle?.(task.id, task.completed);
-          }}
-          className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-            task.completed
-              ? "bg-green-500 border-green-500 text-white hover:bg-green-600"
-              : "border-slate-300 hover:border-slate-400 hover:bg-slate-50"
-          }`}
+      <div className={isSubtask ? "ml-6" : ""}>
+        <div
+          className={`flex items-start gap-2 p-2 rounded-lg border ${isSubtask ? subtaskBgColors[variant] || "bg-slate-50 border-slate-200" : bgColors[variant]} cursor-pointer hover:opacity-80 transition-all ${isSubtask ? "border-l-2 border-l-slate-300" : ""}`}
+          onClick={() => onTaskClick?.(task)}
         >
-          {task.completed && <Check className="h-3 w-3" />}
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className={`text-sm font-medium ${task.completed ? "line-through text-muted-foreground" : ""}`}>
-            {task.subject}
-          </div>
-          <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-            <span className={variant === "overdue" ? "text-red-600 font-medium" : ""}>
-              {formatDate(task.dueAt)}
-            </span>
-            {task.assignedTo && (
-              <>
-                <span>·</span>
-                <span>{task.assignedTo.firstName}</span>
-              </>
+          {/* Expand/collapse button for tasks with subtasks */}
+          {hasSubtasks && !isSubtask ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleExpanded(task.id);
+              }}
+              className="mt-0.5 w-4 h-4 flex items-center justify-center shrink-0 text-slate-400 hover:text-slate-600"
+            >
+              {isExpanded ? (
+                <ChevronDown className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5" />
+              )}
+            </button>
+          ) : isSubtask ? (
+            <div className="mt-0.5 w-4 h-4 flex items-center justify-center shrink-0">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+            </div>
+          ) : (
+            <div className="w-4" />
+          )}
+
+          {/* Checkbox */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onTaskToggle?.(task.id, task.completed);
+            }}
+            className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+              task.completed
+                ? "bg-green-500 border-green-500 text-white hover:bg-green-600"
+                : "border-slate-300 hover:border-slate-400 hover:bg-slate-50"
+            }`}
+          >
+            {task.completed && <Check className="h-3 w-3" />}
+          </button>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-medium ${task.completed ? "line-through text-muted-foreground" : ""} ${isSubtask ? "text-slate-600" : ""}`}>
+                {task.subject}
+              </span>
+              {hasSubtasks && !isSubtask && (
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal text-slate-500">
+                  {completedSubtasks}/{totalSubtasks}
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+              <span className={variant === "overdue" ? "text-red-600 font-medium" : ""}>
+                {formatDate(task.dueAt)}
+              </span>
+              {task.assignedTo && (
+                <>
+                  <span>·</span>
+                  <span>{task.assignedTo.firstName}</span>
+                </>
+              )}
+            </div>
+
+            {/* Subtask progress bar */}
+            {hasSubtasks && !isSubtask && totalSubtasks > 0 && (
+              <div className="mt-1.5 flex items-center gap-2">
+                <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-500 rounded-full transition-all"
+                    style={{ width: `${(completedSubtasks / totalSubtasks) * 100}%` }}
+                  />
+                </div>
+              </div>
             )}
           </div>
         </div>
+
+        {/* Render subtasks when expanded */}
+        {hasSubtasks && isExpanded && (
+          <div className="mt-1 space-y-1">
+            {task.subtasks.map((subtask) => (
+              <TaskItem
+                key={subtask.id}
+                task={{ ...subtask, subtasks: [] }}
+                variant={subtask.completed ? "completed" : subtask.overdue ? "overdue" : variant}
+                isSubtask={true}
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   };
+
+  // Process each section to build hierarchy
+  const overdueHierarchy = useMemo(() => buildHierarchy(tasks.overdue), [tasks.overdue]);
+  const dueThisWeekHierarchy = useMemo(() => buildHierarchy(tasks.dueThisWeek), [tasks.dueThisWeek]);
+  const backlogHierarchy = useMemo(() => buildHierarchy(tasks.backlog), [tasks.backlog]);
+  const completedHierarchy = useMemo(() => buildHierarchy(tasks.completed), [tasks.completed]);
 
   return (
     <div className="space-y-4">
@@ -118,14 +279,14 @@ export function TaskList({ tasks, onTaskToggle, onTaskClick, onAddTask }: TaskLi
       )}
 
       {/* Overdue */}
-      {tasks.overdue.length > 0 && (
+      {overdueHierarchy.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="h-4 w-4 text-red-500" />
             <span className="text-sm font-medium text-red-600">Overdue ({tasks.overdue.length})</span>
           </div>
           <div className="space-y-1.5">
-            {tasks.overdue.map((task) => (
+            {overdueHierarchy.map((task) => (
               <TaskItem key={task.id} task={task} variant="overdue" />
             ))}
           </div>
@@ -133,14 +294,14 @@ export function TaskList({ tasks, onTaskToggle, onTaskClick, onAddTask }: TaskLi
       )}
 
       {/* Due This Week */}
-      {tasks.dueThisWeek.length > 0 && (
+      {dueThisWeekHierarchy.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Clock className="h-4 w-4 text-amber-500" />
             <span className="text-sm font-medium text-amber-600">Due This Week ({tasks.dueThisWeek.length})</span>
           </div>
           <div className="space-y-1.5">
-            {tasks.dueThisWeek.map((task) => (
+            {dueThisWeekHierarchy.map((task) => (
               <TaskItem key={task.id} task={task} variant="upcoming" />
             ))}
           </div>
@@ -148,14 +309,14 @@ export function TaskList({ tasks, onTaskToggle, onTaskClick, onAddTask }: TaskLi
       )}
 
       {/* Backlog */}
-      {tasks.backlog.length > 0 && (
+      {backlogHierarchy.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2">
             <CheckSquare className="h-4 w-4 text-slate-400" />
             <span className="text-sm font-medium text-muted-foreground">Backlog ({tasks.backlog.length})</span>
           </div>
           <div className="space-y-1.5">
-            {tasks.backlog.map((task) => (
+            {backlogHierarchy.map((task) => (
               <TaskItem key={task.id} task={task} variant="backlog" />
             ))}
           </div>
@@ -163,7 +324,7 @@ export function TaskList({ tasks, onTaskToggle, onTaskClick, onAddTask }: TaskLi
       )}
 
       {/* Completed (collapsible) */}
-      {tasks.completed.length > 0 && (
+      {completedHierarchy.length > 0 && (
         <div>
           <button
             onClick={() => setShowCompleted(!showCompleted)}
@@ -174,7 +335,7 @@ export function TaskList({ tasks, onTaskToggle, onTaskClick, onAddTask }: TaskLi
           </button>
           {showCompleted && (
             <div className="space-y-1.5 mt-2">
-              {tasks.completed.map((task) => (
+              {completedHierarchy.map((task) => (
                 <TaskItem key={task.id} task={task} variant="completed" />
               ))}
             </div>
