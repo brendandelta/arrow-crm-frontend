@@ -165,7 +165,9 @@ function SubtaskRow({
   const [editingSubject, setEditingSubject] = useState(false);
   const [editedSubject, setEditedSubject] = useState(subtask.subject);
   const [editingDate, setEditingDate] = useState(false);
+  const [datePosition, setDatePosition] = useState({ top: 0, left: 0 });
   const subjectInputRef = useRef<HTMLInputElement>(null);
+  const dateButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (editingSubject && subjectInputRef.current) {
@@ -261,23 +263,19 @@ function SubtaskRow({
       </select>
 
       {/* Subtask due date */}
-      {editingDate ? (
-        <input
-          type="date"
-          value={subtask.dueAt?.split("T")[0] || ""}
-          onChange={(e) => {
-            onDateChange(e.target.value);
-            setEditingDate(false);
-          }}
-          onBlur={() => setEditingDate(false)}
-          className="text-xs border border-blue-400 rounded px-1 py-0.5 w-28"
-          autoFocus
-        />
-      ) : (
+      <div className="relative">
         <button
+          ref={dateButtonRef}
           onClick={(e) => {
             e.stopPropagation();
-            setEditingDate(true);
+            if (!editingDate && dateButtonRef.current) {
+              const rect = dateButtonRef.current.getBoundingClientRect();
+              setDatePosition({
+                top: rect.bottom + 4,
+                left: rect.left - 100,
+              });
+            }
+            setEditingDate(!editingDate);
           }}
           className={`text-xs w-16 text-right hover:bg-blue-50 px-1 rounded transition-colors ${
             subtask.overdue ? "text-red-600" : subtask.dueAt ? "text-muted-foreground" : "text-slate-400"
@@ -289,7 +287,58 @@ function SubtaskRow({
             </span>
           )}
         </button>
-      )}
+        {editingDate && (
+          <div
+            className="fixed z-50 bg-white border rounded-lg shadow-lg p-2"
+            style={{ top: datePosition.top, left: datePosition.left }}
+          >
+            <input
+              type="date"
+              value={subtask.dueAt?.split("T")[0] || ""}
+              onChange={(e) => {
+                onDateChange(e.target.value);
+                setEditingDate(false);
+              }}
+              onBlur={() => setTimeout(() => setEditingDate(false), 150)}
+              className="text-xs border border-slate-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200"
+              autoFocus
+            />
+            <div className="flex gap-1 mt-1.5">
+              <button
+                onClick={() => {
+                  onDateChange(new Date().toISOString().split("T")[0]);
+                  setEditingDate(false);
+                }}
+                className="px-1.5 py-0.5 text-xs bg-slate-100 hover:bg-slate-200 rounded"
+              >
+                Today
+              </button>
+              <button
+                onClick={() => {
+                  const tomorrow = new Date();
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  onDateChange(tomorrow.toISOString().split("T")[0]);
+                  setEditingDate(false);
+                }}
+                className="px-1.5 py-0.5 text-xs bg-slate-100 hover:bg-slate-200 rounded"
+              >
+                Tmrw
+              </button>
+              {subtask.dueAt && (
+                <button
+                  onClick={() => {
+                    onDateChange("");
+                    setEditingDate(false);
+                  }}
+                  className="px-1.5 py-0.5 text-xs text-red-600 hover:bg-red-50 rounded"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Open detail */}
       <button
@@ -332,11 +381,13 @@ function TaskRow({
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const [priorityPosition, setPriorityPosition] = useState({ top: 0, left: 0 });
+  const [datePosition, setDatePosition] = useState({ top: 0, left: 0 });
 
   const assigneeButtonRef = useRef<HTMLButtonElement>(null);
   const priorityButtonRef = useRef<HTMLButtonElement>(null);
   const subjectInputRef = useRef<HTMLInputElement>(null);
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const dateButtonRef = useRef<HTMLButtonElement>(null);
 
   const [addingSubtask, setAddingSubtask] = useState(false);
   const [newSubtaskSubject, setNewSubtaskSubject] = useState("");
@@ -757,42 +808,101 @@ function TaskRow({
         </div>
 
         {/* Inline Due Date */}
-        <div className="flex-shrink-0 w-24">
-          {editingDate ? (
-            <input
-              ref={dateInputRef}
-              type="date"
-              value={editedDate}
-              onChange={(e) => {
-                setEditedDate(e.target.value);
-                handleDateSave(e.target.value);
-              }}
-              onBlur={() => setEditingDate(false)}
-              className="w-full text-xs border border-blue-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200"
-            />
-          ) : (
-            <button
-              onClick={() => {
-                setEditedDate(task.dueAt?.split("T")[0] || "");
-                setEditingDate(true);
-              }}
-              className={`w-full text-left text-sm px-2 py-1 rounded transition-colors hover:bg-blue-50 ${
-                task.overdue
-                  ? "text-red-600 font-medium"
-                  : task.dueToday
-                  ? "text-amber-600 font-medium"
-                  : task.dueAt
-                  ? "text-muted-foreground"
-                  : "text-slate-400 hover:text-slate-600"
-              }`}
+        <div className="flex-shrink-0 w-24 relative">
+          <button
+            ref={dateButtonRef}
+            onClick={() => {
+              if (!editingDate && dateButtonRef.current) {
+                const rect = dateButtonRef.current.getBoundingClientRect();
+                setDatePosition({
+                  top: rect.bottom + 4,
+                  left: rect.left,
+                });
+              }
+              setEditedDate(task.dueAt?.split("T")[0] || "");
+              setEditingDate(!editingDate);
+            }}
+            className={`w-full text-left text-sm px-2 py-1 rounded transition-colors hover:bg-blue-50 ${
+              task.overdue
+                ? "text-red-600 font-medium"
+                : task.dueToday
+                ? "text-amber-600 font-medium"
+                : task.dueAt
+                ? "text-muted-foreground"
+                : "text-slate-400 hover:text-slate-600"
+            }`}
+          >
+            {task.dueAt ? formatDate(task.dueAt) : (
+              <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                <Calendar className="h-3 w-3" />
+                <span className="text-xs">Add</span>
+              </span>
+            )}
+          </button>
+          {editingDate && (
+            <div
+              className="fixed z-50 bg-white border rounded-lg shadow-lg p-3"
+              style={{ top: datePosition.top, left: datePosition.left }}
             >
-              {task.dueAt ? formatDate(task.dueAt) : (
-                <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                  <Calendar className="h-3 w-3" />
-                  <span className="text-xs">Add</span>
-                </span>
-              )}
-            </button>
+              <input
+                ref={dateInputRef}
+                type="date"
+                value={editedDate}
+                onChange={(e) => {
+                  setEditedDate(e.target.value);
+                  handleDateSave(e.target.value);
+                }}
+                onBlur={() => setTimeout(() => setEditingDate(false), 150)}
+                className="text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                autoFocus
+              />
+              <div className="flex gap-1 mt-2">
+                <button
+                  onClick={() => {
+                    const today = new Date().toISOString().split("T")[0];
+                    setEditedDate(today);
+                    handleDateSave(today);
+                  }}
+                  className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded"
+                >
+                  Today
+                </button>
+                <button
+                  onClick={() => {
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    const date = tomorrow.toISOString().split("T")[0];
+                    setEditedDate(date);
+                    handleDateSave(date);
+                  }}
+                  className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded"
+                >
+                  Tomorrow
+                </button>
+                <button
+                  onClick={() => {
+                    const nextWeek = new Date();
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    const date = nextWeek.toISOString().split("T")[0];
+                    setEditedDate(date);
+                    handleDateSave(date);
+                  }}
+                  className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded"
+                >
+                  Next week
+                </button>
+                {task.dueAt && (
+                  <button
+                    onClick={() => {
+                      handleDateSave("");
+                    }}
+                    className="px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
           )}
         </div>
 
