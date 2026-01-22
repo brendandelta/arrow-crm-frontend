@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   X,
@@ -120,6 +120,21 @@ export function TaskSlideOut({
     isSubtask: task?.isSubtask || false,
     parentTaskId: task?.parentTaskId?.toString() || "",
   });
+
+  // Reset form when task changes (e.g., opening for new task vs editing existing)
+  useEffect(() => {
+    setFormData({
+      subject: task?.subject || "",
+      body: task?.body || "",
+      dueAt: formatDate(task?.dueAt),
+      completed: task?.completed || false,
+      assignedToId: task?.assignedTo?.id?.toString() || "",
+      isSubtask: task?.isSubtask || false,
+      parentTaskId: task?.parentTaskId?.toString() || "",
+    });
+    setEditing(!task);
+    setShowDeleteConfirm(false);
+  }, [task]);
 
   const handleSave = async () => {
     if (!formData.subject.trim()) return;

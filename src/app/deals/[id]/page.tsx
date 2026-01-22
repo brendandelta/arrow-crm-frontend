@@ -714,6 +714,7 @@ export default function DealDetailPage() {
       {/* Task Slide-out */}
       {(selectedTask || showAddTask) && (
         <TaskSlideOut
+          key={selectedTask?.id ?? `new-${Date.now()}`}
           task={selectedTask}
           dealId={deal.id}
           existingTasks={[
