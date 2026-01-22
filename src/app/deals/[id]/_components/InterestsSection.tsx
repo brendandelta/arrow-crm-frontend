@@ -13,11 +13,23 @@ import {
 import { Plus, AlertCircle } from "lucide-react";
 import { FunnelVisualization } from "./FunnelVisualization";
 
+interface Person {
+  id: number;
+  firstName: string;
+  lastName: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+}
+
 interface Interest {
   id: number;
   investor: { id: number; name: string; kind: string } | null;
-  contact: { id: number; firstName: string; lastName: string; email?: string } | null;
+  contact: Person | null;
+  decisionMaker: Person | null;
   targetCents: number | null;
+  minCents: number | null;
+  maxCents: number | null;
   committedCents: number | null;
   allocatedCents: number | null;
   allocatedBlockId: number | null;
@@ -28,10 +40,13 @@ interface Interest {
     status: string;
   } | null;
   status: string;
+  source: string | null;
   nextStep: string | null;
   nextStepAt: string | null;
-  isStale: boolean;
+  internalNotes: string | null;
+  createdAt: string;
   updatedAt: string;
+  isStale: boolean;
 }
 
 interface InterestsSectionProps {

@@ -13,6 +13,7 @@ import { InterestsSection } from "./_components/InterestsSection";
 import { ActivityFeed } from "./_components/ActivityFeed";
 import { DealSidebar } from "./_components/DealSidebar";
 import { BlockSlideOut } from "./_components/BlockSlideOut";
+import { InterestSlideOut } from "./_components/InterestSlideOut";
 import { EditableDealDetails } from "./_components/EditableDealDetails";
 // Import shared components
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
@@ -282,6 +283,8 @@ export default function DealDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
   const [showAddBlock, setShowAddBlock] = useState(false);
+  const [selectedInterest, setSelectedInterest] = useState<Interest | null>(null);
+  const [showAddInterest, setShowAddInterest] = useState(false);
   const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "activity">("blocks");
 
   useEffect(() => {
@@ -325,6 +328,36 @@ export default function DealDetailPage() {
       blocks: deal.blocks.filter((b) => b.id !== blockId),
     });
     setSelectedBlock(null);
+  };
+
+  const handleInterestUpdate = (updatedInterest: Interest) => {
+    if (!deal) return;
+    const existingInterest = deal.interests.find((i) => i.id === updatedInterest.id);
+    if (existingInterest) {
+      // Update existing interest
+      setDeal({
+        ...deal,
+        interests: deal.interests.map((i) => (i.id === updatedInterest.id ? updatedInterest : i)),
+      });
+      setSelectedInterest(updatedInterest);
+    } else {
+      // New interest created
+      setDeal({
+        ...deal,
+        interests: [...deal.interests, updatedInterest],
+      });
+      setShowAddInterest(false);
+      setSelectedInterest(null);
+    }
+  };
+
+  const handleInterestDelete = (interestId: number) => {
+    if (!deal) return;
+    setDeal({
+      ...deal,
+      interests: deal.interests.filter((i) => i.id !== interestId),
+    });
+    setSelectedInterest(null);
   };
 
   const refreshDeal = () => {
@@ -488,12 +521,8 @@ export default function DealDetailPage() {
             <InterestsSection
               interests={deal.interests}
               funnel={deal.demandFunnel}
-              onInterestClick={(interest) => {
-                // Could open interest slide-out
-              }}
-              onAddInterest={() => {
-                // Could open add interest modal
-              }}
+              onInterestClick={(interest) => setSelectedInterest(interest)}
+              onAddInterest={() => setShowAddInterest(true)}
             />
           )}
 
@@ -582,6 +611,21 @@ export default function DealDetailPage() {
           }}
           onSave={handleBlockUpdate}
           onDelete={handleBlockDelete}
+        />
+      )}
+
+      {/* Interest Slide-out */}
+      {(selectedInterest || showAddInterest) && (
+        <InterestSlideOut
+          interest={selectedInterest}
+          dealId={deal.id}
+          blocks={deal.blocks}
+          onClose={() => {
+            setSelectedInterest(null);
+            setShowAddInterest(false);
+          }}
+          onSave={handleInterestUpdate}
+          onDelete={handleInterestDelete}
         />
       )}
     </div>
