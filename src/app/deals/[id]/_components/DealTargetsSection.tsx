@@ -16,6 +16,7 @@ import {
   Circle,
   User,
   Pencil,
+  Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -252,7 +253,14 @@ function TargetRow({
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(target.notes || "");
   const [savingNotes, setSavingNotes] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const isStale = target.isStale || (target.daysSinceContact !== null && target.daysSinceContact > 7);
+
+  // Sync notes when prop changes (e.g., edited via modal)
+  useEffect(() => {
+    setNotesValue(target.notes || "");
+  }, [target.notes]);
 
   const saveNotes = async (value: string) => {
     const trimmed = value.trim();
@@ -273,6 +281,20 @@ function TargetRow({
     }
     setSavingNotes(false);
     setEditingNotes(false);
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deal_targets/${target.id}`, {
+        method: "DELETE",
+      });
+      onTargetUpdated();
+    } catch (err) {
+      console.error("Failed to delete target:", err);
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
   };
 
   return (
@@ -320,12 +342,39 @@ function TargetRow({
             </div>
           </div>
 
-          {target.owner && (
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-400 shrink-0 ml-3">
-              <User className="h-3 w-3" />
-              {target.owner.firstName}
-            </div>
-          )}
+          <div className="flex items-center gap-2 shrink-0 ml-3">
+            {target.owner && (
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                <User className="h-3 w-3" />
+                {target.owner.firstName}
+              </div>
+            )}
+            {confirmDelete ? (
+              <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-right-2 duration-200">
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="text-[11px] font-medium text-white bg-red-500 hover:bg-red-600 px-2.5 py-1 rounded-md transition-colors shadow-sm disabled:opacity-50"
+                >
+                  {deleting ? "..." : "Remove"}
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="text-[11px] text-slate-400 hover:text-slate-600 px-1.5 py-1 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="opacity-0 group-hover/card:opacity-100 p-1.5 rounded-md text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"
+                title="Remove target"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
