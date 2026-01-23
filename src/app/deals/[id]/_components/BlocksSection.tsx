@@ -306,6 +306,7 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
                           dealId={dealId}
                           taskableType="Block"
                           taskableId={block.id}
+                          currentTaskId={block.nextTask?.id}
                           onCancel={() => setAddingFollowUpFor(null)}
                           onSuccess={() => { setAddingFollowUpFor(null); onBlocksUpdated?.(); }}
                         />
@@ -367,10 +368,11 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
 
 // ============ Inline Follow-up Form ============
 
-function InlineFollowUpForm({ dealId, taskableType, taskableId, onCancel, onSuccess }: {
+function InlineFollowUpForm({ dealId, taskableType, taskableId, currentTaskId, onCancel, onSuccess }: {
   dealId: number;
   taskableType: string;
   taskableId: number;
+  currentTaskId?: number | null;
   onCancel: () => void;
   onSuccess: () => void;
 }) {
@@ -383,6 +385,15 @@ function InlineFollowUpForm({ dealId, taskableType, taskableId, onCancel, onSucc
     if (!subject.trim()) return;
     setSubmitting(true);
     try {
+      // Mark the current follow-up task as complete
+      if (currentTaskId) {
+        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${currentTaskId}/complete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Create the new follow-up task
       await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

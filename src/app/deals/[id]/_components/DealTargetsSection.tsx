@@ -423,6 +423,7 @@ function TargetRow({
             <InlineAddTaskForm
               dealId={dealId}
               targetId={target.id}
+              currentTaskId={nextTask?.id}
               onCancel={onCancelAddTask}
               onSuccess={() => {
                 onCancelAddTask();
@@ -641,11 +642,12 @@ function InlineLogEventForm({ dealId, targetId, initialKind = "call", onCancel, 
 interface InlineAddTaskFormProps {
   dealId: number;
   targetId: number;
+  currentTaskId?: number | null;
   onCancel: () => void;
   onSuccess: () => void;
 }
 
-function InlineAddTaskForm({ dealId, targetId, onCancel, onSuccess }: InlineAddTaskFormProps) {
+function InlineAddTaskForm({ dealId, targetId, currentTaskId, onCancel, onSuccess }: InlineAddTaskFormProps) {
   const [subject, setSubject] = useState("");
   const [dueAt, setDueAt] = useState("");
   const [priority, setPriority] = useState("normal");
@@ -656,6 +658,15 @@ function InlineAddTaskForm({ dealId, targetId, onCancel, onSuccess }: InlineAddT
     setSubmitting(true);
 
     try {
+      // Mark the current follow-up task as complete
+      if (currentTaskId) {
+        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${currentTaskId}/complete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Create the new follow-up task
       await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
