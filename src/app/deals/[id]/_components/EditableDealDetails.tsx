@@ -91,7 +91,10 @@ function parseCurrencyToCents(value: string): number | null {
 
 function formatDate(dateStr: string | null) {
   if (!dateStr) return null;
-  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  // Parse as local date to avoid timezone shift for date-only strings
+  const [year, month, day] = dateStr.split("T")[0].split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 // ============ Main Component ============
@@ -442,22 +445,24 @@ function InlineSelect({ value, options, placeholder, onSave, displayClass }: {
 
 function InlineDateCompact({ value, onSave }: { value: string; onSave: (val: string) => void }) {
   const [editing, setEditing] = useState(false);
+  const [localValue, setLocalValue] = useState(value);
   const ref = useRef<HTMLInputElement>(null);
 
+  useEffect(() => { setLocalValue(value); }, [value]);
   useEffect(() => { if (editing && ref.current) ref.current.focus(); }, [editing]);
 
   return editing ? (
     <input
       ref={ref}
       type="date"
-      value={value}
-      onChange={(e) => { onSave(e.target.value); setEditing(false); }}
+      value={localValue}
+      onChange={(e) => { setLocalValue(e.target.value); onSave(e.target.value); setEditing(false); }}
       onBlur={() => setEditing(false)}
       className="text-[13px] font-medium bg-transparent border-b border-slate-300 outline-none py-0"
     />
   ) : (
     <button onClick={() => setEditing(true)} className="text-[13px] font-medium text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer">
-      {value ? formatDate(value) : <span className="text-slate-300">Set date</span>}
+      {localValue ? formatDate(localValue) : <span className="text-slate-300">Set date</span>}
     </button>
   );
 }
