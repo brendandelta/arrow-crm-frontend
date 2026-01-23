@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { type Node, type Edge } from "@xyflow/react";
 import { computeLayout } from "./layout";
 import type { MindMapResponse, MindMapDeal } from "./types";
@@ -8,7 +8,7 @@ export function useMindMapData() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/mind_map`)
       .then((res) => res.json())
       .then((d) => {
@@ -21,6 +21,10 @@ export function useMindMapData() {
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const { nodes, edges } = useMemo(() => {
     if (!data) return { nodes: [], edges: [] };
@@ -66,17 +70,20 @@ export function useMindMapData() {
           animated: false,
         });
 
-        // "Targets" category node
-        const hasTargets = deal.targets.length > 0;
-        const hasInterests = deal.interests.length > 0;
-
-        if (hasTargets) {
+        // "Targets" category node (always shown so users can add)
+        {
           const targetsCatId = `cat-targets-${deal.id}`;
           rawNodes.push({
             id: targetsCatId,
             type: "category",
             position: { x: 0, y: 0 },
-            data: { label: "Targets", count: deal.targets.length },
+            data: {
+              label: "Targets",
+              count: deal.targets.length,
+              dealId: deal.id,
+              categoryType: "targets",
+              onAdd: () => {},
+            },
           });
           rawEdges.push({
             id: `e-${dealNodeId}-${targetsCatId}`,
@@ -101,7 +108,12 @@ export function useMindMapData() {
                 nextAction: nextLabel,
                 isOverdue: target.nextAction.isOverdue,
                 dealId: deal.id,
+                itemId: target.id,
+                itemType: "target" as const,
+                nextStep: target.nextAction.label,
+                nextStepAt: target.nextAction.dueAt,
                 onNavigate: () => {},
+                onEditFollowUp: () => {},
               },
             });
             rawEdges.push({
@@ -114,14 +126,20 @@ export function useMindMapData() {
           });
         }
 
-        // "Interests" category node
-        if (hasInterests) {
+        // "Interests" category node (always shown so users can add)
+        {
           const interestsCatId = `cat-interests-${deal.id}`;
           rawNodes.push({
             id: interestsCatId,
             type: "category",
             position: { x: 0, y: 0 },
-            data: { label: "Interests", count: deal.interests.length },
+            data: {
+              label: "Interests",
+              count: deal.interests.length,
+              dealId: deal.id,
+              categoryType: "interests",
+              onAdd: () => {},
+            },
           });
           rawEdges.push({
             id: `e-${dealNodeId}-${interestsCatId}`,
@@ -146,7 +164,12 @@ export function useMindMapData() {
                 nextAction: nextLabel,
                 isOverdue: interest.nextAction.isOverdue,
                 dealId: deal.id,
+                itemId: interest.id,
+                itemType: "interest" as const,
+                nextStep: interest.nextAction.label,
+                nextStepAt: interest.nextAction.dueAt,
                 onNavigate: () => {},
+                onEditFollowUp: () => {},
               },
             });
             rawEdges.push({
@@ -186,5 +209,6 @@ export function useMindMapData() {
     searchQuery,
     setSearchQuery,
     highlightedNodeIds,
+    refetch: fetchData,
   };
 }

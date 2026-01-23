@@ -1,14 +1,18 @@
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Plus } from "lucide-react";
 
 interface CategoryNodeData {
   label: string;
   count: number;
+  dealId: number;
+  categoryType: string;
+  onAdd: (dealId: number, type: string) => void;
   [key: string]: unknown;
 }
 
 function CategoryNodeComponent({ data }: NodeProps) {
-  const { label, count } = data as CategoryNodeData;
+  const { label, count, dealId, categoryType, onAdd } = data as CategoryNodeData;
 
   return (
     <div
@@ -29,6 +33,16 @@ function CategoryNodeComponent({ data }: NodeProps) {
       <span className="text-[10px] font-medium text-slate-400 bg-white px-1.5 py-0.5 rounded-full">
         {count}
       </span>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onAdd(dealId, categoryType);
+        }}
+        className="w-5 h-5 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition-colors"
+        title={`Add ${label.toLowerCase()}`}
+      >
+        <Plus className="w-3 h-3" />
+      </button>
       {count > 0 && (
         <Handle
           type="source"

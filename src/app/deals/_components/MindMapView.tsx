@@ -1,8 +1,12 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { Search } from "lucide-react";
 import { MindMapCanvas } from "./mind-map/MindMapCanvas";
 import { useMindMapData } from "./mind-map/useMindMapData";
+import { AddTargetModal } from "./mind-map/AddTargetModal";
+import { AddInterestModal } from "./mind-map/AddInterestModal";
+import { EditFollowUpModal } from "./mind-map/EditFollowUpModal";
 
 export function MindMapView() {
   const {
@@ -12,7 +16,77 @@ export function MindMapView() {
     searchQuery,
     setSearchQuery,
     highlightedNodeIds,
+    refetch,
   } = useMindMapData();
+
+  // Modal state
+  const [addModalDealId, setAddModalDealId] = useState<number | null>(null);
+  const [addModalType, setAddModalType] = useState<string | null>(null);
+  const [editModal, setEditModal] = useState<{
+    itemId: number;
+    itemType: "target" | "interest";
+    currentStep: string;
+    currentDate: string | null;
+  } | null>(null);
+
+  const handleAddItem = useCallback((dealId: number, type: string) => {
+    setAddModalDealId(dealId);
+    setAddModalType(type);
+  }, []);
+
+  const handleEditFollowUp = useCallback(
+    (itemId: number, itemType: string, currentStep: string, currentDate: string | null) => {
+      setEditModal({
+        itemId,
+        itemType: itemType as "target" | "interest",
+        currentStep,
+        currentDate,
+      });
+    },
+    []
+  );
+
+  const handleSaveTarget = useCallback(
+    async (data: { deal_id: number; target_type: string; target_id: number; role: string; status: string }) => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deal_targets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create target");
+      refetch();
+    },
+    [refetch]
+  );
+
+  const handleSaveInterest = useCallback(
+    async (data: { deal_id: number; investor_id: number; committed_cents: number | null; status: string }) => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/interests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create interest");
+      refetch();
+    },
+    [refetch]
+  );
+
+  const handleSaveFollowUp = useCallback(
+    async (data: { itemId: number; itemType: string; next_step: string; next_step_at: string | null }) => {
+      const endpoint = data.itemType === "target"
+        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deal_targets/${data.itemId}`
+        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/interests/${data.itemId}`;
+      const res = await fetch(endpoint, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ next_step: data.next_step, next_step_at: data.next_step_at }),
+      });
+      if (!res.ok) throw new Error("Failed to update follow-up");
+      refetch();
+    },
+    [refetch]
+  );
 
   if (loading) {
     return (
@@ -44,8 +118,40 @@ export function MindMapView() {
           nodes={nodes}
           edges={edges}
           highlightedNodeIds={highlightedNodeIds}
+          onAddItem={handleAddItem}
+          onEditFollowUp={handleEditFollowUp}
         />
       </div>
+
+      {/* Add Target Modal */}
+      {addModalDealId && addModalType === "targets" && (
+        <AddTargetModal
+          dealId={addModalDealId}
+          onClose={() => { setAddModalDealId(null); setAddModalType(null); }}
+          onSave={handleSaveTarget}
+        />
+      )}
+
+      {/* Add Interest Modal */}
+      {addModalDealId && addModalType === "interests" && (
+        <AddInterestModal
+          dealId={addModalDealId}
+          onClose={() => { setAddModalDealId(null); setAddModalType(null); }}
+          onSave={handleSaveInterest}
+        />
+      )}
+
+      {/* Edit Follow-Up Modal */}
+      {editModal && (
+        <EditFollowUpModal
+          itemId={editModal.itemId}
+          itemType={editModal.itemType}
+          currentStep={editModal.currentStep}
+          currentDate={editModal.currentDate}
+          onClose={() => setEditModal(null)}
+          onSave={handleSaveFollowUp}
+        />
+      )}
     </div>
   );
 }

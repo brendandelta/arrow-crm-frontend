@@ -29,12 +29,16 @@ interface MindMapCanvasProps {
   nodes: Node[];
   edges: Edge[];
   highlightedNodeIds: Set<string> | null;
+  onAddItem: (dealId: number, type: string) => void;
+  onEditFollowUp: (itemId: number, itemType: string, currentStep: string, currentDate: string | null) => void;
 }
 
 export function MindMapCanvas({
   nodes,
   edges,
   highlightedNodeIds,
+  onAddItem,
+  onEditFollowUp,
 }: MindMapCanvasProps) {
   const router = useRouter();
 
@@ -45,23 +49,32 @@ export function MindMapCanvas({
     [router]
   );
 
-  // Inject navigate callback and apply search highlighting
+  // Inject callbacks and apply search highlighting
   const nodesWithCallbacks = nodes.map((node) => {
-    const withNav =
-      node.type === "deal" || node.type === "child"
-        ? { ...node, data: { ...node.data, onNavigate: handleNavigate } }
-        : node;
+    let updated = node;
+
+    if (node.type === "deal" || node.type === "child") {
+      updated = { ...updated, data: { ...updated.data, onNavigate: handleNavigate } };
+    }
+
+    if (node.type === "child") {
+      updated = { ...updated, data: { ...updated.data, onEditFollowUp } };
+    }
+
+    if (node.type === "category") {
+      updated = { ...updated, data: { ...updated.data, onAdd: onAddItem } };
+    }
 
     if (highlightedNodeIds) {
       return {
-        ...withNav,
+        ...updated,
         style: highlightedNodeIds.has(node.id)
           ? { opacity: 1, filter: "none" }
           : { opacity: 0.2, filter: "grayscale(1)" },
       };
     }
 
-    return withNav;
+    return updated;
   });
 
   return (
@@ -75,7 +88,7 @@ export function MindMapCanvas({
         minZoom={0.3}
         maxZoom={2}
         zoomOnScroll={false}
-        panOnScroll={false}
+        panOnScroll={true}
         proOptions={{ hideAttribution: true }}
         defaultEdgeOptions={{
           type: "default",
