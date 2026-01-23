@@ -10,7 +10,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, LayoutGrid, LayoutList, Flame, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, LayoutGrid, LayoutList, Flame, ChevronDown, ChevronRight, ListTodo, CalendarClock } from "lucide-react";
+
+interface TaskInfo {
+  id: number;
+  subject: string;
+  dueAt: string | null;
+  overdue: boolean;
+}
 
 interface MappedInterest {
   id: number;
@@ -43,6 +50,8 @@ interface Block {
   verified?: boolean;
   internalNotes?: string | null;
   createdAt?: string;
+  nextTask?: TaskInfo | null;
+  tasks?: TaskInfo[];
   mappedInterests?: MappedInterest[];
   mappedInterestsCount?: number;
   mappedCommittedCents?: number;
@@ -50,8 +59,10 @@ interface Block {
 
 interface BlocksSectionProps {
   blocks: Block[];
+  dealId: number;
   onBlockClick: (block: Block) => void;
   onAddBlock: () => void;
+  onBlocksUpdated?: () => void;
 }
 
 function formatCurrency(cents: number | null | undefined) {
@@ -95,9 +106,10 @@ function BlockStatusBadge({ status }: { status: string }) {
   );
 }
 
-export function BlocksSection({ blocks, onBlockClick, onAddBlock }: BlocksSectionProps) {
+export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBlocksUpdated }: BlocksSectionProps) {
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
   const [expandedBlockId, setExpandedBlockId] = useState<number | null>(null);
+  const [addingFollowUpFor, setAddingFollowUpFor] = useState<number | null>(null);
 
   const toggleExpand = (blockId: number, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -155,6 +167,7 @@ export function BlocksSection({ blocks, onBlockClick, onAddBlock }: BlocksSectio
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead>Heat</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Follow-up</TableHead>
                 <TableHead className="text-right">Mapped</TableHead>
               </TableRow>
             </TableHeader>
@@ -221,6 +234,29 @@ export function BlocksSection({ blocks, onBlockClick, onAddBlock }: BlocksSectio
                     <TableCell>
                       <BlockStatusBadge status={block.status} />
                     </TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-1.5">
+                        {block.nextTask ? (
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm truncate ${block.nextTask.overdue ? "text-red-600 font-medium" : ""}`}>
+                              {block.nextTask.subject}
+                            </div>
+                            {block.nextTask.dueAt && (
+                              <div className="text-xs text-muted-foreground">
+                                {new Date(block.nextTask.dueAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                              </div>
+                            )}
+                          </div>
+                        ) : null}
+                        <button
+                          onClick={() => setAddingFollowUpFor(addingFollowUpFor === block.id ? null : block.id)}
+                          className="shrink-0 p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors"
+                          title="Add follow-up task"
+                        >
+                          <ListTodo className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">
                       {block.mappedInterestsCount ? (
                         <div>
@@ -238,7 +274,7 @@ export function BlocksSection({ blocks, onBlockClick, onAddBlock }: BlocksSectio
                   {/* Expanded Row - Mapped Interests */}
                   {expandedBlockId === block.id && block.mappedInterests && (
                     <TableRow>
-                      <TableCell colSpan={9} className="bg-slate-50 p-0">
+                      <TableCell colSpan={10} className="bg-slate-50 p-0">
                         <div className="p-3 pl-10">
                           <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
                             Mapped Interests
@@ -260,6 +296,19 @@ export function BlocksSection({ blocks, onBlockClick, onAddBlock }: BlocksSectio
                             ))}
                           </div>
                         </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {addingFollowUpFor === block.id && (
+                    <TableRow>
+                      <TableCell colSpan={10} className="p-0">
+                        <InlineFollowUpForm
+                          dealId={dealId}
+                          taskableType="Block"
+                          taskableId={block.id}
+                          onCancel={() => setAddingFollowUpFor(null)}
+                          onSuccess={() => { setAddingFollowUpFor(null); onBlocksUpdated?.(); }}
+                        />
                       </TableCell>
                     </TableRow>
                   )}
@@ -312,6 +361,88 @@ export function BlocksSection({ blocks, onBlockClick, onAddBlock }: BlocksSectio
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ============ Inline Follow-up Form ============
+
+function InlineFollowUpForm({ dealId, taskableType, taskableId, onCancel, onSuccess }: {
+  dealId: number;
+  taskableType: string;
+  taskableId: number;
+  onCancel: () => void;
+  onSuccess: () => void;
+}) {
+  const [subject, setSubject] = useState("");
+  const [dueAt, setDueAt] = useState("");
+  const [priority, setPriority] = useState("normal");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!subject.trim()) return;
+    setSubmitting(true);
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: subject.trim(),
+          due_at: dueAt || null,
+          priority: priority === "high" ? 2 : priority === "low" ? 0 : 1,
+          deal_id: dealId,
+          taskable_type: taskableType,
+          taskable_id: taskableId,
+        }),
+      });
+      onSuccess();
+    } catch (err) {
+      console.error("Failed to create follow-up:", err);
+    }
+    setSubmitting(false);
+  };
+
+  return (
+    <div className="p-3 bg-slate-50 border-t border-slate-200 space-y-2">
+      <input
+        type="text"
+        placeholder="Follow-up task description..."
+        value={subject}
+        onChange={(e) => setSubject(e.target.value)}
+        className="w-full text-sm px-3 py-1.5 border rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
+        autoFocus
+      />
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
+          <CalendarClock className="h-3.5 w-3.5 text-slate-400" />
+          <input
+            type="date"
+            value={dueAt}
+            onChange={(e) => setDueAt(e.target.value)}
+            className="text-xs border rounded px-2 py-1"
+          />
+        </div>
+        <select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value)}
+          className="text-xs border rounded px-2 py-1"
+        >
+          <option value="low">Low</option>
+          <option value="normal">Normal</option>
+          <option value="high">High</option>
+        </select>
+        <div className="flex-1" />
+        <button
+          onClick={handleSubmit}
+          disabled={!subject.trim() || submitting}
+          className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 disabled:opacity-50"
+        >
+          {submitting ? "Saving..." : "Add Follow-up"}
+        </button>
+        <button onClick={onCancel} className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800">
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }

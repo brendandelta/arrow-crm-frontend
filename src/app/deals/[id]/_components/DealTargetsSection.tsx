@@ -287,7 +287,6 @@ function TargetRow({
 
           {/* Status + Last contact */}
           <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-            {/* Status dropdown */}
             <div className="flex items-center gap-1">
               <span className="text-xs text-slate-500">Status:</span>
               <select
@@ -300,29 +299,10 @@ function TargetRow({
                 ))}
               </select>
             </div>
-
-            {/* Last contact */}
             <span className="text-xs text-slate-500">
               Last: {target.daysSinceContact !== null ? `${target.daysSinceContact}d ago` : "Never"}
             </span>
-
-            {/* Open tasks count */}
-            {target.tasks && target.tasks.length > 0 && (
-              <span className="text-xs text-slate-500">
-                {target.tasks.length} open task{target.tasks.length !== 1 ? "s" : ""}
-              </span>
-            )}
           </div>
-
-          {/* Next action line */}
-          {nextActionText && (
-            <div className="mt-1 text-xs text-slate-600 flex items-center gap-1">
-              <span className="text-slate-400">→</span>
-              <span className={isOverdue ? "text-red-600 font-medium" : ""}>
-                {nextActionText}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Owner */}
@@ -333,56 +313,100 @@ function TargetRow({
         )}
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-2 mt-3">
-        {ACTIVITY_KINDS.map((kind) => {
-          const Icon = kind.icon;
-          return (
+      {/* Two-column layout: Events left, Follow-up right */}
+      <div className="flex gap-4 mt-3">
+        {/* Left: Events */}
+        <div className="flex-1 min-w-0">
+          <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Events</div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {ACTIVITY_KINDS.map((kind) => {
+              const Icon = kind.icon;
+              return (
+                <button
+                  key={kind.value}
+                  onClick={() => onStartLogEvent(kind.value)}
+                  className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 transition-colors"
+                >
+                  <Icon className="h-3 w-3" />
+                  {kind.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Inline Log Event Form */}
+          {isLoggingEvent && (
+            <InlineLogEventForm
+              dealId={dealId}
+              targetId={target.id}
+              initialKind={loggingKind || "call"}
+              onCancel={onCancelLogEvent}
+              onSuccess={() => {
+                onCancelLogEvent();
+                onTargetUpdated();
+              }}
+            />
+          )}
+        </div>
+
+        {/* Right: Follow-up */}
+        <div className="w-64 shrink-0 border-l pl-4">
+          <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Follow-up</div>
+          {nextTask ? (
+            <div className="mb-2">
+              <div className={`text-sm ${isOverdue ? "text-red-600 font-medium" : "text-slate-700"}`}>
+                {nextTask.subject}
+              </div>
+              {nextTask.dueAt && (
+                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <CalendarClock className="h-3 w-3" />
+                  {formatDate(nextTask.dueAt)}
+                  {isOverdue && <span className="text-red-500 font-medium ml-1">Overdue</span>}
+                </div>
+              )}
+            </div>
+          ) : target.nextStep ? (
+            <div className="mb-2">
+              <div className="text-sm text-slate-700">{target.nextStep}</div>
+              {target.nextStepAt && (
+                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <CalendarClock className="h-3 w-3" />
+                  {formatDate(target.nextStepAt)}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-xs text-slate-400 mb-2">No follow-up set</div>
+          )}
+
+          {/* Open tasks count */}
+          {target.tasks && target.tasks.length > 0 && (
+            <div className="text-xs text-slate-500 mb-2">
+              {target.tasks.length} open task{target.tasks.length !== 1 ? "s" : ""}
+            </div>
+          )}
+
+          {!isAddingTask ? (
             <button
-              key={kind.value}
-              onClick={() => onStartLogEvent(kind.value)}
-              className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 transition-colors"
+              onClick={onStartAddTask}
+              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
             >
-              <Icon className="h-3 w-3" />
-              {kind.label}
+              <Plus className="h-3 w-3" />
+              Add Follow-up
             </button>
-          );
-        })}
-        <button
-          onClick={onStartAddTask}
-          className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 transition-colors"
-        >
-          <ListTodo className="h-3 w-3" />
-          Add Task
-        </button>
+          ) : (
+            <InlineAddTaskForm
+              dealId={dealId}
+              targetId={target.id}
+              onCancel={onCancelAddTask}
+              onSuccess={() => {
+                onCancelAddTask();
+                onTargetUpdated();
+              }}
+            />
+          )}
+        </div>
       </div>
-
-      {/* Inline Log Event Form */}
-      {isLoggingEvent && (
-        <InlineLogEventForm
-          dealId={dealId}
-          targetId={target.id}
-          initialKind={loggingKind || "call"}
-          onCancel={onCancelLogEvent}
-          onSuccess={() => {
-            onCancelLogEvent();
-            onTargetUpdated();
-          }}
-        />
-      )}
-
-      {/* Inline Add Task Form */}
-      {isAddingTask && (
-        <InlineAddTaskForm
-          dealId={dealId}
-          targetId={target.id}
-          onCancel={onCancelAddTask}
-          onSuccess={() => {
-            onCancelAddTask();
-            onTargetUpdated();
-          }}
-        />
-      )}
 
       {/* Timeline toggle */}
       {target.recentActivities && target.recentActivities.length > 0 && (
@@ -477,6 +501,7 @@ function InlineLogEventForm({ dealId, targetId, initialKind = "call", onCancel, 
       body: body.trim() || null,
       regarding_type: "DealTarget",
       regarding_id: targetId,
+      deal_target_id: targetId,
       deal_id: dealId,
       occurred_at: new Date().toISOString(),
     };
@@ -657,49 +682,43 @@ function InlineAddTaskForm({ dealId, targetId, onCancel, onSuccess }: InlineAddT
   };
 
   return (
-    <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
+    <div className="mt-2 space-y-1.5">
       <input
         type="text"
-        placeholder="Task description (required)"
+        placeholder="Task description..."
         value={subject}
         onChange={(e) => setSubject(e.target.value)}
-        className="w-full text-sm px-3 py-1.5 border rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
+        className="w-full text-xs px-2 py-1.5 border rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
         autoFocus
       />
-
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1.5">
-          <CalendarClock className="h-3.5 w-3.5 text-slate-400" />
-          <input
-            type="date"
-            value={dueAt}
-            onChange={(e) => setDueAt(e.target.value)}
-            className="text-xs border rounded px-2 py-1"
-          />
-        </div>
-
+      <div className="flex items-center gap-2">
+        <input
+          type="date"
+          value={dueAt}
+          onChange={(e) => setDueAt(e.target.value)}
+          className="text-xs border rounded px-1.5 py-1 flex-1"
+        />
         <select
           value={priority}
           onChange={(e) => setPriority(e.target.value)}
-          className="text-xs border rounded px-2 py-1"
+          className="text-xs border rounded px-1.5 py-1"
         >
           <option value="low">Low</option>
           <option value="normal">Normal</option>
           <option value="high">High</option>
         </select>
       </div>
-
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <button
           onClick={handleSubmit}
           disabled={!subject.trim() || submitting}
-          className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-2 py-1 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 disabled:opacity-50"
         >
-          {submitting ? "Saving..." : "Add Task"}
+          {submitting ? "..." : "Save"}
         </button>
         <button
           onClick={onCancel}
-          className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800"
+          className="px-2 py-1 text-xs text-slate-500 hover:text-slate-700"
         >
           Cancel
         </button>

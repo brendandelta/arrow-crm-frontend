@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, AlertCircle } from "lucide-react";
+import { Plus, AlertCircle, ListTodo, CalendarClock } from "lucide-react";
 import { FunnelVisualization } from "./FunnelVisualization";
 
 interface Person {
@@ -20,6 +20,13 @@ interface Person {
   title?: string;
   email?: string;
   phone?: string;
+}
+
+interface TaskInfo {
+  id: number;
+  subject: string;
+  dueAt: string | null;
+  overdue: boolean;
 }
 
 interface Interest {
@@ -43,6 +50,8 @@ interface Interest {
   source: string | null;
   nextStep: string | null;
   nextStepAt: string | null;
+  nextTask?: TaskInfo | null;
+  tasks?: TaskInfo[];
   internalNotes: string | null;
   createdAt: string;
   updatedAt: string;
@@ -51,6 +60,7 @@ interface Interest {
 
 interface InterestsSectionProps {
   interests: Interest[];
+  dealId: number;
   funnel: {
     prospecting: number;
     contacted: number;
@@ -61,6 +71,7 @@ interface InterestsSectionProps {
   };
   onInterestClick?: (interest: Interest) => void;
   onAddInterest?: () => void;
+  onInterestsUpdated?: () => void;
 }
 
 function formatCurrency(cents: number | null) {
@@ -106,11 +117,14 @@ function InterestStatusBadge({ status }: { status: string }) {
 
 export function InterestsSection({
   interests,
+  dealId,
   funnel,
   onInterestClick,
   onAddInterest,
+  onInterestsUpdated,
 }: InterestsSectionProps) {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [addingFollowUpFor, setAddingFollowUpFor] = useState<number | null>(null);
 
   const filteredInterests = statusFilter
     ? interests.filter((i) => {
@@ -190,14 +204,14 @@ export function InterestsSection({
                 <TableHead className="text-right">Target</TableHead>
                 <TableHead className="text-right">Committed</TableHead>
                 <TableHead>Block</TableHead>
-                <TableHead>Next Step</TableHead>
+                <TableHead>Follow-up</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredInterests.map((interest) => (
+                <Fragment key={interest.id}>
                 <TableRow
-                  key={interest.id}
                   className={`cursor-pointer hover:bg-slate-50 ${
                     interest.isStale ? "bg-amber-50/50" : ""
                   }`}
@@ -256,29 +270,143 @@ export function InterestsSection({
                       <span className="text-muted-foreground text-sm">Not mapped</span>
                     )}
                   </TableCell>
-                  <TableCell>
-                    {interest.nextStep ? (
-                      <div>
-                        <div className="text-sm">{interest.nextStep}</div>
-                        {interest.nextStepAt && (
-                          <div className="text-xs text-muted-foreground">
-                            {formatDate(interest.nextStepAt)}
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1.5">
+                      {interest.nextTask ? (
+                        <div className="flex-1 min-w-0">
+                          <div className={`text-sm truncate ${interest.nextTask.overdue ? "text-red-600 font-medium" : ""}`}>
+                            {interest.nextTask.subject}
                           </div>
-                        )}
-                      </div>
-                    ) : (
-                      "—"
-                    )}
+                          {interest.nextTask.dueAt && (
+                            <div className="text-xs text-muted-foreground">
+                              {formatDate(interest.nextTask.dueAt)}
+                            </div>
+                          )}
+                        </div>
+                      ) : interest.nextStep ? (
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm truncate">{interest.nextStep}</div>
+                          {interest.nextStepAt && (
+                            <div className="text-xs text-muted-foreground">
+                              {formatDate(interest.nextStepAt)}
+                            </div>
+                          )}
+                        </div>
+                      ) : null}
+                      <button
+                        onClick={() => setAddingFollowUpFor(addingFollowUpFor === interest.id ? null : interest.id)}
+                        className="shrink-0 p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors"
+                        title="Add follow-up task"
+                      >
+                        <ListTodo className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <InterestStatusBadge status={interest.status} />
                   </TableCell>
                 </TableRow>
+                {addingFollowUpFor === interest.id && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="p-0">
+                      <InlineFollowUpForm
+                        dealId={dealId}
+                        taskableType="Interest"
+                        taskableId={interest.id}
+                        onCancel={() => setAddingFollowUpFor(null)}
+                        onSuccess={() => { setAddingFollowUpFor(null); onInterestsUpdated?.(); }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                )}
+                </Fragment>
               ))}
             </TableBody>
           </Table>
         </div>
       )}
+    </div>
+  );
+}
+
+// ============ Inline Follow-up Form ============
+
+function InlineFollowUpForm({ dealId, taskableType, taskableId, onCancel, onSuccess }: {
+  dealId: number;
+  taskableType: string;
+  taskableId: number;
+  onCancel: () => void;
+  onSuccess: () => void;
+}) {
+  const [subject, setSubject] = useState("");
+  const [dueAt, setDueAt] = useState("");
+  const [priority, setPriority] = useState("normal");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!subject.trim()) return;
+    setSubmitting(true);
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: subject.trim(),
+          due_at: dueAt || null,
+          priority: priority === "high" ? 2 : priority === "low" ? 0 : 1,
+          deal_id: dealId,
+          taskable_type: taskableType,
+          taskable_id: taskableId,
+        }),
+      });
+      onSuccess();
+    } catch (err) {
+      console.error("Failed to create follow-up:", err);
+    }
+    setSubmitting(false);
+  };
+
+  return (
+    <div className="p-3 bg-slate-50 border-t border-slate-200 space-y-2">
+      <input
+        type="text"
+        placeholder="Follow-up task description..."
+        value={subject}
+        onChange={(e) => setSubject(e.target.value)}
+        className="w-full text-sm px-3 py-1.5 border rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
+        autoFocus
+      />
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
+          <CalendarClock className="h-3.5 w-3.5 text-slate-400" />
+          <input
+            type="date"
+            value={dueAt}
+            onChange={(e) => setDueAt(e.target.value)}
+            className="text-xs border rounded px-2 py-1"
+          />
+        </div>
+        <select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value)}
+          className="text-xs border rounded px-2 py-1"
+        >
+          <option value="low">Low</option>
+          <option value="normal">Normal</option>
+          <option value="high">High</option>
+        </select>
+        <div className="flex-1" />
+        <button
+          onClick={handleSubmit}
+          disabled={!subject.trim() || submitting}
+          className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 disabled:opacity-50"
+        >
+          {submitting ? "Saving..." : "Add Follow-up"}
+        </button>
+        <button onClick={onCancel} className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800">
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }

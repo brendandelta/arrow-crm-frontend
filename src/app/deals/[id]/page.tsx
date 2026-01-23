@@ -577,17 +577,21 @@ export default function DealDetailPage() {
           {activeTab === "blocks" && (
             <BlocksSection
               blocks={deal.blocks}
+              dealId={deal.id}
               onBlockClick={(block) => setSelectedBlock(block)}
               onAddBlock={() => setShowAddBlock(true)}
+              onBlocksUpdated={refreshDeal}
             />
           )}
 
           {activeTab === "interests" && (
             <InterestsSection
               interests={deal.interests}
+              dealId={deal.id}
               funnel={deal.demandFunnel}
               onInterestClick={(interest) => setSelectedInterest(interest)}
               onAddInterest={() => setShowAddInterest(true)}
+              onInterestsUpdated={refreshDeal}
             />
           )}
 
