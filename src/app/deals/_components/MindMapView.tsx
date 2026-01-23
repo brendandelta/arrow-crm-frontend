@@ -60,7 +60,7 @@ export function MindMapView() {
   );
 
   const handleSaveInterest = useCallback(
-    async (data: { deal_id: number; investor_id: number; committed_cents: number | null; status: string }) => {
+    async (data: { deal_id: number; investor_id: number; committed_cents: number | null; status: string; contact_id?: number; decision_maker_id?: number; introduced_by_id?: number }) => {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/interests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
