@@ -15,6 +15,7 @@ import {
   Check,
   Circle,
   User,
+  Pencil,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -248,7 +249,31 @@ function TargetRow({
   formatDate,
 }: TargetRowProps) {
   const [tasksExpanded, setTasksExpanded] = useState(false);
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notesValue, setNotesValue] = useState(target.notes || "");
+  const [savingNotes, setSavingNotes] = useState(false);
   const isStale = target.isStale || (target.daysSinceContact !== null && target.daysSinceContact > 7);
+
+  const saveNotes = async (value: string) => {
+    const trimmed = value.trim();
+    if (trimmed === (target.notes || "").trim()) {
+      setEditingNotes(false);
+      return;
+    }
+    setSavingNotes(true);
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deal_targets/${target.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes: trimmed || null }),
+      });
+      onTargetUpdated();
+    } catch (err) {
+      console.error("Failed to save notes:", err);
+    }
+    setSavingNotes(false);
+    setEditingNotes(false);
+  };
 
   return (
     <div
@@ -436,6 +461,51 @@ function TargetRow({
             />
           )}
         </div>
+      </div>
+
+      {/* Notes Section */}
+      <div className="border-t border-slate-100 px-5 py-3">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Notes</span>
+          {!editingNotes && (
+            <button
+              onClick={() => setEditingNotes(true)}
+              className="opacity-0 group-hover/card:opacity-100 text-slate-400 hover:text-indigo-500 transition-all"
+            >
+              <Pencil className="h-3 w-3" />
+            </button>
+          )}
+        </div>
+        {editingNotes ? (
+          <textarea
+            autoFocus
+            value={notesValue}
+            onChange={(e) => setNotesValue(e.target.value)}
+            onBlur={() => saveNotes(notesValue)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setNotesValue(target.notes || "");
+                setEditingNotes(false);
+              }
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                saveNotes(notesValue);
+              }
+            }}
+            placeholder="Add a note..."
+            className="w-full text-[13px] text-slate-700 bg-slate-50 border border-slate-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 resize-none min-h-[60px] placeholder:text-slate-300"
+          />
+        ) : (
+          <button
+            onClick={() => setEditingNotes(true)}
+            className="w-full text-left"
+          >
+            {notesValue ? (
+              <p className="text-[13px] text-slate-600 whitespace-pre-wrap leading-relaxed">{notesValue}</p>
+            ) : (
+              <p className="text-[12px] text-slate-300 italic">Add a note...</p>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
