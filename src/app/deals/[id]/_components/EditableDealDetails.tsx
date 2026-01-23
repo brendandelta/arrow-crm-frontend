@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useRef, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, X, Save, Loader2, Plus, Trash2 } from "lucide-react";
-import { MissingDataDropdown, getDealMissingFields, MissingField } from "./MissingDataDropdown";
+import { Plus, X, ExternalLink, Link as LinkIcon } from "lucide-react";
 
 interface Owner {
   id: number;
@@ -53,7 +51,6 @@ function formatCurrency(cents: number | null) {
 
 function parseCurrencyToCents(value: string): number | null {
   if (!value) return null;
-  // Remove $ and commas, handle M/B suffixes
   let clean = value.replace(/[$,]/g, "").trim();
   let multiplier = 1;
 
@@ -73,510 +70,540 @@ function parseCurrencyToCents(value: string): number | null {
   return Math.round(num * multiplier * 100);
 }
 
-export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetailsProps) {
+// ============ Inline Editable Fields ============
+
+function InlineText({
+  label,
+  value,
+  placeholder,
+  onSave,
+  prefix,
+  suffix,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  placeholder?: string;
+  onSave: (val: string) => void;
+  prefix?: string;
+  suffix?: string;
+  type?: string;
+}) {
   const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    stage: deal.stage || "",
-    confidence: deal.confidence?.toString() || "",
-    sharePrice: deal.sharePrice ? (deal.sharePrice / 100).toString() : "",
-    valuation: deal.valuation ? formatCurrency(deal.valuation)?.replace("$", "") || "" : "",
-    source: deal.source || "",
-    sourceDetail: deal.sourceDetail || "",
-    expectedClose: deal.expectedClose?.split("T")[0] || "",
-    deadline: deal.deadline?.split("T")[0] || "",
-    tags: deal.tags || [],
-    notes: deal.notes || "",
-    driveUrl: deal.driveUrl || "",
-    dataRoomUrl: deal.dataRoomUrl || "",
-    deckUrl: deal.deckUrl || "",
-    notionUrl: deal.notionUrl || "",
-    newTag: "",
-  });
+  const [draft, setDraft] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const missingFields = getDealMissingFields(deal);
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
 
-  const handleEdit = () => {
-    setFormData({
-      stage: deal.stage || "",
-      confidence: deal.confidence?.toString() || "",
-      sharePrice: deal.sharePrice ? (deal.sharePrice / 100).toString() : "",
-      valuation: deal.valuation ? formatCurrency(deal.valuation)?.replace("$", "") || "" : "",
-      source: deal.source || "",
-      sourceDetail: deal.sourceDetail || "",
-      expectedClose: deal.expectedClose?.split("T")[0] || "",
-      deadline: deal.deadline?.split("T")[0] || "",
-      tags: deal.tags || [],
-      notes: deal.notes || "",
-      driveUrl: deal.driveUrl || "",
-      dataRoomUrl: deal.dataRoomUrl || "",
-      deckUrl: deal.deckUrl || "",
-      notionUrl: deal.notionUrl || "",
-      newTag: "",
-    });
-    setEditing(true);
-  };
-
-  const handleCancel = () => {
+  const commit = () => {
     setEditing(false);
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await onSave({
-        stage: formData.stage || null,
-        confidence: formData.confidence ? parseInt(formData.confidence) : null,
-        sharePrice: formData.sharePrice ? Math.round(parseFloat(formData.sharePrice) * 100) : null,
-        valuation: parseCurrencyToCents(formData.valuation),
-        source: formData.source || null,
-        sourceDetail: formData.sourceDetail || null,
-        expectedClose: formData.expectedClose || null,
-        deadline: formData.deadline || null,
-        tags: formData.tags.length > 0 ? formData.tags : null,
-        notes: formData.notes || null,
-        driveUrl: formData.driveUrl || null,
-        dataRoomUrl: formData.dataRoomUrl || null,
-        deckUrl: formData.deckUrl || null,
-        notionUrl: formData.notionUrl || null,
-      });
-      setEditing(false);
-    } catch (err) {
-      console.error("Failed to save:", err);
-    }
-    setSaving(false);
-  };
-
-  const addTag = () => {
-    if (formData.newTag.trim() && !formData.tags.includes(formData.newTag.trim())) {
-      setFormData({
-        ...formData,
-        tags: [...formData.tags, formData.newTag.trim()],
-        newTag: "",
-      });
+    if (draft !== value) {
+      onSave(draft);
     }
   };
 
-  const removeTag = (tag: string) => {
-    setFormData({
-      ...formData,
-      tags: formData.tags.filter((t) => t !== tag),
+  return (
+    <div className="group">
+      <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">
+        {label}
+      </div>
+      {editing ? (
+        <input
+          ref={inputRef}
+          type={type}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") { setDraft(value); setEditing(false); }
+          }}
+          placeholder={placeholder}
+          className="w-full text-sm font-medium bg-transparent border-b border-slate-300 focus:border-slate-900 outline-none py-0.5 transition-colors"
+        />
+      ) : (
+        <button
+          onClick={() => { setDraft(value); setEditing(true); }}
+          className="w-full text-left text-sm font-medium text-slate-900 py-0.5 border-b border-transparent group-hover:border-slate-200 transition-colors cursor-text min-h-[24px]"
+        >
+          {value ? (
+            <span>{prefix}{value}{suffix}</span>
+          ) : (
+            <span className="text-slate-300">{placeholder || "—"}</span>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function InlineSelect({
+  label,
+  value,
+  options,
+  placeholder,
+  onSave,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  placeholder?: string;
+  onSave: (val: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const selectRef = useRef<HTMLSelectElement>(null);
+
+  useEffect(() => {
+    if (editing && selectRef.current) {
+      selectRef.current.focus();
+    }
+  }, [editing]);
+
+  const commit = (val: string) => {
+    setEditing(false);
+    if (val !== value) {
+      onSave(val);
+    }
+  };
+
+  return (
+    <div className="group">
+      <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">
+        {label}
+      </div>
+      {editing ? (
+        <select
+          ref={selectRef}
+          value={value}
+          onChange={(e) => commit(e.target.value)}
+          onBlur={() => setEditing(false)}
+          className="w-full text-sm font-medium bg-transparent border-b border-slate-300 focus:border-slate-900 outline-none py-0.5 cursor-pointer"
+        >
+          <option value="">{placeholder || "Select..."}</option>
+          {options.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt.charAt(0).toUpperCase() + opt.slice(1)}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <button
+          onClick={() => setEditing(true)}
+          className="w-full text-left text-sm font-medium text-slate-900 py-0.5 border-b border-transparent group-hover:border-slate-200 transition-colors cursor-pointer min-h-[24px]"
+        >
+          {value ? (
+            <span>{value.charAt(0).toUpperCase() + value.slice(1)}</span>
+          ) : (
+            <span className="text-slate-300">{placeholder || "—"}</span>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function InlineDate({
+  label,
+  value,
+  onSave,
+}: {
+  label: string;
+  value: string;
+  onSave: (val: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editing]);
+
+  const commit = (val: string) => {
+    setEditing(false);
+    if (val !== value) {
+      onSave(val);
+    }
+  };
+
+  const formatDisplay = (dateStr: string) => {
+    if (!dateStr) return null;
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
-  const handleMissingFieldClick = (fieldKey: string) => {
-    handleEdit();
-    // Focus on the field after a short delay
-    setTimeout(() => {
-      const element = document.getElementById(`deal-field-${fieldKey}`);
-      if (element) {
-        element.focus();
-        element.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 100);
+  return (
+    <div className="group">
+      <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">
+        {label}
+      </div>
+      {editing ? (
+        <input
+          ref={inputRef}
+          type="date"
+          value={value}
+          onChange={(e) => commit(e.target.value)}
+          onBlur={() => setEditing(false)}
+          className="w-full text-sm font-medium bg-transparent border-b border-slate-300 focus:border-slate-900 outline-none py-0.5"
+        />
+      ) : (
+        <button
+          onClick={() => setEditing(true)}
+          className="w-full text-left text-sm font-medium text-slate-900 py-0.5 border-b border-transparent group-hover:border-slate-200 transition-colors cursor-pointer min-h-[24px]"
+        >
+          {value ? (
+            <span>{formatDisplay(value)}</span>
+          ) : (
+            <span className="text-slate-300">Set date</span>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function InlineNotes({
+  value,
+  onSave,
+}: {
+  value: string;
+  onSave: (val: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (editing && textareaRef.current) {
+      textareaRef.current.focus();
+      // Move cursor to end
+      textareaRef.current.selectionStart = textareaRef.current.value.length;
+    }
+  }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    if (draft !== value) {
+      onSave(draft);
+    }
+  };
+
+  return (
+    <div className="group">
+      <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">
+        Notes
+      </div>
+      {editing ? (
+        <textarea
+          ref={textareaRef}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          rows={3}
+          className="w-full text-sm bg-transparent border border-slate-200 rounded px-2 py-1.5 focus:border-slate-400 outline-none resize-none"
+          placeholder="Internal notes..."
+        />
+      ) : (
+        <button
+          onClick={() => { setDraft(value); setEditing(true); }}
+          className="w-full text-left text-sm text-slate-700 py-0.5 border-b border-transparent group-hover:border-slate-200 transition-colors cursor-text min-h-[24px]"
+        >
+          {value ? (
+            <span className="line-clamp-2 whitespace-pre-wrap">{value}</span>
+          ) : (
+            <span className="text-slate-300">Add notes...</span>
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function InlineLink({
+  label,
+  url,
+  onSave,
+  placeholder,
+}: {
+  label: string;
+  url: string;
+  onSave: (val: string) => void;
+  placeholder?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(url);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    if (draft !== url) {
+      onSave(draft);
+    }
   };
 
   if (editing) {
     return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Deal Details</CardTitle>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleCancel}
-              disabled={saving}
-              className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50"
-            >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              Save
-            </button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Stage */}
-            <div>
-              <label className="block text-sm text-muted-foreground mb-1">Stage</label>
-              <select
-                id="deal-field-stage"
-                value={formData.stage}
-                onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
-                className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-              >
-                <option value="">Select stage...</option>
-                {STAGES.map((s) => (
-                  <option key={s} value={s}>
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
+      <div className="flex items-center gap-1.5">
+        <LinkIcon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+        <input
+          ref={inputRef}
+          type="url"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") { setDraft(url); setEditing(false); }
+          }}
+          placeholder={placeholder || "https://..."}
+          className="flex-1 text-xs bg-transparent border-b border-slate-300 focus:border-slate-900 outline-none py-0.5"
+        />
+      </div>
+    );
+  }
 
-            {/* Confidence */}
-            <div>
-              <label className="block text-sm text-muted-foreground mb-1">Confidence (%)</label>
-              <input
-                id="deal-field-confidence"
-                type="number"
-                min="0"
-                max="100"
-                value={formData.confidence}
-                onChange={(e) => setFormData({ ...formData, confidence: e.target.value })}
-                className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                placeholder="0-100"
-              />
-            </div>
-
-            {/* Share Price */}
-            <div>
-              <label className="block text-sm text-muted-foreground mb-1">Share Price ($)</label>
-              <input
-                id="deal-field-sharePrice"
-                type="number"
-                step="0.01"
-                value={formData.sharePrice}
-                onChange={(e) => setFormData({ ...formData, sharePrice: e.target.value })}
-                className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                placeholder="0.00"
-              />
-            </div>
-
-            {/* Valuation */}
-            <div>
-              <label className="block text-sm text-muted-foreground mb-1">Valuation</label>
-              <input
-                id="deal-field-valuation"
-                type="text"
-                value={formData.valuation}
-                onChange={(e) => setFormData({ ...formData, valuation: e.target.value })}
-                className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                placeholder="e.g., 10B, 500M"
-              />
-            </div>
-
-            {/* Expected Close */}
-            <div>
-              <label className="block text-sm text-muted-foreground mb-1">Expected Close</label>
-              <input
-                id="deal-field-expectedClose"
-                type="date"
-                value={formData.expectedClose}
-                onChange={(e) => setFormData({ ...formData, expectedClose: e.target.value })}
-                className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-              />
-            </div>
-
-            {/* Deadline */}
-            <div>
-              <label className="block text-sm text-muted-foreground mb-1">Deadline</label>
-              <input
-                id="deal-field-deadline"
-                type="date"
-                value={formData.deadline}
-                onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-              />
-            </div>
-
-            {/* Source */}
-            <div>
-              <label className="block text-sm text-muted-foreground mb-1">Source</label>
-              <select
-                id="deal-field-source"
-                value={formData.source}
-                onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-              >
-                <option value="">Select source...</option>
-                {SOURCES.map((s) => (
-                  <option key={s} value={s}>
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Source Detail */}
-            {formData.source && (
-              <div>
-                <label className="block text-sm text-muted-foreground mb-1">Source Detail</label>
-                <input
-                  type="text"
-                  value={formData.sourceDetail}
-                  onChange={(e) => setFormData({ ...formData, sourceDetail: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                  placeholder="Additional source details..."
-                />
-              </div>
-            )}
-
-            {/* URLs */}
-            <div className="pt-2 border-t">
-              <h4 className="text-sm font-medium mb-3">Links</h4>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm text-muted-foreground mb-1">Google Drive</label>
-                  <input
-                    id="deal-field-driveUrl"
-                    type="url"
-                    value={formData.driveUrl}
-                    onChange={(e) => setFormData({ ...formData, driveUrl: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    placeholder="https://drive.google.com/..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-muted-foreground mb-1">Data Room</label>
-                  <input
-                    id="deal-field-dataRoomUrl"
-                    type="url"
-                    value={formData.dataRoomUrl}
-                    onChange={(e) => setFormData({ ...formData, dataRoomUrl: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    placeholder="https://..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-muted-foreground mb-1">Deck</label>
-                  <input
-                    id="deal-field-deckUrl"
-                    type="url"
-                    value={formData.deckUrl}
-                    onChange={(e) => setFormData({ ...formData, deckUrl: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    placeholder="https://..."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-muted-foreground mb-1">Notion</label>
-                  <input
-                    type="url"
-                    value={formData.notionUrl}
-                    onChange={(e) => setFormData({ ...formData, notionUrl: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    placeholder="https://notion.so/..."
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Tags */}
-            <div className="pt-2 border-t">
-              <label className="block text-sm text-muted-foreground mb-1">Tags</label>
-              <div className="flex flex-wrap gap-1 mb-2">
-                {formData.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs flex items-center gap-1">
-                    {tag}
-                    <button
-                      onClick={() => removeTag(tag)}
-                      className="hover:text-red-600"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <input
-                  id="deal-field-tags"
-                  type="text"
-                  value={formData.newTag}
-                  onChange={(e) => setFormData({ ...formData, newTag: e.target.value })}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addTag();
-                    }
-                  }}
-                  className="flex-1 px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                  placeholder="Add tag..."
-                />
-                <button
-                  onClick={addTag}
-                  className="px-3 py-2 text-sm border rounded-md hover:bg-slate-50"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* Internal Notes */}
-            {!lpMode && (
-              <div className="pt-2 border-t">
-                <label className="block text-sm text-muted-foreground mb-1">Internal Notes</label>
-                <textarea
-                  id="deal-field-notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 min-h-[100px]"
-                  placeholder="Internal notes..."
-                />
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+  if (url) {
+    return (
+      <div className="flex items-center gap-1">
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-0.5"
+        >
+          {label}
+          <ExternalLink className="h-2.5 w-2.5" />
+        </a>
+        <button
+          onClick={() => { setDraft(url); setEditing(true); }}
+          className="text-slate-300 hover:text-slate-500 transition-colors"
+          title="Edit link"
+        >
+          <LinkIcon className="h-3 w-3" />
+        </button>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Deal Details</CardTitle>
-        <div className="flex items-center gap-2">
-          <MissingDataDropdown
-            missingFields={missingFields}
-            onAddClick={handleMissingFieldClick}
-          />
-          <button
-            onClick={handleEdit}
-            className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <dl className="space-y-3 text-sm">
-          {deal.stage && (
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Stage</dt>
-              <dd className="font-medium">{deal.stage.charAt(0).toUpperCase() + deal.stage.slice(1)}</dd>
-            </div>
-          )}
-          {deal.confidence && (
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Confidence</dt>
-              <dd className="font-medium">{deal.confidence}%</dd>
-            </div>
-          )}
-          {deal.sharePrice && (
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Share Price</dt>
-              <dd className="font-medium">${(deal.sharePrice / 100).toFixed(2)}</dd>
-            </div>
-          )}
-          {deal.valuation && (
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Valuation</dt>
-              <dd className="font-medium">{formatCurrency(deal.valuation)}</dd>
-            </div>
-          )}
-          {deal.expectedClose && (
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Expected Close</dt>
-              <dd className="font-medium">
-                {new Date(deal.expectedClose).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </dd>
-            </div>
-          )}
-          {deal.deadline && (
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Deadline</dt>
-              <dd className="font-medium">
-                {new Date(deal.deadline).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </dd>
-            </div>
-          )}
-          {deal.source && (
-            <div className="flex justify-between">
-              <dt className="text-muted-foreground">Source</dt>
-              <dd className="font-medium">
-                {deal.source.charAt(0).toUpperCase() + deal.source.slice(1)}
-                {deal.sourceDetail && ` - ${deal.sourceDetail}`}
-              </dd>
-            </div>
-          )}
+    <button
+      onClick={() => { setDraft(""); setEditing(true); }}
+      className="text-xs text-slate-300 hover:text-slate-500 transition-colors flex items-center gap-0.5"
+    >
+      <Plus className="h-3 w-3" />
+      {label}
+    </button>
+  );
+}
 
-          {/* Links */}
-          {(deal.driveUrl || deal.dataRoomUrl || deal.deckUrl || deal.notionUrl) && (
-            <div className="pt-2 border-t">
-              <dt className="text-muted-foreground mb-2">Links</dt>
-              <dd className="flex flex-wrap gap-2">
-                {deal.driveUrl && (
-                  <a
-                    href={deal.driveUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    Drive
-                  </a>
-                )}
-                {deal.dataRoomUrl && (
-                  <a
-                    href={deal.dataRoomUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    Data Room
-                  </a>
-                )}
-                {deal.deckUrl && (
-                  <a
-                    href={deal.deckUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    Deck
-                  </a>
-                )}
-                {deal.notionUrl && (
-                  <a
-                    href={deal.notionUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    Notion
-                  </a>
-                )}
-              </dd>
-            </div>
-          )}
+// ============ Main Component ============
 
-          {deal.tags && deal.tags.length > 0 && (
-            <div className="pt-2 border-t">
-              <dt className="text-muted-foreground mb-1">Tags</dt>
-              <dd className="flex flex-wrap gap-1">
-                {deal.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </dd>
-            </div>
-          )}
-        </dl>
+export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetailsProps) {
+  const [tags, setTags] = useState<string[]>(deal.tags || []);
+  const [newTag, setNewTag] = useState("");
+  const [addingTag, setAddingTag] = useState(false);
+  const tagInputRef = useRef<HTMLInputElement>(null);
 
-        {!lpMode && deal.notes && (
-          <div className="mt-4 pt-4 border-t">
-            <h4 className="text-sm text-muted-foreground mb-2">Internal Notes</h4>
-            <p className="text-sm whitespace-pre-wrap">{deal.notes}</p>
+  // Sync tags from prop changes (after save/refresh)
+  useEffect(() => {
+    setTags(deal.tags || []);
+  }, [deal.tags]);
+
+  useEffect(() => {
+    if (addingTag && tagInputRef.current) {
+      tagInputRef.current.focus();
+    }
+  }, [addingTag]);
+
+  const saveField = (field: string, value: unknown) => {
+    onSave({ [field]: value || null } as Partial<DealDetailsData>);
+  };
+
+  const addTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      const updated = [...tags, newTag.trim()];
+      setTags(updated);
+      setNewTag("");
+      onSave({ tags: updated });
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    const updated = tags.filter((t) => t !== tag);
+    setTags(updated);
+    onSave({ tags: updated.length > 0 ? updated : null });
+  };
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-5">
+      {/* Row 1: Key Metrics */}
+      <div className="grid grid-cols-4 gap-6">
+        <InlineSelect
+          label="Stage"
+          value={deal.stage || ""}
+          options={STAGES}
+          placeholder="Set stage"
+          onSave={(val) => saveField("stage", val)}
+        />
+        <InlineText
+          label="Confidence"
+          value={deal.confidence?.toString() || ""}
+          placeholder="0-100"
+          suffix="%"
+          type="number"
+          onSave={(val) => saveField("confidence", val ? parseInt(val) : null)}
+        />
+        <InlineText
+          label="Share Price"
+          value={deal.sharePrice ? (deal.sharePrice / 100).toFixed(2) : ""}
+          placeholder="0.00"
+          prefix="$"
+          type="number"
+          onSave={(val) => saveField("sharePrice", val ? Math.round(parseFloat(val) * 100) : null)}
+        />
+        <InlineText
+          label="Valuation"
+          value={deal.valuation ? formatCurrency(deal.valuation)?.replace("$", "") || "" : ""}
+          placeholder="e.g. 10B, 500M"
+          prefix="$"
+          onSave={(val) => saveField("valuation", parseCurrencyToCents(val))}
+        />
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-slate-100 my-4" />
+
+      {/* Row 2: Timeline & Source */}
+      <div className="grid grid-cols-4 gap-6">
+        <InlineDate
+          label="Expected Close"
+          value={deal.expectedClose?.split("T")[0] || ""}
+          onSave={(val) => saveField("expectedClose", val)}
+        />
+        <InlineDate
+          label="Deadline"
+          value={deal.deadline?.split("T")[0] || ""}
+          onSave={(val) => saveField("deadline", val)}
+        />
+        <InlineSelect
+          label="Source"
+          value={deal.source || ""}
+          options={SOURCES}
+          placeholder="Set source"
+          onSave={(val) => saveField("source", val)}
+        />
+        <InlineText
+          label="Source Detail"
+          value={deal.sourceDetail || ""}
+          placeholder="Details..."
+          onSave={(val) => saveField("sourceDetail", val)}
+        />
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-slate-100 my-4" />
+
+      {/* Row 3: Links & Tags */}
+      <div className="flex items-start justify-between gap-6">
+        {/* Links */}
+        <div>
+          <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1.5">
+            Links
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <div className="flex items-center gap-4">
+            <InlineLink
+              label="Drive"
+              url={deal.driveUrl || ""}
+              onSave={(val) => saveField("driveUrl", val)}
+            />
+            <InlineLink
+              label="Data Room"
+              url={deal.dataRoomUrl || ""}
+              onSave={(val) => saveField("dataRoomUrl", val)}
+            />
+            <InlineLink
+              label="Deck"
+              url={deal.deckUrl || ""}
+              onSave={(val) => saveField("deckUrl", val)}
+            />
+            <InlineLink
+              label="Notion"
+              url={deal.notionUrl || ""}
+              onSave={(val) => saveField("notionUrl", val)}
+              placeholder="https://notion.so/..."
+            />
+          </div>
+        </div>
+
+        {/* Tags */}
+        <div className="flex-1 max-w-xs">
+          <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1.5">
+            Tags
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {tags.map((tag) => (
+              <Badge key={tag} variant="secondary" className="text-xs flex items-center gap-0.5 pr-1">
+                {tag}
+                <button
+                  onClick={() => removeTag(tag)}
+                  className="ml-0.5 text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </Badge>
+            ))}
+            {addingTag ? (
+              <input
+                ref={tagInputRef}
+                type="text"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onBlur={() => { if (newTag.trim()) addTag(); setAddingTag(false); setNewTag(""); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") { addTag(); setAddingTag(false); }
+                  if (e.key === "Escape") { setAddingTag(false); setNewTag(""); }
+                }}
+                placeholder="tag"
+                className="text-xs border-b border-slate-300 outline-none w-16 py-0.5"
+              />
+            ) : (
+              <button
+                onClick={() => setAddingTag(true)}
+                className="text-slate-300 hover:text-slate-500 transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 4: Notes (if not LP mode) */}
+      {!lpMode && (
+        <>
+          <div className="border-t border-slate-100 my-4" />
+          <InlineNotes
+            value={deal.notes || ""}
+            onSave={(val) => saveField("notes", val)}
+          />
+        </>
+      )}
+    </div>
   );
 }

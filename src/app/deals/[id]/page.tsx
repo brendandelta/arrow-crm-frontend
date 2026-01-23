@@ -544,6 +544,29 @@ export default function DealDetailPage() {
         }}
       />
 
+      {/* Deal Details - Inline Editable */}
+      <EditableDealDetails
+        deal={{
+          stage: deal.stage,
+          confidence: deal.confidence,
+          sharePrice: deal.sharePrice,
+          valuation: deal.valuation,
+          source: deal.source,
+          sourceDetail: deal.sourceDetail,
+          expectedClose: deal.expectedClose,
+          deadline: deal.deadline,
+          tags: deal.tags,
+          notes: deal.notes,
+          driveUrl: deal.driveUrl,
+          dataRoomUrl: deal.dataRoomUrl,
+          deckUrl: deal.deckUrl,
+          notionUrl: deal.notionUrl,
+          owner: deal.owner,
+        }}
+        lpMode={lpMode}
+        onSave={handleDealUpdate}
+      />
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-3 gap-6">
         {/* Left Column - Main Content */}
@@ -668,28 +691,6 @@ export default function DealDetailPage() {
             </Card>
           )}
 
-          {/* Deal Details */}
-          <EditableDealDetails
-            deal={{
-              stage: deal.stage,
-              confidence: deal.confidence,
-              sharePrice: deal.sharePrice,
-              valuation: deal.valuation,
-              source: deal.source,
-              sourceDetail: deal.sourceDetail,
-              expectedClose: deal.expectedClose,
-              deadline: deal.deadline,
-              tags: deal.tags,
-              notes: deal.notes,
-              driveUrl: deal.driveUrl,
-              dataRoomUrl: deal.dataRoomUrl,
-              deckUrl: deal.deckUrl,
-              notionUrl: deal.notionUrl,
-              owner: deal.owner,
-            }}
-            lpMode={lpMode}
-            onSave={handleDealUpdate}
-          />
         </div>
       </div>
 
