@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { X, Loader2, Search, ArrowRight, Plus } from "lucide-react";
+import { X, Loader2, Search, ArrowRight, Plus, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 interface User {
   id: number;
@@ -388,10 +389,20 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
               <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
                 Target
               </label>
-              <div className="p-2.5 bg-slate-50 rounded-lg text-sm font-medium">
-                {target.targetName}
-                <span className="text-slate-400 ml-2 text-xs">({target.targetType})</span>
-              </div>
+              <Link
+                href={target.targetType === "Organization" ? `/organizations/${target.targetId}` : `/people/${target.targetId}`}
+                className="group/link flex items-center justify-between p-2.5 bg-slate-50 hover:bg-indigo-50/60 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-slate-900 group-hover/link:text-indigo-700 transition-colors">
+                    {target.targetName}
+                  </span>
+                  <span className="text-xs text-slate-400 group-hover/link:text-indigo-400 transition-colors">
+                    {target.targetType}
+                  </span>
+                </div>
+                <ExternalLink className="h-3.5 w-3.5 text-slate-300 group-hover/link:text-indigo-500 transition-colors" />
+              </Link>
               {target.activityCount !== undefined && target.activityCount > 0 && (
                 <div className="mt-1.5 text-xs text-slate-400">
                   {target.activityCount} activities · First contact: {target.firstContactedAt ? new Date(target.firstContactedAt).toLocaleDateString() : "—"}
