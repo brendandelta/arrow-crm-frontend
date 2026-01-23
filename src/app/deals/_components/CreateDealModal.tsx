@@ -21,7 +21,7 @@ interface CreateDealModalProps {
 
 const STAGES = ["sourcing", "due_diligence", "negotiation", "documentation", "closing"];
 const STATUSES = ["live", "sourcing", "closing", "closed", "dead"];
-const KINDS = ["secondary", "direct", "co_invest", "primary", "fund_interest", "other"];
+const KINDS = ["secondary", "primary"];
 const SOURCES = ["inbound", "outbound", "referral", "broker", "network", "conference"];
 
 function formatLabel(val: string) {
@@ -50,7 +50,7 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
   const [status, setStatus] = useState("live");
   const [kind, setKind] = useState("secondary");
   const [ownerId, setOwnerId] = useState<number | null>(null);
-  const [priority, setPriority] = useState(3);
+  const [priority, setPriority] = useState(2);
   const [confidence, setConfidence] = useState("");
   const [expectedClose, setExpectedClose] = useState("");
   const [deadline, setDeadline] = useState("");
@@ -170,19 +170,18 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !company) return;
 
     setSaving(true);
     try {
       const payload: Record<string, unknown> = {
         name: name.trim(),
+        company_id: company.id,
         stage,
         status,
         kind,
         priority,
       };
-
-      if (company) payload.company_id = company.id;
       if (ownerId) payload.owner_id = ownerId;
       if (confidence) payload.confidence = parseInt(confidence, 10);
       if (expectedClose) payload.expected_close = expectedClose;
@@ -203,8 +202,11 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Failed to create deal");
       const data = await res.json();
+      if (!res.ok) {
+        console.error("Deal creation failed:", res.status, data);
+        throw new Error("Failed to create deal");
+      }
       router.push(`/deals/${data.id}`);
     } catch (err) {
       console.error("Failed to create deal:", err);
@@ -246,7 +248,7 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
                 />
               </div>
               <div className="relative">
-                <label className="block text-sm font-medium text-slate-700 mb-1">Company</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Company <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                   <input
@@ -355,18 +357,18 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Priority</label>
                 <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((p) => (
+                  {([{ value: 0, label: "Now" }, { value: 1, label: "High" }, { value: 2, label: "Med" }, { value: 3, label: "Low" }]).map((p) => (
                     <button
-                      key={p}
+                      key={p.value}
                       type="button"
-                      onClick={() => setPriority(p)}
-                      className={`flex-1 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                        priority === p
+                      onClick={() => setPriority(p.value)}
+                      className={`flex-1 py-2 text-xs font-medium rounded-lg border transition-colors ${
+                        priority === p.value
                           ? "bg-indigo-100 text-indigo-700 border-indigo-200"
                           : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                       }`}
                     >
-                      {p}
+                      {p.label}
                     </button>
                   ))}
                 </div>
@@ -574,7 +576,7 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
             </button>
             <button
               type="submit"
-              disabled={saving || !name.trim()}
+              disabled={saving || !name.trim() || !company}
               className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-2"
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
