@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   X,
@@ -17,6 +17,10 @@ import {
   Percent,
   TrendingUp,
   Hash,
+  Plus,
+  Search,
+  Users,
+  UserPlus,
 } from "lucide-react";
 
 interface Person {
@@ -34,6 +38,16 @@ interface Organization {
   kind: string;
 }
 
+interface BlockContactEntry {
+  id?: number;
+  personId: number;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  notes: string;
+}
+
 interface MappedInterest {
   id: number;
   investor: string | null;
@@ -48,6 +62,8 @@ interface Block {
   contact?: Person | null;
   broker?: { id: number; name: string } | null;
   brokerContact?: Person | null;
+  sellerContacts?: BlockContactEntry[];
+  brokerContacts?: BlockContactEntry[];
   shareClass?: string | null;
   shares?: number | null;
   priceCents?: number | null;
@@ -68,6 +84,16 @@ interface Block {
   mappedInterests?: MappedInterest[];
   mappedInterestsCount?: number;
   mappedCommittedCents?: number;
+}
+
+interface PersonSearchResult {
+  id: number;
+  firstName: string;
+  lastName: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  organization?: string;
 }
 
 interface BlockSlideOutProps {
@@ -105,11 +131,359 @@ const inputClass = "w-full px-3 py-2 text-sm rounded-md border border-transparen
 const selectClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-pointer appearance-none";
 const textareaClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text resize-none min-h-[80px]";
 
+function PersonSearchInput({ onSelect, excludeIds, placeholder }: {
+  onSelect: (person: PersonSearchResult) => void;
+  excludeIds: number[];
+  placeholder?: string;
+}) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<PersonSearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newPerson, setNewPerson] = useState({ firstName: "", lastName: "", email: "" });
+  const [saving, setSaving] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setCreating(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const search = (q: string) => {
+    setQuery(q);
+    setCreating(false);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (q.length < 2) { setResults([]); setOpen(false); return; }
+    debounceRef.current = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/people?q=${encodeURIComponent(q)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const mapped: PersonSearchResult[] = data.map((p: Record<string, unknown>) => ({
+            id: p.id as number,
+            firstName: p.firstName as string,
+            lastName: p.lastName as string,
+            title: p.title as string | undefined,
+            email: p.email as string | undefined,
+            phone: p.phone as string | undefined,
+            organization: p.org as string | undefined,
+          }));
+          setResults(mapped.filter((p) => !excludeIds.includes(p.id)).slice(0, 8));
+          setOpen(true);
+        }
+      } catch {}
+      setLoading(false);
+    }, 250);
+  };
+
+  const handleCreate = async () => {
+    if (!newPerson.firstName.trim() || !newPerson.lastName.trim()) return;
+    setSaving(true);
+    try {
+      const payload: Record<string, unknown> = {
+        firstName: newPerson.firstName.trim(),
+        lastName: newPerson.lastName.trim(),
+      };
+      if (newPerson.email.trim()) {
+        payload.emails = [{ address: newPerson.email.trim(), label: "work" }];
+      }
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/people`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        onSelect({
+          id: data.id,
+          firstName: newPerson.firstName.trim(),
+          lastName: newPerson.lastName.trim(),
+          email: newPerson.email.trim() || undefined,
+        });
+        setQuery("");
+        setOpen(false);
+        setCreating(false);
+        setNewPerson({ firstName: "", lastName: "", email: "" });
+      }
+    } catch {}
+    setSaving(false);
+  };
+
+  const parseQueryName = () => {
+    const parts = query.trim().split(/\s+/);
+    return { firstName: parts[0] || "", lastName: parts.slice(1).join(" ") || "" };
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="relative">
+        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => search(e.target.value)}
+          onFocus={() => query.length >= 2 && setOpen(true)}
+          className="w-full pl-8 pr-3 py-2 text-sm rounded-md border border-slate-200 bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50"
+          placeholder={placeholder || "Search people..."}
+        />
+        {loading && <Loader2 className="absolute right-2.5 top-2.5 h-3.5 w-3.5 animate-spin text-slate-400" />}
+      </div>
+      {open && (
+        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-64 overflow-y-auto">
+          {results.map((person) => (
+            <button
+              key={person.id}
+              onClick={() => { onSelect(person); setQuery(""); setOpen(false); setResults([]); }}
+              className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center justify-between"
+            >
+              <div>
+                <span className="font-medium">{person.firstName} {person.lastName}</span>
+                {person.title && <span className="text-slate-400 ml-1.5">· {person.title}</span>}
+              </div>
+              {person.organization && <span className="text-xs text-slate-400">{person.organization}</span>}
+            </button>
+          ))}
+          {!creating && (
+            <button
+              onClick={() => { const parsed = parseQueryName(); setCreating(true); setNewPerson({ firstName: parsed.firstName, lastName: parsed.lastName, email: "" }); }}
+              className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 text-blue-600 border-t"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Create new contact{query.length >= 2 ? `: "${query}"` : ""}</span>
+            </button>
+          )}
+          {creating && (
+            <div className="p-3 border-t space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newPerson.firstName}
+                  onChange={(e) => setNewPerson({ ...newPerson, firstName: e.target.value })}
+                  className="flex-1 px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
+                  placeholder="First name"
+                  autoFocus
+                />
+                <input
+                  type="text"
+                  value={newPerson.lastName}
+                  onChange={(e) => setNewPerson({ ...newPerson, lastName: e.target.value })}
+                  className="flex-1 px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
+                  placeholder="Last name"
+                />
+              </div>
+              <input
+                type="email"
+                value={newPerson.email}
+                onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
+                placeholder="Email (optional)"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCreate}
+                  disabled={saving || !newPerson.firstName.trim() || !newPerson.lastName.trim()}
+                  className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded disabled:opacity-50"
+                >
+                  {saving ? "Creating..." : "Create"}
+                </button>
+                <button
+                  onClick={() => setCreating(false)}
+                  className="px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-100 rounded"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const ORG_KINDS = ["fund", "company", "spv", "broker", "bank", "law_firm", "other"];
+
+function OrgSearchInput({ value, onSelect, onClear }: {
+  value: { id: number; name: string } | null;
+  onSelect: (org: { id: number; name: string }) => void;
+  onClear: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<{ id: number; name: string; kind: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newOrg, setNewOrg] = useState({ name: "", kind: "company" });
+  const [saving, setSaving] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setCreating(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const search = (q: string) => {
+    setQuery(q);
+    setCreating(false);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (q.length < 2) { setResults([]); setOpen(false); return; }
+    debounceRef.current = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/organizations?q=${encodeURIComponent(q)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setResults(data.slice(0, 8));
+          setOpen(true);
+        }
+      } catch {}
+      setLoading(false);
+    }, 250);
+  };
+
+  const handleCreate = async () => {
+    if (!newOrg.name.trim()) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/organizations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newOrg.name.trim(), kind: newOrg.kind }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        onSelect({ id: data.id, name: data.name });
+        setQuery("");
+        setOpen(false);
+        setCreating(false);
+        setNewOrg({ name: "", kind: "company" });
+      }
+    } catch {}
+    setSaving(false);
+  };
+
+  if (value) {
+    return (
+      <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg group">
+        <div className="flex items-center gap-2">
+          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+          <span className="text-sm font-medium">{value.name}</span>
+        </div>
+        <button
+          onClick={onClear}
+          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 rounded transition-opacity"
+        >
+          <X className="h-3 w-3 text-slate-400" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="relative">
+        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => search(e.target.value)}
+          onFocus={() => query.length >= 2 && setOpen(true)}
+          className="w-full pl-8 pr-3 py-2 text-sm rounded-md border border-slate-200 bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50"
+          placeholder="Search organizations..."
+        />
+        {loading && <Loader2 className="absolute right-2.5 top-2.5 h-3.5 w-3.5 animate-spin text-slate-400" />}
+      </div>
+      {open && (
+        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-64 overflow-y-auto">
+          {results.map((org) => (
+            <button
+              key={org.id}
+              onClick={() => { onSelect({ id: org.id, name: org.name }); setQuery(""); setOpen(false); setResults([]); }}
+              className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span className="font-medium">{org.name}</span>
+              {org.kind && <span className="text-xs text-slate-400">{org.kind}</span>}
+            </button>
+          ))}
+          {!creating && (
+            <button
+              onClick={() => { setCreating(true); setNewOrg({ name: query, kind: "company" }); }}
+              className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 text-blue-600 border-t"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>Create new organization{query.length >= 2 ? `: "${query}"` : ""}</span>
+            </button>
+          )}
+          {creating && (
+            <div className="p-3 border-t space-y-2">
+              <input
+                type="text"
+                value={newOrg.name}
+                onChange={(e) => setNewOrg({ ...newOrg, name: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
+                placeholder="Organization name"
+                autoFocus
+              />
+              <select
+                value={newOrg.kind}
+                onChange={(e) => setNewOrg({ ...newOrg, kind: e.target.value })}
+                className="w-full px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
+              >
+                {ORG_KINDS.map((k) => (
+                  <option key={k} value={k}>{k.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}</option>
+                ))}
+              </select>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCreate}
+                  disabled={saving || !newOrg.name.trim()}
+                  className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded disabled:opacity-50"
+                >
+                  {saving ? "Creating..." : "Create"}
+                </button>
+                <button
+                  onClick={() => setCreating(false)}
+                  className="px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-100 rounded"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: BlockSlideOutProps) {
   const isNew = !block;
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const [sellerContacts, setSellerContacts] = useState<BlockContactEntry[]>(
+    block?.sellerContacts || []
+  );
+  const [brokerContacts, setBrokerContacts] = useState<BlockContactEntry[]>(
+    block?.brokerContacts || []
+  );
 
   const [formData, setFormData] = useState({
     sellerId: block?.seller?.id || null as number | null,
@@ -143,26 +517,30 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
   const handleSave = async () => {
     setSaving(true);
     try {
+      const blockContactsPayload = [
+        ...sellerContacts.map((c) => ({ person_id: c.personId, role: "seller_contact", notes: c.notes || null })),
+        ...brokerContacts.map((c) => ({ person_id: c.personId, role: "broker_contact", notes: c.notes || null })),
+      ];
+
       const payload = {
-        block: {
-          deal_id: dealId,
-          seller_id: formData.sellerId,
-          share_class: formData.shareClass || null,
-          shares: formData.shares ? parseInt(formData.shares) : null,
-          price_cents: parseCurrency(formData.priceCents),
-          total_cents: parseCurrency(formData.totalCents),
-          min_size_cents: parseCurrency(formData.minSizeCents),
-          implied_valuation_cents: parseCurrency(formData.impliedValuationCents),
-          discount_pct: formData.discountPct ? parseFloat(formData.discountPct) : null,
-          status: formData.status,
-          heat: formData.heat,
-          terms: formData.terms || null,
-          expires_at: formData.expiresAt || null,
-          source: formData.source || null,
-          source_detail: formData.sourceDetail || null,
-          verified: formData.verified,
-          internal_notes: formData.internalNotes || null,
-        },
+        deal_id: dealId,
+        seller_id: formData.sellerId,
+        share_class: formData.shareClass || null,
+        shares: formData.shares ? parseInt(formData.shares) : null,
+        price_cents: parseCurrency(formData.priceCents),
+        total_cents: parseCurrency(formData.totalCents),
+        min_size_cents: parseCurrency(formData.minSizeCents),
+        implied_valuation_cents: parseCurrency(formData.impliedValuationCents),
+        discount_pct: formData.discountPct ? parseFloat(formData.discountPct) : null,
+        status: formData.status,
+        heat: formData.heat,
+        terms: formData.terms || null,
+        expires_at: formData.expiresAt || null,
+        source: formData.source || null,
+        source_detail: formData.sourceDetail || null,
+        verified: formData.verified,
+        internal_notes: formData.internalNotes || null,
+        block_contacts: blockContactsPayload,
       };
 
       const url = isNew
@@ -303,8 +681,137 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
               </button>
             </div>
 
+            {/* Seller Organization */}
+            <div className="py-3 border-t mt-2">
+              <div className="flex items-center gap-2 mb-2 px-3">
+                <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Seller Organization</span>
+              </div>
+              <div className="px-3">
+                <OrgSearchInput
+                  value={formData.sellerId ? { id: formData.sellerId, name: formData.sellerName } : null}
+                  onSelect={(org) => setFormData({ ...formData, sellerId: org.id, sellerName: org.name })}
+                  onClear={() => setFormData({ ...formData, sellerId: null, sellerName: "" })}
+                />
+              </div>
+            </div>
+
+            {/* Seller Contacts */}
+            <div className="py-3 border-t">
+              <div className="flex items-center justify-between mb-2 px-3">
+                <div className="flex items-center gap-2">
+                  <Users className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                    Seller Contacts {sellerContacts.length > 0 && `(${sellerContacts.length})`}
+                  </span>
+                </div>
+              </div>
+              <div className="px-3 space-y-2">
+                {sellerContacts.map((contact, idx) => (
+                  <div key={contact.personId} className="p-2.5 bg-slate-50 rounded-lg group">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium">{contact.firstName} {contact.lastName}</div>
+                      <button
+                        onClick={() => setSellerContacts(sellerContacts.filter((_, i) => i !== idx))}
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 rounded transition-opacity"
+                      >
+                        <X className="h-3 w-3 text-slate-400" />
+                      </button>
+                    </div>
+                    {(contact.email || contact.phone) && (
+                      <div className="text-xs text-slate-400 mt-0.5">
+                        {contact.email}{contact.email && contact.phone ? " · " : ""}{contact.phone}
+                      </div>
+                    )}
+                    <input
+                      type="text"
+                      value={contact.notes}
+                      onChange={(e) => {
+                        const updated = [...sellerContacts];
+                        updated[idx] = { ...updated[idx], notes: e.target.value };
+                        setSellerContacts(updated);
+                      }}
+                      className="mt-1.5 w-full px-2 py-1 text-xs rounded border border-transparent bg-transparent hover:bg-white hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none transition-all"
+                      placeholder="Add note..."
+                    />
+                  </div>
+                ))}
+                <PersonSearchInput
+                  excludeIds={sellerContacts.map((c) => c.personId)}
+                  placeholder="Add seller contact..."
+                  onSelect={(person) => {
+                    setSellerContacts([...sellerContacts, {
+                      personId: person.id,
+                      firstName: person.firstName,
+                      lastName: person.lastName,
+                      email: person.email,
+                      phone: person.phone,
+                      notes: "",
+                    }]);
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Broker / Access Source Contacts */}
+            <div className="py-3 border-t">
+              <div className="flex items-center justify-between mb-2 px-3">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                    Broker / Source Contacts {brokerContacts.length > 0 && `(${brokerContacts.length})`}
+                  </span>
+                </div>
+              </div>
+              <div className="px-3 space-y-2">
+                {brokerContacts.map((contact, idx) => (
+                  <div key={contact.personId} className="p-2.5 bg-slate-50 rounded-lg group">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium">{contact.firstName} {contact.lastName}</div>
+                      <button
+                        onClick={() => setBrokerContacts(brokerContacts.filter((_, i) => i !== idx))}
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 rounded transition-opacity"
+                      >
+                        <X className="h-3 w-3 text-slate-400" />
+                      </button>
+                    </div>
+                    {(contact.email || contact.phone) && (
+                      <div className="text-xs text-slate-400 mt-0.5">
+                        {contact.email}{contact.email && contact.phone ? " · " : ""}{contact.phone}
+                      </div>
+                    )}
+                    <input
+                      type="text"
+                      value={contact.notes}
+                      onChange={(e) => {
+                        const updated = [...brokerContacts];
+                        updated[idx] = { ...updated[idx], notes: e.target.value };
+                        setBrokerContacts(updated);
+                      }}
+                      className="mt-1.5 w-full px-2 py-1 text-xs rounded border border-transparent bg-transparent hover:bg-white hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none transition-all"
+                      placeholder="Add note..."
+                    />
+                  </div>
+                ))}
+                <PersonSearchInput
+                  excludeIds={brokerContacts.map((c) => c.personId)}
+                  placeholder="Add broker/source contact..."
+                  onSelect={(person) => {
+                    setBrokerContacts([...brokerContacts, {
+                      personId: person.id,
+                      firstName: person.firstName,
+                      lastName: person.lastName,
+                      email: person.email,
+                      phone: person.phone,
+                      notes: "",
+                    }]);
+                  }}
+                />
+              </div>
+            </div>
+
             {/* Share Class */}
-            <div className="py-2">
+            <div className="py-2 border-t">
               <div className="flex items-center gap-2 mb-1 px-3">
                 <Layers className="h-3.5 w-3.5 text-slate-400" />
                 <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Share Class</span>

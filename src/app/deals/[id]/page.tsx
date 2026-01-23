@@ -17,7 +17,7 @@ import { BlockSlideOut } from "./_components/BlockSlideOut";
 import { InterestSlideOut } from "./_components/InterestSlideOut";
 import { ActivitySlideOut } from "./_components/ActivitySlideOut";
 import { TaskSlideOut } from "./_components/TaskSlideOut";
-import { AddTargetModal } from "../_components/mind-map/AddTargetModal";
+import { OutreachTargetModal } from "./_components/OutreachTargetModal";
 import { EditableDealDetails } from "./_components/EditableDealDetails";
 import { Task as SidebarTask } from "./_components/DealSidebar";
 // Import shared components
@@ -150,10 +150,14 @@ interface DealTarget {
   priority: number;
   lastActivityAt: string | null;
   activityCount: number;
+  firstContactedAt?: string | null;
+  lastContactedAt?: string | null;
   nextStep: string | null;
   nextStepAt: string | null;
+  notes?: string | null;
   isStale: boolean;
   daysSinceContact: number | null;
+  owner?: { id: number; firstName: string; lastName: string } | null;
   recentActivities?: Activity[];
 }
 
@@ -295,7 +299,8 @@ export default function DealDetailPage() {
   const [selectedTask, setSelectedTask] = useState<SidebarTask | null>(null);
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddTarget, setShowAddTarget] = useState(false);
-  const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "activity" | "targets">("blocks");
+  const [selectedTarget, setSelectedTarget] = useState<DealTarget | null>(null);
+  const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "activity" | "targets">("targets");
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/${params.id}`)
@@ -546,9 +551,9 @@ export default function DealDetailPage() {
           {/* Tab Navigation */}
           <div className="flex border-b">
             {[
+              { key: "targets", label: "Outreach Targets", count: deal.targets.length },
               { key: "blocks", label: "Blocks", count: deal.blocks.length },
               { key: "interests", label: "Interests", count: deal.interests.length },
-              { key: "targets", label: "Targets", count: deal.targets.length },
               { key: "activity", label: "Activity", count: deal.activities.length },
             ].map((tab) => (
               <button
@@ -592,6 +597,7 @@ export default function DealDetailPage() {
               dealId={deal.id}
               onTargetUpdated={refreshDeal}
               onAddTarget={() => setShowAddTarget(true)}
+              onTargetClick={(target) => setSelectedTarget(target)}
             />
           )}
 
@@ -746,19 +752,59 @@ export default function DealDetailPage() {
         />
       )}
 
-      {/* Add Target Modal */}
-      {showAddTarget && deal && (
-        <AddTargetModal
+      {/* Outreach Target Modal (Add / Edit) */}
+      {(showAddTarget || selectedTarget) && deal && (
+        <OutreachTargetModal
           dealId={deal.id}
-          onClose={() => setShowAddTarget(false)}
-          onSave={async (data) => {
-            await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deal_targets`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(data),
-            });
-            setShowAddTarget(false);
-            refreshDeal();
+          target={selectedTarget ? {
+            id: selectedTarget.id,
+            dealId: deal.id,
+            targetType: selectedTarget.targetType,
+            targetId: selectedTarget.targetId,
+            targetName: selectedTarget.targetName,
+            status: selectedTarget.status,
+            role: selectedTarget.role,
+            priority: selectedTarget.priority,
+            nextStep: selectedTarget.nextStep,
+            nextStepAt: selectedTarget.nextStepAt,
+            notes: selectedTarget.notes || null,
+            ownerId: selectedTarget.owner?.id || null,
+            ownerName: selectedTarget.owner ? `${selectedTarget.owner.firstName} ${selectedTarget.owner.lastName}` : null,
+            firstContactedAt: selectedTarget.firstContactedAt || null,
+            lastContactedAt: selectedTarget.lastContactedAt || null,
+            activityCount: selectedTarget.activityCount,
+          } : undefined}
+          onClose={() => { setShowAddTarget(false); setSelectedTarget(null); }}
+          onSaved={() => { refreshDeal(); }}
+          onConvertToInterest={async (target) => {
+            try {
+              const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/interests`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  deal_id: deal.id,
+                  investor_id: target.targetType === "Organization" ? target.targetId : null,
+                  contact_id: target.targetType === "Person" ? target.targetId : null,
+                  status: "prospecting",
+                  source: "outreach",
+                }),
+              });
+              if (res.ok) {
+                // Mark target as committed if not already
+                if (target.status !== "committed") {
+                  await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deal_targets/${target.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: "committed" }),
+                  });
+                }
+                setSelectedTarget(null);
+                refreshDeal();
+                setActiveTab("interests");
+              }
+            } catch (err) {
+              console.error("Failed to convert to interest:", err);
+            }
           }}
         />
       )}

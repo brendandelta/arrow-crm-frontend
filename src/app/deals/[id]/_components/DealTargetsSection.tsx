@@ -48,8 +48,11 @@ interface DealTarget {
   priority: number;
   lastActivityAt: string | null;
   activityCount: number;
+  firstContactedAt?: string | null;
+  lastContactedAt?: string | null;
   nextStep: string | null;
   nextStepAt: string | null;
+  notes?: string | null;
   isStale: boolean;
   daysSinceContact: number | null;
   owner?: Owner | null;
@@ -63,6 +66,7 @@ interface DealTargetsSectionProps {
   dealId: number;
   onTargetUpdated: () => void;
   onAddTarget: () => void;
+  onTargetClick?: (target: DealTarget) => void;
 }
 
 const STATUS_OPTIONS = [
@@ -104,7 +108,7 @@ const ACTIVITY_ICONS: Record<string, typeof Phone> = {
   video_call: Video,
 };
 
-export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarget }: DealTargetsSectionProps) {
+export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarget, onTargetClick }: DealTargetsSectionProps) {
   const [expandedTimelines, setExpandedTimelines] = useState<Set<number>>(new Set());
   const [loggingEventFor, setLoggingEventFor] = useState<{ targetId: number; kind: string } | null>(null);
   const [addingTaskFor, setAddingTaskFor] = useState<number | null>(null);
@@ -199,6 +203,7 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarg
               onCancelAddTask={() => setAddingTaskFor(null)}
               onStatusChange={handleStatusChange}
               onTargetUpdated={onTargetUpdated}
+              onTargetClick={onTargetClick}
               formatDate={formatDate}
             />
           ))}
@@ -224,6 +229,7 @@ interface TargetRowProps {
   onCancelAddTask: () => void;
   onStatusChange: (targetId: number, status: string) => void;
   onTargetUpdated: () => void;
+  onTargetClick?: (target: DealTarget) => void;
   formatDate: (date: string | null) => string;
 }
 
@@ -241,6 +247,7 @@ function TargetRow({
   onCancelAddTask,
   onStatusChange,
   onTargetUpdated,
+  onTargetClick,
   formatDate,
 }: TargetRowProps) {
   const isStale = target.isStale || (target.daysSinceContact !== null && target.daysSinceContact > 7);
@@ -265,7 +272,12 @@ function TargetRow({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             {isStale && <div className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />}
-            <span className="text-sm font-semibold text-slate-900">{target.targetName}</span>
+            <button
+              onClick={() => onTargetClick?.(target)}
+              className="text-sm font-semibold text-slate-900 hover:text-blue-600 transition-colors text-left"
+            >
+              {target.targetName}
+            </button>
             {target.role && (
               <span className="text-xs text-slate-500 capitalize">
                 · {target.role.replace(/_/g, " ")}
