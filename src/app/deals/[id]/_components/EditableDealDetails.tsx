@@ -53,16 +53,20 @@ interface EditableDealDetailsProps {
   onSave: (data: Partial<DealDetailsData>) => Promise<void>;
 }
 
-const STAGES = ["sourcing", "diligence", "negotiation", "documentation", "closing"];
+const STAGES = ["sourcing", "due_diligence", "negotiation", "documentation", "closing"];
 const SOURCES = ["inbound", "outbound", "referral", "broker", "network", "conference"];
 
 const STAGE_COLORS: Record<string, string> = {
   sourcing: "bg-slate-100 text-slate-700",
-  diligence: "bg-sky-50 text-sky-700 border border-sky-200",
+  due_diligence: "bg-sky-50 text-sky-700 border border-sky-200",
   negotiation: "bg-violet-50 text-violet-700 border border-violet-200",
   documentation: "bg-amber-50 text-amber-700 border border-amber-200",
   closing: "bg-emerald-50 text-emerald-700 border border-emerald-200",
 };
+
+function formatLabel(val: string) {
+  return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 function formatCurrency(cents: number | null) {
   if (!cents) return null;
@@ -419,7 +423,7 @@ function InlineSelect({ value, options, placeholder, onSave, displayClass }: {
     >
       <option value="">{placeholder}</option>
       {options.map((opt) => (
-        <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>
+        <option key={opt} value={opt}>{formatLabel(opt)}</option>
       ))}
     </select>
   ) : (
@@ -431,7 +435,7 @@ function InlineSelect({ value, options, placeholder, onSave, displayClass }: {
           : "text-slate-900 hover:text-indigo-600"
       }`}
     >
-      {value ? value.charAt(0).toUpperCase() + value.slice(1) : <span className="text-slate-300">{placeholder}</span>}
+      {value ? formatLabel(value) : <span className="text-slate-300">{placeholder}</span>}
     </button>
   );
 }
