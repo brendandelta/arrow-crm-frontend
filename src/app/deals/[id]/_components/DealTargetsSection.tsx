@@ -318,21 +318,46 @@ function TargetRow({
         {/* Left: Events */}
         <div className="flex-1 min-w-0">
           <div className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">Events</div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {ACTIVITY_KINDS.map((kind) => {
-              const Icon = kind.icon;
-              return (
-                <button
-                  key={kind.value}
-                  onClick={() => onStartLogEvent(kind.value)}
-                  className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 transition-colors"
-                >
-                  <Icon className="h-3 w-3" />
-                  {kind.label}
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-2">
+            {target.recentActivities && target.recentActivities.length > 0 && (
+              <button
+                onClick={onToggleTimeline}
+                className="flex items-center gap-1 text-xs text-slate-600 hover:text-slate-800 transition-colors"
+              >
+                {isTimelineExpanded ? (
+                  <ChevronDown className="h-3.5 w-3.5" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5" />
+                )}
+                {target.recentActivities.length} event{target.recentActivities.length !== 1 ? "s" : ""}
+              </button>
+            )}
+            {!isLoggingEvent && (
+              <button
+                onClick={() => onStartLogEvent("call")}
+                className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                <Plus className="h-3 w-3" />
+                Add Event
+              </button>
+            )}
           </div>
+
+          {/* Expanded event list */}
+          {isTimelineExpanded && target.recentActivities && (
+            <div className="mt-2 space-y-1.5 pl-1">
+              {target.recentActivities.map((activity) => {
+                const Icon = ACTIVITY_ICONS[activity.kind] || Clock;
+                return (
+                  <div key={activity.id} className="flex items-center gap-2 text-xs text-slate-600">
+                    <Icon className="h-3 w-3 text-slate-400 shrink-0" />
+                    <span className="truncate flex-1">{activity.subject || activity.kind}</span>
+                    <span className="text-slate-400 shrink-0">{formatDate(activity.occurredAt)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Inline Log Event Form */}
           {isLoggingEvent && (
@@ -408,37 +433,6 @@ function TargetRow({
         </div>
       </div>
 
-      {/* Timeline toggle */}
-      {target.recentActivities && target.recentActivities.length > 0 && (
-        <div className="mt-3 border-t pt-2">
-          <button
-            onClick={onToggleTimeline}
-            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700"
-          >
-            {isTimelineExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5" />
-            ) : (
-              <ChevronRight className="h-3.5 w-3.5" />
-            )}
-            Timeline ({target.recentActivities.length} events)
-          </button>
-
-          {isTimelineExpanded && (
-            <div className="mt-2 space-y-1.5 pl-2">
-              {target.recentActivities.map((activity) => {
-                const Icon = ACTIVITY_ICONS[activity.kind] || Clock;
-                return (
-                  <div key={activity.id} className="flex items-center gap-2 text-xs text-slate-600">
-                    <Icon className="h-3 w-3 text-slate-400 shrink-0" />
-                    <span className="truncate flex-1">{activity.subject || activity.kind}</span>
-                    <span className="text-slate-400 shrink-0">{formatDate(activity.occurredAt)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
