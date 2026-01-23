@@ -4,18 +4,19 @@ import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   X,
-  Pencil,
   Save,
   Loader2,
   Trash2,
-  AlertCircle,
   Building2,
-  User,
   DollarSign,
   Calendar,
   FileText,
   Flame,
-  CheckCircle2
+  CheckCircle2,
+  Layers,
+  Percent,
+  TrendingUp,
+  Hash,
 } from "lucide-react";
 
 interface Person {
@@ -70,7 +71,7 @@ interface Block {
 }
 
 interface BlockSlideOutProps {
-  block: Block | null; // null for new block
+  block: Block | null;
   dealId: number;
   onClose: () => void;
   onSave: (block: Block) => void;
@@ -100,37 +101,12 @@ function parseCurrency(value: string): number | null {
   return Math.round(num * 100);
 }
 
-function FieldRow({
-  label,
-  children,
-  missing = false,
-  icon: Icon
-}: {
-  label: string;
-  children: React.ReactNode;
-  missing?: boolean;
-  icon?: React.ComponentType<{ className?: string }>;
-}) {
-  return (
-    <div className="py-3 border-b border-slate-100 last:border-0">
-      <div className="flex items-center gap-2 mb-1">
-        {Icon && <Icon className="h-4 w-4 text-slate-400" />}
-        <label className="text-sm font-medium text-slate-500">{label}</label>
-        {missing && (
-          <span className="flex items-center gap-1 text-xs text-amber-600">
-            <AlertCircle className="h-3 w-3" />
-            Missing
-          </span>
-        )}
-      </div>
-      <div className="text-sm">{children}</div>
-    </div>
-  );
-}
+const inputClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text";
+const selectClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-pointer appearance-none";
+const textareaClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text resize-none min-h-[80px]";
 
 export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: BlockSlideOutProps) {
   const isNew = !block;
-  const [editing, setEditing] = useState(isNew);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -155,16 +131,12 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
     internalNotes: block?.internalNotes || "",
   });
 
-  // Auto-calculate total when shares or price changes
   useEffect(() => {
     const shares = parseInt(formData.shares) || 0;
     const priceCents = parseCurrency(formData.priceCents) || 0;
     if (shares > 0 && priceCents > 0) {
       const total = shares * priceCents;
-      setFormData(prev => ({
-        ...prev,
-        totalCents: formatCurrency(total)
-      }));
+      setFormData(prev => ({ ...prev, totalCents: formatCurrency(total) }));
     }
   }, [formData.shares, formData.priceCents]);
 
@@ -206,7 +178,6 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
       if (res.ok) {
         const updated = await res.json();
         onSave(updated);
-        if (!isNew) setEditing(false);
       } else {
         console.error("Failed to save block");
       }
@@ -252,7 +223,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
           <div>
             <h2 className="text-lg font-semibold">
-              {isNew ? "Add Block" : "Block Details"}
+              {isNew ? "New Block" : "Block"}
             </h2>
             {!isNew && block?.createdAt && (
               <p className="text-xs text-muted-foreground">
@@ -260,458 +231,336 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
               </p>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            {!isNew && !editing && (
-              <button
-                onClick={() => setEditing(true)}
-                className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-            )}
-            <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded">
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded">
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {editing ? (
-            <div className="space-y-4">
-              {/* Status & Heat Row */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-500 mb-1">Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
+          <div className="space-y-1">
+            {/* Status */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-2 px-3">
+                <Layers className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Status</span>
+              </div>
+              <div className="flex gap-2 px-3">
+                {BLOCK_STATUSES.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setFormData({ ...formData, status: s })}
+                    className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                      formData.status === s
+                        ? s === "available" ? "bg-green-50 border-green-200 text-green-700"
+                          : s === "reserved" ? "bg-yellow-50 border-yellow-200 text-yellow-700"
+                          : s === "sold" ? "bg-purple-50 border-purple-200 text-purple-700"
+                          : "bg-slate-100 border-slate-200 text-slate-600"
+                        : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"
+                    }`}
                   >
-                    {BLOCK_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {s.charAt(0).toUpperCase() + s.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-500 mb-1">Heat Level</label>
-                  <div className="flex gap-1">
-                    {HEAT_LEVELS.map((h) => (
-                      <button
-                        key={h.value}
-                        onClick={() => setFormData({ ...formData, heat: h.value })}
-                        className={`flex-1 py-2 text-xs font-medium rounded border transition-colors ${
-                          formData.heat === h.value
-                            ? getHeatColor(h.value)
-                            : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"
-                        }`}
-                      >
-                        {h.value >= 2 && <Flame className="h-3 w-3 mx-auto mb-0.5" />}
-                        {h.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Share Details */}
-              <div className="pt-4 border-t">
-                <h3 className="text-sm font-semibold mb-3">Share Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 mb-1">Share Class</label>
-                    <select
-                      value={formData.shareClass}
-                      onChange={(e) => setFormData({ ...formData, shareClass: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    >
-                      <option value="">Select class...</option>
-                      {SHARE_CLASSES.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 mb-1">Number of Shares</label>
-                    <input
-                      type="text"
-                      value={formData.shares}
-                      onChange={(e) => setFormData({ ...formData, shares: e.target.value.replace(/[^0-9]/g, "") })}
-                      className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Pricing */}
-              <div className="pt-4 border-t">
-                <h3 className="text-sm font-semibold mb-3">Pricing</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 mb-1">Price per Share ($)</label>
-                    <input
-                      type="text"
-                      value={formData.priceCents}
-                      onChange={(e) => setFormData({ ...formData, priceCents: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                      placeholder="0.00"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 mb-1">Total Value ($)</label>
-                    <input
-                      type="text"
-                      value={formData.totalCents}
-                      onChange={(e) => setFormData({ ...formData, totalCents: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 bg-slate-50"
-                      placeholder="Auto-calculated"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 mb-1">Minimum Size ($)</label>
-                    <input
-                      type="text"
-                      value={formData.minSizeCents}
-                      onChange={(e) => setFormData({ ...formData, minSizeCents: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                      placeholder="0.00"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 mb-1">Discount (%)</label>
-                    <input
-                      type="text"
-                      value={formData.discountPct}
-                      onChange={(e) => setFormData({ ...formData, discountPct: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-slate-500 mb-1">Implied Valuation ($)</label>
-                  <input
-                    type="text"
-                    value={formData.impliedValuationCents}
-                    onChange={(e) => setFormData({ ...formData, impliedValuationCents: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
-
-              {/* Terms & Expiration */}
-              <div className="pt-4 border-t">
-                <h3 className="text-sm font-semibold mb-3">Terms & Timeline</h3>
-                <div>
-                  <label className="block text-sm font-medium text-slate-500 mb-1">Terms</label>
-                  <textarea
-                    value={formData.terms}
-                    onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 min-h-[80px]"
-                    placeholder="Deal terms, conditions, restrictions..."
-                  />
-                </div>
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-slate-500 mb-1">Expires At</label>
-                  <input
-                    type="date"
-                    value={formData.expiresAt}
-                    onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                  />
-                </div>
-              </div>
-
-              {/* Source */}
-              <div className="pt-4 border-t">
-                <h3 className="text-sm font-semibold mb-3">Source</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 mb-1">Source Type</label>
-                    <select
-                      value={formData.source}
-                      onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                    >
-                      <option value="">Select...</option>
-                      {SOURCES.map((s) => (
-                        <option key={s} value={s}>
-                          {s.charAt(0).toUpperCase() + s.slice(1)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-500 mb-1">Source Detail</label>
-                    <input
-                      type="text"
-                      value={formData.sourceDetail}
-                      onChange={(e) => setFormData({ ...formData, sourceDetail: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-                      placeholder="Name, company..."
-                    />
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="verified"
-                    checked={formData.verified}
-                    onChange={(e) => setFormData({ ...formData, verified: e.target.checked })}
-                    className="rounded border-slate-300"
-                  />
-                  <label htmlFor="verified" className="text-sm text-slate-600">
-                    Verified block
-                  </label>
-                </div>
-              </div>
-
-              {/* Internal Notes */}
-              <div className="pt-4 border-t">
-                <h3 className="text-sm font-semibold mb-3">Internal Notes</h3>
-                <textarea
-                  value={formData.internalNotes}
-                  onChange={(e) => setFormData({ ...formData, internalNotes: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 min-h-[100px]"
-                  placeholder="Notes visible only to your team..."
-                />
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </button>
+                ))}
               </div>
             </div>
-          ) : (
-            /* View Mode */
-            <div className="space-y-1">
-              {/* Status & Heat */}
-              <div className="flex items-center gap-3 pb-4 mb-4 border-b">
-                <Badge className={`${
-                  formData.status === "available" ? "bg-green-100 text-green-700" :
-                  formData.status === "reserved" ? "bg-yellow-100 text-yellow-700" :
-                  formData.status === "sold" ? "bg-purple-100 text-purple-700" :
-                  "bg-slate-100 text-slate-600"
-                }`}>
-                  {formData.status.charAt(0).toUpperCase() + formData.status.slice(1)}
-                </Badge>
-                <Badge className={getHeatColor(block?.heat || 0)}>
-                  {block?.heat && block.heat >= 2 && <Flame className="h-3 w-3 mr-1" />}
-                  {HEAT_LEVELS.find(h => h.value === block?.heat)?.label || "Cold"}
-                </Badge>
-                {block?.verified && (
-                  <Badge className="bg-green-100 text-green-700">
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                    Verified
-                  </Badge>
-                )}
+
+            {/* Heat */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-2 px-3">
+                <Flame className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Heat</span>
               </div>
+              <div className="flex gap-1.5 px-3">
+                {HEAT_LEVELS.map((h) => (
+                  <button
+                    key={h.value}
+                    onClick={() => setFormData({ ...formData, heat: h.value })}
+                    className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                      formData.heat === h.value
+                        ? getHeatColor(h.value)
+                        : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"
+                    }`}
+                  >
+                    {h.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              {/* Seller */}
-              <FieldRow label="Seller" missing={!block?.seller} icon={Building2}>
-                {block?.seller ? (
-                  <div>
-                    <span className="font-medium">{block.seller.name}</span>
-                    <span className="text-muted-foreground ml-2">({block.seller.kind})</span>
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
-              </FieldRow>
+            {/* Verified */}
+            <div className="py-2 px-3">
+              <button
+                onClick={() => setFormData({ ...formData, verified: !formData.verified })}
+                className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+                  formData.verified
+                    ? "bg-green-50 border-green-200 text-green-700"
+                    : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+                }`}
+              >
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                {formData.verified ? "Verified" : "Not verified"}
+              </button>
+            </div>
 
-              {/* Contact */}
-              <FieldRow label="Contact" missing={!block?.contact} icon={User}>
-                {block?.contact ? (
-                  <div>
-                    <div className="font-medium">{block.contact.firstName} {block.contact.lastName}</div>
-                    {block.contact.email && <div className="text-muted-foreground">{block.contact.email}</div>}
-                    {block.contact.phone && <div className="text-muted-foreground">{block.contact.phone}</div>}
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
-              </FieldRow>
+            {/* Share Class */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <Layers className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Share Class</span>
+              </div>
+              <select
+                value={formData.shareClass}
+                onChange={(e) => setFormData({ ...formData, shareClass: e.target.value })}
+                className={selectClass}
+              >
+                <option value="">Select class...</option>
+                {SHARE_CLASSES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
 
-              {/* Share Class */}
-              <FieldRow label="Share Class" missing={!block?.shareClass}>
-                {block?.shareClass || <span className="text-muted-foreground italic">Not set</span>}
-              </FieldRow>
+            {/* Shares */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <Hash className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Shares</span>
+              </div>
+              <input
+                type="text"
+                value={formData.shares}
+                onChange={(e) => setFormData({ ...formData, shares: e.target.value.replace(/[^0-9]/g, "") })}
+                className={inputClass}
+                placeholder="Number of shares"
+              />
+            </div>
 
-              {/* Shares */}
-              <FieldRow label="Number of Shares" missing={!block?.shares}>
-                {block?.shares ? block.shares.toLocaleString() : <span className="text-muted-foreground italic">Not set</span>}
-              </FieldRow>
+            {/* Price per Share */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <DollarSign className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Price / Share</span>
+              </div>
+              <input
+                type="text"
+                value={formData.priceCents}
+                onChange={(e) => setFormData({ ...formData, priceCents: e.target.value })}
+                className={inputClass}
+                placeholder="0.00"
+              />
+            </div>
 
-              {/* Price */}
-              <FieldRow label="Price per Share" missing={!block?.priceCents} icon={DollarSign}>
-                {block?.priceCents ? (
-                  <span className="font-semibold">${(block.priceCents / 100).toFixed(2)}</span>
-                ) : (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
-              </FieldRow>
+            {/* Total Value */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <DollarSign className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Total Value</span>
+              </div>
+              <input
+                type="text"
+                value={formData.totalCents}
+                onChange={(e) => setFormData({ ...formData, totalCents: e.target.value })}
+                className={`${inputClass} text-slate-500`}
+                placeholder="Auto-calculated"
+              />
+            </div>
 
-              {/* Total */}
-              <FieldRow label="Total Value" missing={!block?.totalCents} icon={DollarSign}>
-                {block?.totalCents ? (
-                  <span className="text-xl font-bold">${(block.totalCents / 100).toLocaleString()}</span>
-                ) : (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
-              </FieldRow>
+            {/* Min Size */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <DollarSign className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Minimum Size</span>
+              </div>
+              <input
+                type="text"
+                value={formData.minSizeCents}
+                onChange={(e) => setFormData({ ...formData, minSizeCents: e.target.value })}
+                className={inputClass}
+                placeholder="0.00"
+              />
+            </div>
 
-              {/* Min Size */}
-              <FieldRow label="Minimum Size" missing={!block?.minSizeCents}>
-                {block?.minSizeCents ? (
-                  `$${(block.minSizeCents / 100).toLocaleString()}`
-                ) : (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
-              </FieldRow>
+            {/* Discount */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <Percent className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Discount</span>
+              </div>
+              <input
+                type="text"
+                value={formData.discountPct}
+                onChange={(e) => setFormData({ ...formData, discountPct: e.target.value })}
+                className={inputClass}
+                placeholder="0"
+              />
+            </div>
 
-              {/* Discount */}
-              <FieldRow label="Discount" missing={!block?.discountPct}>
-                {block?.discountPct ? (
-                  `${block.discountPct}%`
-                ) : (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
-              </FieldRow>
+            {/* Implied Valuation */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <TrendingUp className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Implied Valuation</span>
+              </div>
+              <input
+                type="text"
+                value={formData.impliedValuationCents}
+                onChange={(e) => setFormData({ ...formData, impliedValuationCents: e.target.value })}
+                className={inputClass}
+                placeholder="0.00"
+              />
+            </div>
 
-              {/* Implied Valuation */}
-              <FieldRow label="Implied Valuation" missing={!block?.impliedValuationCents}>
-                {block?.impliedValuationCents ? (
-                  `$${(block.impliedValuationCents / 100).toLocaleString()}`
-                ) : (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
-              </FieldRow>
+            {/* Terms */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <FileText className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Terms</span>
+              </div>
+              <textarea
+                value={formData.terms}
+                onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
+                className={textareaClass}
+                placeholder="Deal terms, conditions..."
+              />
+            </div>
 
-              {/* Terms */}
-              <FieldRow label="Terms" missing={!block?.terms} icon={FileText}>
-                {block?.terms ? (
-                  <p className="whitespace-pre-wrap">{block.terms}</p>
-                ) : (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
-              </FieldRow>
+            {/* Expires At */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Expires</span>
+              </div>
+              <input
+                type="date"
+                value={formData.expiresAt}
+                onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
+                className={selectClass}
+              />
+            </div>
 
-              {/* Expires */}
-              <FieldRow label="Expires At" missing={!block?.expiresAt} icon={Calendar}>
-                {block?.expiresAt ? (
-                  new Date(block.expiresAt).toLocaleDateString("en-US", {
-                    month: "short", day: "numeric", year: "numeric"
-                  })
-                ) : (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
-              </FieldRow>
+            {/* Source */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Source</span>
+              </div>
+              <select
+                value={formData.source}
+                onChange={(e) => setFormData({ ...formData, source: e.target.value })}
+                className={selectClass}
+              >
+                <option value="">Select source...</option>
+                {SOURCES.map((s) => (
+                  <option key={s} value={s}>
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-              {/* Source */}
-              <FieldRow label="Source" missing={!block?.source}>
-                {block?.source ? (
-                  <span>
-                    {block.source.charAt(0).toUpperCase() + block.source.slice(1)}
-                    {block.sourceDetail && ` - ${block.sourceDetail}`}
+            {/* Source Detail */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Source Detail</span>
+              </div>
+              <input
+                type="text"
+                value={formData.sourceDetail}
+                onChange={(e) => setFormData({ ...formData, sourceDetail: e.target.value })}
+                className={inputClass}
+                placeholder="Name, company..."
+              />
+            </div>
+
+            {/* Internal Notes */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <FileText className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Internal Notes</span>
+              </div>
+              <textarea
+                value={formData.internalNotes}
+                onChange={(e) => setFormData({ ...formData, internalNotes: e.target.value })}
+                className={textareaClass}
+                placeholder="Notes visible only to your team..."
+              />
+            </div>
+
+            {/* Mapped Interests (read-only display) */}
+            {block?.mappedInterests && block.mappedInterests.length > 0 && (
+              <div className="py-4 mt-2 border-t">
+                <div className="flex items-center gap-2 mb-3 px-3">
+                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                    Mapped Interests ({block.mappedInterests.length})
                   </span>
-                ) : (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
-              </FieldRow>
-
-              {/* Internal Notes */}
-              <FieldRow label="Internal Notes" missing={!block?.internalNotes}>
-                {block?.internalNotes ? (
-                  <p className="whitespace-pre-wrap">{block.internalNotes}</p>
-                ) : (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
-              </FieldRow>
-
-              {/* Mapped Interests */}
-              {block?.mappedInterests && block.mappedInterests.length > 0 && (
-                <div className="pt-4 mt-4 border-t">
-                  <h3 className="text-sm font-semibold mb-3">Mapped Interests ({block.mappedInterests.length})</h3>
-                  <div className="space-y-2">
-                    {block.mappedInterests.map((interest) => (
-                      <div
-                        key={interest.id}
-                        className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                      >
-                        <span className="font-medium">{interest.investor || "—"}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">
-                            ${((interest.committedCents || 0) / 100).toLocaleString()}
-                          </span>
-                          <Badge variant="secondary" className="text-xs">
-                            {interest.status.replace("_", " ")}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
-              )}
-            </div>
-          )}
+                <div className="space-y-2 px-3">
+                  {block.mappedInterests.map((interest) => (
+                    <div
+                      key={interest.id}
+                      className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                    >
+                      <span className="text-sm font-medium">{interest.investor || "—"}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-slate-600">
+                          ${((interest.committedCents || 0) / 100).toLocaleString()}
+                        </span>
+                        <Badge variant="secondary" className="text-xs">
+                          {interest.status.replace("_", " ")}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex items-center justify-between">
-          {!isNew && onDelete && !editing && (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </button>
-          )}
-          {showDeleteConfirm && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-red-600">Delete this block?</span>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="px-3 py-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded disabled:opacity-50"
-              >
-                {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Yes, delete"}
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded"
-              >
-                Cancel
-              </button>
-            </div>
+          {!isNew && onDelete && (
+            <>
+              {!showDeleteConfirm ? (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-red-600">Delete?</span>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="px-3 py-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded disabled:opacity-50"
+                  >
+                    {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Yes"}
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded"
+                  >
+                    No
+                  </button>
+                </div>
+              )}
+            </>
           )}
           {!showDeleteConfirm && (
             <div className="flex items-center gap-3 ml-auto">
-              {editing && !isNew && (
-                <button
-                  onClick={() => setEditing(false)}
-                  disabled={saving}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md"
-                >
-                  Cancel
-                </button>
-              )}
-              {editing ? (
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50"
-                >
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  {isNew ? "Create Block" : "Save Changes"}
-                </button>
-              ) : (
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md"
-                >
-                  Close
-                </button>
-              )}
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 transition-colors"
+              >
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {isNew ? "Create" : "Save"}
+              </button>
             </div>
           )}
         </div>
