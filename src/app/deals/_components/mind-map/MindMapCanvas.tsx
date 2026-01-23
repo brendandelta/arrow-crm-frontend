@@ -74,6 +74,8 @@ export function MindMapCanvas({
         fitViewOptions={{ padding: 0.3 }}
         minZoom={0.3}
         maxZoom={2}
+        zoomOnScroll={false}
+        panOnScroll={false}
         proOptions={{ hideAttribution: true }}
         defaultEdgeOptions={{
           type: "default",
