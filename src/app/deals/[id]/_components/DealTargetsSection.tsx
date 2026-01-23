@@ -274,7 +274,7 @@ function TargetRow({
             {isStale && <div className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />}
             <button
               onClick={() => onTargetClick?.(target)}
-              className="text-sm font-semibold text-slate-900 hover:text-blue-600 transition-colors text-left"
+              className="text-lg font-bold text-slate-900 hover:text-blue-600 transition-colors text-left"
             >
               {target.targetName}
             </button>
