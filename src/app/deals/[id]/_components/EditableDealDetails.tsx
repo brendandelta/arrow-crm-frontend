@@ -1,8 +1,24 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, X, ExternalLink, Link as LinkIcon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Plus,
+  X,
+  ExternalLink,
+  FolderOpen,
+  FileText,
+  Presentation,
+  BookOpen,
+  Calendar,
+  TrendingUp,
+  DollarSign,
+  Target,
+  Gauge,
+} from "lucide-react";
 
 interface Owner {
   id: number;
@@ -37,15 +53,20 @@ interface EditableDealDetailsProps {
 const STAGES = ["sourcing", "diligence", "negotiation", "documentation", "closing"];
 const SOURCES = ["inbound", "outbound", "referral", "broker", "network", "conference"];
 
+const STAGE_COLORS: Record<string, string> = {
+  sourcing: "bg-slate-100 text-slate-700",
+  diligence: "bg-sky-50 text-sky-700 border border-sky-200",
+  negotiation: "bg-violet-50 text-violet-700 border border-violet-200",
+  documentation: "bg-amber-50 text-amber-700 border border-amber-200",
+  closing: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+};
+
 function formatCurrency(cents: number | null) {
   if (!cents) return null;
   const dollars = cents / 100;
-  if (dollars >= 1_000_000_000) {
-    return `$${(dollars / 1_000_000_000).toFixed(2)}B`;
-  }
-  if (dollars >= 1_000_000) {
-    return `$${(dollars / 1_000_000).toFixed(2)}M`;
-  }
+  if (dollars >= 1_000_000_000) return `$${(dollars / 1_000_000_000).toFixed(2)}B`;
+  if (dollars >= 1_000_000) return `$${(dollars / 1_000_000).toFixed(1)}M`;
+  if (dollars >= 1_000) return `$${(dollars / 1_000).toFixed(1)}K`;
   return `$${dollars.toFixed(2)}`;
 }
 
@@ -53,383 +74,29 @@ function parseCurrencyToCents(value: string): number | null {
   if (!value) return null;
   let clean = value.replace(/[$,]/g, "").trim();
   let multiplier = 1;
-
-  if (clean.toLowerCase().endsWith("b")) {
-    multiplier = 1_000_000_000;
-    clean = clean.slice(0, -1);
-  } else if (clean.toLowerCase().endsWith("m")) {
-    multiplier = 1_000_000;
-    clean = clean.slice(0, -1);
-  } else if (clean.toLowerCase().endsWith("k")) {
-    multiplier = 1_000;
-    clean = clean.slice(0, -1);
-  }
-
+  if (clean.toLowerCase().endsWith("b")) { multiplier = 1_000_000_000; clean = clean.slice(0, -1); }
+  else if (clean.toLowerCase().endsWith("m")) { multiplier = 1_000_000; clean = clean.slice(0, -1); }
+  else if (clean.toLowerCase().endsWith("k")) { multiplier = 1_000; clean = clean.slice(0, -1); }
   const num = parseFloat(clean);
   if (isNaN(num)) return null;
   return Math.round(num * multiplier * 100);
 }
 
-// ============ Inline Editable Fields ============
-
-function InlineText({
-  label,
-  value,
-  placeholder,
-  onSave,
-  prefix,
-  suffix,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  placeholder?: string;
-  onSave: (val: string) => void;
-  prefix?: string;
-  suffix?: string;
-  type?: string;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (editing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [editing]);
-
-  const commit = () => {
-    setEditing(false);
-    if (draft !== value) {
-      onSave(draft);
-    }
-  };
-
-  return (
-    <div className="group">
-      <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">
-        {label}
-      </div>
-      {editing ? (
-        <input
-          ref={inputRef}
-          type={type}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commit();
-            if (e.key === "Escape") { setDraft(value); setEditing(false); }
-          }}
-          placeholder={placeholder}
-          className="w-full text-sm font-medium bg-transparent border-b border-slate-300 focus:border-slate-900 outline-none py-0.5 transition-colors"
-        />
-      ) : (
-        <button
-          onClick={() => { setDraft(value); setEditing(true); }}
-          className="w-full text-left text-sm font-medium text-slate-900 py-0.5 border-b border-transparent group-hover:border-slate-200 transition-colors cursor-text min-h-[24px]"
-        >
-          {value ? (
-            <span>{prefix}{value}{suffix}</span>
-          ) : (
-            <span className="text-slate-300">{placeholder || "—"}</span>
-          )}
-        </button>
-      )}
-    </div>
-  );
-}
-
-function InlineSelect({
-  label,
-  value,
-  options,
-  placeholder,
-  onSave,
-}: {
-  label: string;
-  value: string;
-  options: string[];
-  placeholder?: string;
-  onSave: (val: string) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const selectRef = useRef<HTMLSelectElement>(null);
-
-  useEffect(() => {
-    if (editing && selectRef.current) {
-      selectRef.current.focus();
-    }
-  }, [editing]);
-
-  const commit = (val: string) => {
-    setEditing(false);
-    if (val !== value) {
-      onSave(val);
-    }
-  };
-
-  return (
-    <div className="group">
-      <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">
-        {label}
-      </div>
-      {editing ? (
-        <select
-          ref={selectRef}
-          value={value}
-          onChange={(e) => commit(e.target.value)}
-          onBlur={() => setEditing(false)}
-          className="w-full text-sm font-medium bg-transparent border-b border-slate-300 focus:border-slate-900 outline-none py-0.5 cursor-pointer"
-        >
-          <option value="">{placeholder || "Select..."}</option>
-          {options.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt.charAt(0).toUpperCase() + opt.slice(1)}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <button
-          onClick={() => setEditing(true)}
-          className="w-full text-left text-sm font-medium text-slate-900 py-0.5 border-b border-transparent group-hover:border-slate-200 transition-colors cursor-pointer min-h-[24px]"
-        >
-          {value ? (
-            <span>{value.charAt(0).toUpperCase() + value.slice(1)}</span>
-          ) : (
-            <span className="text-slate-300">{placeholder || "—"}</span>
-          )}
-        </button>
-      )}
-    </div>
-  );
-}
-
-function InlineDate({
-  label,
-  value,
-  onSave,
-}: {
-  label: string;
-  value: string;
-  onSave: (val: string) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (editing && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [editing]);
-
-  const commit = (val: string) => {
-    setEditing(false);
-    if (val !== value) {
-      onSave(val);
-    }
-  };
-
-  const formatDisplay = (dateStr: string) => {
-    if (!dateStr) return null;
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  return (
-    <div className="group">
-      <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">
-        {label}
-      </div>
-      {editing ? (
-        <input
-          ref={inputRef}
-          type="date"
-          value={value}
-          onChange={(e) => commit(e.target.value)}
-          onBlur={() => setEditing(false)}
-          className="w-full text-sm font-medium bg-transparent border-b border-slate-300 focus:border-slate-900 outline-none py-0.5"
-        />
-      ) : (
-        <button
-          onClick={() => setEditing(true)}
-          className="w-full text-left text-sm font-medium text-slate-900 py-0.5 border-b border-transparent group-hover:border-slate-200 transition-colors cursor-pointer min-h-[24px]"
-        >
-          {value ? (
-            <span>{formatDisplay(value)}</span>
-          ) : (
-            <span className="text-slate-300">Set date</span>
-          )}
-        </button>
-      )}
-    </div>
-  );
-}
-
-function InlineNotes({
-  value,
-  onSave,
-}: {
-  value: string;
-  onSave: (val: string) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (editing && textareaRef.current) {
-      textareaRef.current.focus();
-      // Move cursor to end
-      textareaRef.current.selectionStart = textareaRef.current.value.length;
-    }
-  }, [editing]);
-
-  const commit = () => {
-    setEditing(false);
-    if (draft !== value) {
-      onSave(draft);
-    }
-  };
-
-  return (
-    <div className="group">
-      <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-0.5">
-        Notes
-      </div>
-      {editing ? (
-        <textarea
-          ref={textareaRef}
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          rows={3}
-          className="w-full text-sm bg-transparent border border-slate-200 rounded px-2 py-1.5 focus:border-slate-400 outline-none resize-none"
-          placeholder="Internal notes..."
-        />
-      ) : (
-        <button
-          onClick={() => { setDraft(value); setEditing(true); }}
-          className="w-full text-left text-sm text-slate-700 py-0.5 border-b border-transparent group-hover:border-slate-200 transition-colors cursor-text min-h-[24px]"
-        >
-          {value ? (
-            <span className="line-clamp-2 whitespace-pre-wrap">{value}</span>
-          ) : (
-            <span className="text-slate-300">Add notes...</span>
-          )}
-        </button>
-      )}
-    </div>
-  );
-}
-
-function InlineLink({
-  label,
-  url,
-  onSave,
-  placeholder,
-}: {
-  label: string;
-  url: string;
-  onSave: (val: string) => void;
-  placeholder?: string;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(url);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (editing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [editing]);
-
-  const commit = () => {
-    setEditing(false);
-    if (draft !== url) {
-      onSave(draft);
-    }
-  };
-
-  if (editing) {
-    return (
-      <div className="flex items-center gap-1.5">
-        <LinkIcon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-        <input
-          ref={inputRef}
-          type="url"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commit();
-            if (e.key === "Escape") { setDraft(url); setEditing(false); }
-          }}
-          placeholder={placeholder || "https://..."}
-          className="flex-1 text-xs bg-transparent border-b border-slate-300 focus:border-slate-900 outline-none py-0.5"
-        />
-      </div>
-    );
-  }
-
-  if (url) {
-    return (
-      <div className="flex items-center gap-1">
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-0.5"
-        >
-          {label}
-          <ExternalLink className="h-2.5 w-2.5" />
-        </a>
-        <button
-          onClick={() => { setDraft(url); setEditing(true); }}
-          className="text-slate-300 hover:text-slate-500 transition-colors"
-          title="Edit link"
-        >
-          <LinkIcon className="h-3 w-3" />
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <button
-      onClick={() => { setDraft(""); setEditing(true); }}
-      className="text-xs text-slate-300 hover:text-slate-500 transition-colors flex items-center gap-0.5"
-    >
-      <Plus className="h-3 w-3" />
-      {label}
-    </button>
-  );
+function formatDate(dateStr: string | null) {
+  if (!dateStr) return null;
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 // ============ Main Component ============
 
 export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetailsProps) {
   const [tags, setTags] = useState<string[]>(deal.tags || []);
-  const [newTag, setNewTag] = useState("");
   const [addingTag, setAddingTag] = useState(false);
+  const [newTag, setNewTag] = useState("");
   const tagInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync tags from prop changes (after save/refresh)
-  useEffect(() => {
-    setTags(deal.tags || []);
-  }, [deal.tags]);
-
-  useEffect(() => {
-    if (addingTag && tagInputRef.current) {
-      tagInputRef.current.focus();
-    }
-  }, [addingTag]);
+  useEffect(() => { setTags(deal.tags || []); }, [deal.tags]);
+  useEffect(() => { if (addingTag && tagInputRef.current) tagInputRef.current.focus(); }, [addingTag]);
 
   const saveField = (field: string, value: unknown) => {
     onSave({ [field]: value || null } as Partial<DealDetailsData>);
@@ -450,159 +117,615 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
     onSave({ tags: updated.length > 0 ? updated : null });
   };
 
+  const links = [
+    { key: "driveUrl", label: "Drive", icon: FolderOpen, url: deal.driveUrl },
+    { key: "dataRoomUrl", label: "Data Room", icon: FileText, url: deal.dataRoomUrl },
+    { key: "deckUrl", label: "Deck", icon: Presentation, url: deal.deckUrl },
+    { key: "notionUrl", label: "Notion", icon: BookOpen, url: deal.notionUrl },
+  ];
+
+  const hasAnyLink = links.some((l) => l.url);
+
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
-      {/* Row 1: Key Metrics */}
-      <div className="grid grid-cols-4 gap-6">
-        <InlineSelect
-          label="Stage"
-          value={deal.stage || ""}
-          options={STAGES}
-          placeholder="Set stage"
-          onSave={(val) => saveField("stage", val)}
-        />
-        <InlineText
-          label="Confidence"
-          value={deal.confidence?.toString() || ""}
-          placeholder="0-100"
-          suffix="%"
-          type="number"
-          onSave={(val) => saveField("confidence", val ? parseInt(val) : null)}
-        />
-        <InlineText
-          label="Share Price"
-          value={deal.sharePrice ? (deal.sharePrice / 100).toFixed(2) : ""}
-          placeholder="0.00"
-          prefix="$"
-          type="number"
-          onSave={(val) => saveField("sharePrice", val ? Math.round(parseFloat(val) * 100) : null)}
-        />
-        <InlineText
-          label="Valuation"
-          value={deal.valuation ? formatCurrency(deal.valuation)?.replace("$", "") || "" : ""}
-          placeholder="e.g. 10B, 500M"
-          prefix="$"
-          onSave={(val) => saveField("valuation", parseCurrencyToCents(val))}
-        />
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-slate-100 my-4" />
-
-      {/* Row 2: Timeline & Source */}
-      <div className="grid grid-cols-4 gap-6">
-        <InlineDate
-          label="Expected Close"
-          value={deal.expectedClose?.split("T")[0] || ""}
-          onSave={(val) => saveField("expectedClose", val)}
-        />
-        <InlineDate
-          label="Deadline"
-          value={deal.deadline?.split("T")[0] || ""}
-          onSave={(val) => saveField("deadline", val)}
-        />
-        <InlineSelect
-          label="Source"
-          value={deal.source || ""}
-          options={SOURCES}
-          placeholder="Set source"
-          onSave={(val) => saveField("source", val)}
-        />
-        <InlineText
-          label="Source Detail"
-          value={deal.sourceDetail || ""}
-          placeholder="Details..."
-          onSave={(val) => saveField("sourceDetail", val)}
-        />
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-slate-100 my-4" />
-
-      {/* Row 3: Links & Tags */}
-      <div className="flex items-start justify-between gap-6">
-        {/* Links */}
-        <div>
-          <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1.5">
-            Links
-          </div>
-          <div className="flex items-center gap-4">
-            <InlineLink
-              label="Drive"
-              url={deal.driveUrl || ""}
-              onSave={(val) => saveField("driveUrl", val)}
-            />
-            <InlineLink
-              label="Data Room"
-              url={deal.dataRoomUrl || ""}
-              onSave={(val) => saveField("dataRoomUrl", val)}
-            />
-            <InlineLink
-              label="Deck"
-              url={deal.deckUrl || ""}
-              onSave={(val) => saveField("deckUrl", val)}
-            />
-            <InlineLink
-              label="Notion"
-              url={deal.notionUrl || ""}
-              onSave={(val) => saveField("notionUrl", val)}
-              placeholder="https://notion.so/..."
-            />
-          </div>
-        </div>
-
-        {/* Tags */}
-        <div className="flex-1 max-w-xs">
-          <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1.5">
-            Tags
-          </div>
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs flex items-center gap-0.5 pr-1">
-                {tag}
-                <button
-                  onClick={() => removeTag(tag)}
-                  className="ml-0.5 text-slate-400 hover:text-red-500 transition-colors"
-                >
-                  <X className="h-2.5 w-2.5" />
-                </button>
-              </Badge>
-            ))}
-            {addingTag ? (
-              <input
-                ref={tagInputRef}
-                type="text"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onBlur={() => { if (newTag.trim()) addTag(); setAddingTag(false); setNewTag(""); }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") { addTag(); setAddingTag(false); }
-                  if (e.key === "Escape") { setAddingTag(false); setNewTag(""); }
-                }}
-                placeholder="tag"
-                className="text-xs border-b border-slate-300 outline-none w-16 py-0.5"
+    <Card className="overflow-hidden border-slate-200 shadow-sm">
+      {/* ═══ Layer 1: Summary Strip ═══ */}
+      <div className="px-5 py-4">
+        <div className="flex items-center justify-between gap-6">
+          {/* Left: Key Facts */}
+          <div className="flex items-center gap-5 min-w-0 flex-1">
+            {/* Stage */}
+            <SummaryField icon={Target} label="Stage">
+              <InlineSelect
+                value={deal.stage || ""}
+                options={STAGES}
+                placeholder="Set stage"
+                onSave={(val) => saveField("stage", val)}
+                displayClass={STAGE_COLORS[deal.stage || ""] || "bg-slate-50 text-slate-600"}
               />
-            ) : (
-              <button
-                onClick={() => setAddingTag(true)}
-                className="text-slate-300 hover:text-slate-500 transition-colors"
-              >
-                <Plus className="h-3.5 w-3.5" />
-              </button>
+            </SummaryField>
+
+            <Separator orientation="vertical" className="h-8" />
+
+            {/* Close & Deadline */}
+            <SummaryField icon={Calendar} label="Close">
+              <InlineDateCompact
+                value={deal.expectedClose?.split("T")[0] || ""}
+                onSave={(val) => saveField("expectedClose", val)}
+              />
+            </SummaryField>
+
+            {deal.deadline && deal.deadline !== deal.expectedClose && (
+              <SummaryField icon={Calendar} label="Deadline">
+                <InlineDateCompact
+                  value={deal.deadline?.split("T")[0] || ""}
+                  onSave={(val) => saveField("deadline", val)}
+                />
+              </SummaryField>
+            )}
+
+            <Separator orientation="vertical" className="h-8" />
+
+            {/* Source */}
+            <SummaryField icon={TrendingUp} label="Source">
+              <InlineSelect
+                value={deal.source || ""}
+                options={SOURCES}
+                placeholder="—"
+                onSave={(val) => saveField("source", val)}
+              />
+            </SummaryField>
+
+            {/* Confidence */}
+            <SummaryField icon={Gauge} label="Confidence">
+              <ConfidenceMeter
+                value={deal.confidence}
+                onSave={(val) => saveField("confidence", val)}
+              />
+            </SummaryField>
+          </div>
+
+          {/* Right: Terms */}
+          <div className="flex items-center gap-5 shrink-0">
+            {(deal.valuation || deal.sharePrice) && (
+              <>
+                {deal.valuation && (
+                  <div className="text-right">
+                    <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Valuation</div>
+                    <div className="text-sm font-semibold text-slate-900">{formatCurrency(deal.valuation)}</div>
+                  </div>
+                )}
+                {deal.sharePrice && (
+                  <div className="text-right">
+                    <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">PPS</div>
+                    <div className="text-sm font-semibold text-slate-900">${(deal.sharePrice / 100).toFixed(2)}</div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
+
+        {/* Links Strip */}
+        {(hasAnyLink || true) && (
+          <div className="flex items-center gap-1 mt-3">
+            {links.map((link) => (
+              <LinkChip
+                key={link.key}
+                label={link.label}
+                icon={link.icon}
+                url={link.url}
+                onSave={(val) => saveField(link.key, val)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Row 4: Notes (if not LP mode) */}
-      {!lpMode && (
-        <>
-          <div className="border-t border-slate-100 my-4" />
-          <InlineNotes
-            value={deal.notes || ""}
-            onSave={(val) => saveField("notes", val)}
-          />
-        </>
+      {/* ═══ Layer 2: Tabs ═══ */}
+      <div className="border-t border-slate-100">
+        <Tabs defaultValue="overview" className="gap-0">
+          <TabsList className="w-full justify-start rounded-none bg-transparent border-b border-slate-100 h-9 px-5">
+            <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[12px] px-3 py-1.5">
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="terms" className="rounded-none border-b-2 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[12px] px-3 py-1.5">
+              Terms
+            </TabsTrigger>
+            {!lpMode && (
+              <TabsTrigger value="notes" className="rounded-none border-b-2 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[12px] px-3 py-1.5">
+                Notes
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="px-5 py-4">
+            <div className="flex items-start gap-8">
+              {/* Source Detail */}
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Source Detail</div>
+                <InlineTextCompact
+                  value={deal.sourceDetail || ""}
+                  placeholder="Add context about source..."
+                  onSave={(val) => saveField("sourceDetail", val)}
+                />
+              </div>
+
+              {/* Deadline (if not shown above) */}
+              {(!deal.deadline || deal.deadline === deal.expectedClose) && (
+                <div>
+                  <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Deadline</div>
+                  <InlineDateCompact
+                    value={deal.deadline?.split("T")[0] || ""}
+                    onSave={(val) => saveField("deadline", val)}
+                  />
+                </div>
+              )}
+
+              {/* Tags */}
+              <div className="shrink-0">
+                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1.5">Tags</div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="text-[11px] font-normal pl-2 pr-1 py-0 h-5 flex items-center gap-0.5 bg-slate-100">
+                      {tag}
+                      <button onClick={() => removeTag(tag)} className="text-slate-400 hover:text-rose-500 transition-colors ml-0.5">
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </Badge>
+                  ))}
+                  {addingTag ? (
+                    <input
+                      ref={tagInputRef}
+                      type="text"
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      onBlur={() => { if (newTag.trim()) addTag(); setAddingTag(false); setNewTag(""); }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") { addTag(); setAddingTag(false); }
+                        if (e.key === "Escape") { setAddingTag(false); setNewTag(""); }
+                      }}
+                      placeholder="tag"
+                      className="text-[11px] border-b border-slate-300 outline-none w-14 py-0.5 bg-transparent"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => setAddingTag(true)}
+                      className="text-slate-300 hover:text-slate-500 transition-colors"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Terms Tab */}
+          <TabsContent value="terms" className="px-5 py-4">
+            <div className="grid grid-cols-3 gap-6 max-w-lg">
+              <div>
+                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Valuation</div>
+                <InlineCurrencyField
+                  value={deal.valuation}
+                  placeholder="e.g. 10B, 500M"
+                  onSave={(val) => saveField("valuation", val)}
+                />
+              </div>
+              <div>
+                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Share Price</div>
+                <InlineSharePriceField
+                  value={deal.sharePrice}
+                  onSave={(val) => saveField("sharePrice", val)}
+                />
+              </div>
+              <div>
+                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Confidence</div>
+                <ConfidenceMeter
+                  value={deal.confidence}
+                  onSave={(val) => saveField("confidence", val)}
+                  showLabel
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Notes Tab */}
+          {!lpMode && (
+            <TabsContent value="notes" className="px-5 py-4">
+              <NotesEditor
+                value={deal.notes || ""}
+                onSave={(val) => saveField("notes", val)}
+              />
+            </TabsContent>
+          )}
+        </Tabs>
+      </div>
+    </Card>
+  );
+}
+
+// ============ Summary Field Wrapper ============
+
+function SummaryField({ icon: Icon, label, children }: {
+  icon: typeof Target;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-2 min-w-0">
+      <Icon className="h-3.5 w-3.5 text-slate-300 shrink-0" />
+      <div className="min-w-0">
+        <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider leading-none mb-0.5">{label}</div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ============ Inline Compact Fields ============
+
+function InlineSelect({ value, options, placeholder, onSave, displayClass }: {
+  value: string;
+  options: string[];
+  placeholder?: string;
+  onSave: (val: string) => void;
+  displayClass?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const ref = useRef<HTMLSelectElement>(null);
+
+  useEffect(() => { if (editing && ref.current) ref.current.focus(); }, [editing]);
+
+  return editing ? (
+    <select
+      ref={ref}
+      value={value}
+      onChange={(e) => { onSave(e.target.value); setEditing(false); }}
+      onBlur={() => setEditing(false)}
+      className="text-[13px] font-medium bg-transparent border-b border-slate-300 outline-none py-0 cursor-pointer"
+    >
+      <option value="">{placeholder}</option>
+      {options.map((opt) => (
+        <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>
+      ))}
+    </select>
+  ) : (
+    <button
+      onClick={() => setEditing(true)}
+      className={`text-[13px] font-medium cursor-pointer transition-colors ${
+        displayClass
+          ? `px-2 py-0.5 rounded-full text-[11px] ${displayClass}`
+          : "text-slate-900 hover:text-indigo-600"
+      }`}
+    >
+      {value ? value.charAt(0).toUpperCase() + value.slice(1) : <span className="text-slate-300">{placeholder}</span>}
+    </button>
+  );
+}
+
+function InlineDateCompact({ value, onSave }: { value: string; onSave: (val: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (editing && ref.current) ref.current.focus(); }, [editing]);
+
+  return editing ? (
+    <input
+      ref={ref}
+      type="date"
+      value={value}
+      onChange={(e) => { onSave(e.target.value); setEditing(false); }}
+      onBlur={() => setEditing(false)}
+      className="text-[13px] font-medium bg-transparent border-b border-slate-300 outline-none py-0"
+    />
+  ) : (
+    <button onClick={() => setEditing(true)} className="text-[13px] font-medium text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer">
+      {value ? formatDate(value) : <span className="text-slate-300">Set date</span>}
+    </button>
+  );
+}
+
+function InlineTextCompact({ value, placeholder, onSave }: {
+  value: string;
+  placeholder?: string;
+  onSave: (val: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (editing && ref.current) { ref.current.focus(); ref.current.select(); } }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    if (draft !== value) onSave(draft);
+  };
+
+  return editing ? (
+    <input
+      ref={ref}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
+      placeholder={placeholder}
+      className="text-[13px] text-slate-700 bg-transparent border-b border-slate-300 outline-none py-0.5 w-full"
+    />
+  ) : (
+    <button onClick={() => { setDraft(value); setEditing(true); }} className="text-[13px] text-slate-700 hover:text-indigo-600 transition-colors cursor-text text-left">
+      {value || <span className="text-slate-300 italic">{placeholder}</span>}
+    </button>
+  );
+}
+
+function InlineCurrencyField({ value, placeholder, onSave }: {
+  value: number | null;
+  placeholder?: string;
+  onSave: (val: number | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value ? (formatCurrency(value)?.replace("$", "") || "") : "");
+  const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (editing && ref.current) { ref.current.focus(); ref.current.select(); } }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    const cents = parseCurrencyToCents(draft);
+    if (cents !== value) onSave(cents);
+  };
+
+  return editing ? (
+    <div className="flex items-center gap-0.5">
+      <DollarSign className="h-3 w-3 text-slate-400" />
+      <input
+        ref={ref}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value ? (formatCurrency(value)?.replace("$", "") || "") : ""); setEditing(false); } }}
+        placeholder={placeholder}
+        className="text-[13px] font-semibold text-slate-900 bg-transparent border-b border-slate-300 outline-none py-0.5 w-24"
+      />
+    </div>
+  ) : (
+    <button onClick={() => { setDraft(value ? (formatCurrency(value)?.replace("$", "") || "") : ""); setEditing(true); }} className="text-[13px] font-semibold text-slate-900 hover:text-indigo-600 transition-colors cursor-text">
+      {value ? formatCurrency(value) : <span className="text-slate-300 font-normal">{placeholder || "—"}</span>}
+    </button>
+  );
+}
+
+function InlineSharePriceField({ value, onSave }: {
+  value: number | null;
+  onSave: (val: number | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value ? (value / 100).toFixed(2) : "");
+  const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (editing && ref.current) { ref.current.focus(); ref.current.select(); } }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    const cents = draft ? Math.round(parseFloat(draft) * 100) : null;
+    if (cents !== value) onSave(cents);
+  };
+
+  return editing ? (
+    <div className="flex items-center gap-0.5">
+      <DollarSign className="h-3 w-3 text-slate-400" />
+      <input
+        ref={ref}
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value ? (value / 100).toFixed(2) : ""); setEditing(false); } }}
+        placeholder="0.00"
+        className="text-[13px] font-semibold text-slate-900 bg-transparent border-b border-slate-300 outline-none py-0.5 w-20"
+      />
+    </div>
+  ) : (
+    <button onClick={() => { setDraft(value ? (value / 100).toFixed(2) : ""); setEditing(true); }} className="text-[13px] font-semibold text-slate-900 hover:text-indigo-600 transition-colors cursor-text">
+      {value ? `$${(value / 100).toFixed(2)}` : <span className="text-slate-300 font-normal">—</span>}
+    </button>
+  );
+}
+
+// ============ Confidence Meter ============
+
+function ConfidenceMeter({ value, onSave, showLabel }: {
+  value: number | null;
+  onSave: (val: number | null) => void;
+  showLabel?: boolean;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value?.toString() || "");
+  const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (editing && ref.current) { ref.current.focus(); ref.current.select(); } }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    const num = draft ? parseInt(draft) : null;
+    if (num !== value) onSave(num);
+  };
+
+  const pct = value || 0;
+  const color = pct >= 70 ? "bg-emerald-500" : pct >= 40 ? "bg-amber-400" : pct > 0 ? "bg-rose-400" : "bg-slate-200";
+
+  if (editing) {
+    return (
+      <input
+        ref={ref}
+        type="number"
+        min="0"
+        max="100"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value?.toString() || ""); setEditing(false); } }}
+        className="text-[13px] font-medium text-slate-900 bg-transparent border-b border-slate-300 outline-none py-0 w-12"
+        placeholder="0"
+      />
+    );
+  }
+
+  return (
+    <button onClick={() => { setDraft(value?.toString() || ""); setEditing(true); }} className="flex items-center gap-1.5 cursor-pointer group">
+      <div className="w-12 h-[5px] rounded-full bg-slate-100 overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-[12px] font-medium text-slate-600 group-hover:text-indigo-600 transition-colors tabular-nums">
+        {value !== null && value !== undefined ? `${value}%` : <span className="text-slate-300">—</span>}
+      </span>
+      {showLabel && value !== null && value !== undefined && (
+        <span className="text-[11px] text-slate-400">
+          {pct >= 70 ? "High" : pct >= 40 ? "Medium" : "Low"}
+        </span>
+      )}
+    </button>
+  );
+}
+
+// ============ Link Chip ============
+
+function LinkChip({ label, icon: Icon, url, onSave }: {
+  label: string;
+  icon: typeof FolderOpen;
+  url: string | null;
+  onSave: (val: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(url || "");
+  const ref = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { if (editing && ref.current) { ref.current.focus(); ref.current.select(); } }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    if (draft !== (url || "")) onSave(draft);
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1.5 bg-slate-50 rounded-md px-2 py-1 border border-slate-200">
+        <Icon className="h-3 w-3 text-slate-400 shrink-0" />
+        <input
+          ref={ref}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(url || ""); setEditing(false); } }}
+          placeholder="https://..."
+          className="text-[11px] bg-transparent outline-none w-40"
+        />
+      </div>
+    );
+  }
+
+  if (url) {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 rounded-md px-2.5 py-1 transition-colors border border-slate-200 hover:border-indigo-200"
+        onContextMenu={(e) => { e.preventDefault(); setDraft(url); setEditing(true); }}
+      >
+        <Icon className="h-3 w-3" />
+        {label}
+        <ExternalLink className="h-2.5 w-2.5 opacity-50" />
+      </a>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => { setDraft(""); setEditing(true); }}
+      className="inline-flex items-center gap-1.5 text-[11px] text-slate-300 hover:text-slate-500 rounded-md px-2.5 py-1 transition-colors border border-dashed border-slate-200 hover:border-slate-300"
+    >
+      <Icon className="h-3 w-3" />
+      {label}
+    </button>
+  );
+}
+
+// ============ Notes Editor ============
+
+function NotesEditor({ value, onSave }: { value: string; onSave: (val: string) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [expanded, setExpanded] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (editing && textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.selectionStart = textareaRef.current.value.length;
+    }
+  }, [editing]);
+
+  const commit = () => {
+    setEditing(false);
+    if (draft !== value) onSave(draft);
+  };
+
+  const isLong = value.length > 200;
+  const displayText = !expanded && isLong ? value.slice(0, 200) + "..." : value;
+
+  if (editing) {
+    return (
+      <div className="space-y-2">
+        <textarea
+          ref={textareaRef}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          rows={6}
+          className="w-full text-[14px] leading-relaxed text-slate-700 bg-white border border-slate-200 rounded-lg px-4 py-3 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 outline-none resize-none placeholder:text-slate-300"
+          placeholder="Write your deal narrative here — context, thesis, key considerations..."
+        />
+        <div className="flex items-center gap-2">
+          <button onClick={commit} className="px-3 py-1.5 text-[12px] font-medium text-white bg-slate-800 rounded-md hover:bg-slate-700 transition-colors shadow-sm">
+            Save
+          </button>
+          <button onClick={() => { setDraft(value); setEditing(false); }} className="px-3 py-1.5 text-[12px] text-slate-400 hover:text-slate-600 transition-colors">
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!value) {
+    return (
+      <button
+        onClick={() => { setDraft(""); setEditing(true); }}
+        className="text-[13px] text-slate-300 italic hover:text-slate-500 transition-colors cursor-text"
+      >
+        Add deal narrative...
+      </button>
+    );
+  }
+
+  return (
+    <div>
+      <button
+        onClick={() => { setDraft(value); setEditing(true); }}
+        className="text-[14px] leading-relaxed text-slate-700 whitespace-pre-wrap text-left cursor-text hover:bg-slate-50 rounded-md px-2 py-1 -mx-2 -my-1 transition-colors"
+      >
+        {displayText}
+      </button>
+      {isLong && !expanded && (
+        <button onClick={() => setExpanded(true)} className="text-[12px] text-indigo-500 hover:text-indigo-700 mt-1 block">
+          Show more
+        </button>
+      )}
+      {isLong && expanded && (
+        <button onClick={() => setExpanded(false)} className="text-[12px] text-indigo-500 hover:text-indigo-700 mt-1 block">
+          Show less
+        </button>
       )}
     </div>
   );
