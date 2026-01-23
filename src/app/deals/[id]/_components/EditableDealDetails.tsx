@@ -3,8 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
 import {
   Plus,
   X,
@@ -13,11 +16,10 @@ import {
   FileText,
   Presentation,
   BookOpen,
-  Calendar,
-  TrendingUp,
+  ChevronRight,
+  ChevronDown,
   DollarSign,
-  Target,
-  Gauge,
+  User,
 } from "lucide-react";
 
 interface Owner {
@@ -26,7 +28,7 @@ interface Owner {
   lastName: string;
 }
 
-interface DealDetailsData {
+export interface DealDetailsData {
   stage: string | null;
   confidence: number | null;
   sharePrice: number | null;
@@ -42,6 +44,7 @@ interface DealDetailsData {
   deckUrl: string | null;
   notionUrl: string | null;
   owner: Owner | null;
+  ownerId?: number | null;
 }
 
 interface EditableDealDetailsProps {
@@ -93,6 +96,7 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
   const [tags, setTags] = useState<string[]>(deal.tags || []);
   const [addingTag, setAddingTag] = useState(false);
   const [newTag, setNewTag] = useState("");
+  const [moreOpen, setMoreOpen] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setTags(deal.tags || []); }, [deal.tags]);
@@ -124,17 +128,18 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
     { key: "notionUrl", label: "Notion", icon: BookOpen, url: deal.notionUrl },
   ];
 
-  const hasAnyLink = links.some((l) => l.url);
+  const hasTermsData = !!(deal.valuation || deal.sharePrice || deal.source);
+  const showTerms = hasTermsData || !lpMode;
 
   return (
     <Card className="overflow-hidden border-slate-200 shadow-sm">
-      {/* ═══ Layer 1: Summary Strip ═══ */}
       <div className="px-5 py-4">
-        <div className="flex items-center justify-between gap-6">
-          {/* Left: Key Facts */}
-          <div className="flex items-center gap-5 min-w-0 flex-1">
+        {/* ═══ Zone A + Zone B: Two-column layout ═══ */}
+        <div className="flex gap-8">
+          {/* Zone A: Deal Controls (left) */}
+          <div className="flex-1 min-w-0 space-y-3">
             {/* Stage */}
-            <SummaryField icon={Target} label="Stage">
+            <FieldRow label="Stage">
               <InlineSelect
                 value={deal.stage || ""}
                 options={STAGES}
@@ -142,224 +147,251 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
                 onSave={(val) => saveField("stage", val)}
                 displayClass={STAGE_COLORS[deal.stage || ""] || "bg-slate-50 text-slate-600"}
               />
-            </SummaryField>
+            </FieldRow>
 
-            <Separator orientation="vertical" className="h-8" />
-
-            {/* Close & Deadline */}
-            <SummaryField icon={Calendar} label="Close">
+            {/* Close */}
+            <FieldRow label="Close">
               <InlineDateCompact
                 value={deal.expectedClose?.split("T")[0] || ""}
                 onSave={(val) => saveField("expectedClose", val)}
               />
-            </SummaryField>
+            </FieldRow>
 
-            {deal.deadline && deal.deadline !== deal.expectedClose && (
-              <SummaryField icon={Calendar} label="Deadline">
+            {/* Deadline */}
+            {(!lpMode || deal.deadline) && (
+              <FieldRow label="Deadline">
                 <InlineDateCompact
                   value={deal.deadline?.split("T")[0] || ""}
                   onSave={(val) => saveField("deadline", val)}
                 />
-              </SummaryField>
+              </FieldRow>
             )}
 
-            <Separator orientation="vertical" className="h-8" />
-
-            {/* Source */}
-            <SummaryField icon={TrendingUp} label="Source">
-              <InlineSelect
-                value={deal.source || ""}
-                options={SOURCES}
-                placeholder="—"
-                onSave={(val) => saveField("source", val)}
-              />
-            </SummaryField>
+            {/* Owner */}
+            {(!lpMode || deal.owner) && (
+              <FieldRow label="Owner">
+                <InlineOwnerField
+                  owner={deal.owner}
+                  onSave={(ownerId) => onSave({ ownerId })}
+                />
+              </FieldRow>
+            )}
 
             {/* Confidence */}
-            <SummaryField icon={Gauge} label="Confidence">
+            <FieldRow label="Confidence">
               <ConfidenceMeter
                 value={deal.confidence}
                 onSave={(val) => saveField("confidence", val)}
               />
-            </SummaryField>
+            </FieldRow>
           </div>
 
-          {/* Right: Terms */}
-          <div className="flex items-center gap-5 shrink-0">
-            {(deal.valuation || deal.sharePrice) && (
-              <>
-                {deal.valuation && (
-                  <div className="text-right">
-                    <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Valuation</div>
-                    <div className="text-sm font-semibold text-slate-900">{formatCurrency(deal.valuation)}</div>
-                  </div>
-                )}
-                {deal.sharePrice && (
-                  <div className="text-right">
-                    <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">PPS</div>
-                    <div className="text-sm font-semibold text-slate-900">${(deal.sharePrice / 100).toFixed(2)}</div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Links Strip */}
-        {(hasAnyLink || true) && (
-          <div className="flex items-center gap-1 mt-3">
-            {links.map((link) => (
-              <LinkChip
-                key={link.key}
-                label={link.label}
-                icon={link.icon}
-                url={link.url}
-                onSave={(val) => saveField(link.key, val)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* ═══ Layer 2: Tabs ═══ */}
-      <div className="border-t border-slate-100">
-        <Tabs defaultValue="overview" className="gap-0">
-          <TabsList className="w-full justify-start rounded-none bg-transparent border-b border-slate-100 h-9 px-5">
-            <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[12px] px-3 py-1.5">
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="terms" className="rounded-none border-b-2 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[12px] px-3 py-1.5">
-              Terms
-            </TabsTrigger>
-            {!lpMode && (
-              <TabsTrigger value="notes" className="rounded-none border-b-2 border-transparent data-[state=active]:border-slate-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-[12px] px-3 py-1.5">
-                Notes
-              </TabsTrigger>
-            )}
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="px-5 py-4">
-            <div className="flex items-start gap-8">
-              {/* Source Detail */}
-              <div className="flex-1 min-w-0">
-                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Source Detail</div>
-                <InlineTextCompact
-                  value={deal.sourceDetail || ""}
-                  placeholder="Add context about source..."
-                  onSave={(val) => saveField("sourceDetail", val)}
-                />
-              </div>
-
-              {/* Deadline (if not shown above) */}
-              {(!deal.deadline || deal.deadline === deal.expectedClose) && (
-                <div>
-                  <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Deadline</div>
-                  <InlineDateCompact
-                    value={deal.deadline?.split("T")[0] || ""}
-                    onSave={(val) => saveField("deadline", val)}
+          {/* Zone B: Terms Snapshot (right) */}
+          {showTerms && (
+            <div className="shrink-0 space-y-3 min-w-[180px]">
+              {/* Valuation */}
+              {(!lpMode || deal.valuation) && (
+                <FieldRow label="Valuation">
+                  <InlineCurrencyField
+                    value={deal.valuation}
+                    placeholder="e.g. 10B, 500M"
+                    onSave={(val) => saveField("valuation", val)}
                   />
-                </div>
+                </FieldRow>
               )}
 
-              {/* Tags */}
-              <div className="shrink-0">
-                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1.5">Tags</div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-[11px] font-normal pl-2 pr-1 py-0 h-5 flex items-center gap-0.5 bg-slate-100">
-                      {tag}
-                      <button onClick={() => removeTag(tag)} className="text-slate-400 hover:text-rose-500 transition-colors ml-0.5">
-                        <X className="h-2.5 w-2.5" />
-                      </button>
-                    </Badge>
-                  ))}
-                  {addingTag ? (
-                    <input
-                      ref={tagInputRef}
-                      type="text"
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      onBlur={() => { if (newTag.trim()) addTag(); setAddingTag(false); setNewTag(""); }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") { addTag(); setAddingTag(false); }
-                        if (e.key === "Escape") { setAddingTag(false); setNewTag(""); }
-                      }}
-                      placeholder="tag"
-                      className="text-[11px] border-b border-slate-300 outline-none w-14 py-0.5 bg-transparent"
-                    />
-                  ) : (
-                    <button
-                      onClick={() => setAddingTag(true)}
-                      className="text-slate-300 hover:text-slate-500 transition-colors"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </TabsContent>
+              {/* PPS */}
+              {(!lpMode || deal.sharePrice) && (
+                <FieldRow label="PPS">
+                  <InlineSharePriceField
+                    value={deal.sharePrice}
+                    onSave={(val) => saveField("sharePrice", val)}
+                  />
+                </FieldRow>
+              )}
 
-          {/* Terms Tab */}
-          <TabsContent value="terms" className="px-5 py-4">
-            <div className="grid grid-cols-3 gap-6 max-w-lg">
-              <div>
-                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Valuation</div>
-                <InlineCurrencyField
-                  value={deal.valuation}
-                  placeholder="e.g. 10B, 500M"
-                  onSave={(val) => saveField("valuation", val)}
-                />
-              </div>
-              <div>
-                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Share Price</div>
-                <InlineSharePriceField
-                  value={deal.sharePrice}
-                  onSave={(val) => saveField("sharePrice", val)}
-                />
-              </div>
-              <div>
-                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Confidence</div>
-                <ConfidenceMeter
-                  value={deal.confidence}
-                  onSave={(val) => saveField("confidence", val)}
-                  showLabel
-                />
-              </div>
+              {/* Source */}
+              {(!lpMode || deal.source) && (
+                <FieldRow label="Source">
+                  <InlineSelect
+                    value={deal.source || ""}
+                    options={SOURCES}
+                    placeholder="—"
+                    onSave={(val) => saveField("source", val)}
+                  />
+                </FieldRow>
+              )}
             </div>
-          </TabsContent>
-
-          {/* Notes Tab */}
-          {!lpMode && (
-            <TabsContent value="notes" className="px-5 py-4">
-              <NotesEditor
-                value={deal.notes || ""}
-                onSave={(val) => saveField("notes", val)}
-              />
-            </TabsContent>
           )}
-        </Tabs>
+        </div>
+
+        {/* ═══ Zone C: Links ═══ */}
+        <div className="flex items-center gap-1 mt-4">
+          {links.map((link) => (
+            <LinkChip
+              key={link.key}
+              label={link.label}
+              icon={link.icon}
+              url={link.url}
+              onSave={(val) => saveField(link.key, val)}
+            />
+          ))}
+        </div>
+
+        {/* ═══ "More" Drawer ═══ */}
+        <Collapsible open={moreOpen} onOpenChange={setMoreOpen} className="mt-4">
+          <CollapsibleTrigger className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500 hover:text-slate-700 transition-colors cursor-pointer">
+            {moreOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+            More
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3 space-y-4">
+            {/* Source Detail */}
+            <div>
+              <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Source Detail</div>
+              <InlineTextCompact
+                value={deal.sourceDetail || ""}
+                placeholder="Add context about source..."
+                onSave={(val) => saveField("sourceDetail", val)}
+              />
+            </div>
+
+            {/* Tags */}
+            <div>
+              <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1.5">Tags</div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" className="text-[11px] font-normal pl-2 pr-1 py-0 h-5 flex items-center gap-0.5 bg-slate-100">
+                    {tag}
+                    <button onClick={() => removeTag(tag)} className="text-slate-400 hover:text-rose-500 transition-colors ml-0.5">
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </Badge>
+                ))}
+                {addingTag ? (
+                  <input
+                    ref={tagInputRef}
+                    type="text"
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onBlur={() => { if (newTag.trim()) addTag(); setAddingTag(false); setNewTag(""); }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") { addTag(); setAddingTag(false); }
+                      if (e.key === "Escape") { setAddingTag(false); setNewTag(""); }
+                    }}
+                    placeholder="tag"
+                    className="text-[11px] border-b border-slate-300 outline-none w-14 py-0.5 bg-transparent"
+                  />
+                ) : (
+                  <button
+                    onClick={() => setAddingTag(true)}
+                    className="text-slate-300 hover:text-slate-500 transition-colors"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Notes */}
+            {!lpMode && (
+              <div>
+                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Notes</div>
+                <NotesEditor
+                  value={deal.notes || ""}
+                  onSave={(val) => saveField("notes", val)}
+                />
+              </div>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* ═══ Clarification Line ═══ */}
+        <div className="mt-4 text-[11px] text-slate-400 italic">
+          KPIs are live-calculated from interests/blocks
+        </div>
       </div>
     </Card>
   );
 }
 
-// ============ Summary Field Wrapper ============
+// ============ Field Row Wrapper ============
 
-function SummaryField({ icon: Icon, label, children }: {
-  icon: typeof Target;
-  label: string;
-  children: React.ReactNode;
-}) {
+function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 min-w-0">
-      <Icon className="h-3.5 w-3.5 text-slate-300 shrink-0" />
-      <div className="min-w-0">
-        <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider leading-none mb-0.5">{label}</div>
-        {children}
-      </div>
+    <div className="flex items-center gap-3">
+      <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider w-20 shrink-0">{label}</div>
+      <div className="min-w-0">{children}</div>
     </div>
+  );
+}
+
+// ============ InlineOwnerField ============
+
+function InlineOwnerField({ owner, onSave }: {
+  owner: Owner | null;
+  onSave: (ownerId: number | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [users, setUsers] = useState<Owner[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const ref = useRef<HTMLSelectElement>(null);
+
+  useEffect(() => {
+    if (editing && ref.current) ref.current.focus();
+  }, [editing, users]);
+
+  const startEdit = async () => {
+    setEditing(true);
+    if (users.length === 0) {
+      setLoadingUsers(true);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users`);
+        if (res.ok) {
+          const data = await res.json();
+          setUsers(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch users:", err);
+      } finally {
+        setLoadingUsers(false);
+      }
+    }
+  };
+
+  if (editing) {
+    if (loadingUsers) {
+      return <span className="text-[13px] text-slate-400">Loading...</span>;
+    }
+    return (
+      <select
+        ref={ref}
+        value={owner?.id?.toString() || ""}
+        onChange={(e) => {
+          const val = e.target.value ? parseInt(e.target.value) : null;
+          onSave(val);
+          setEditing(false);
+        }}
+        onBlur={() => setEditing(false)}
+        className="text-[13px] font-medium bg-transparent border-b border-slate-300 outline-none py-0 cursor-pointer"
+      >
+        <option value="">Unassigned</option>
+        {users.map((u) => (
+          <option key={u.id} value={u.id.toString()}>
+            {u.firstName} {u.lastName}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  return (
+    <button
+      onClick={startEdit}
+      className="flex items-center gap-1.5 text-[13px] font-medium text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer"
+    >
+      <User className="h-3 w-3 text-slate-400" />
+      {owner ? `${owner.firstName} ${owner.lastName}` : <span className="text-slate-300">Assign owner</span>}
+    </button>
   );
 }
 

@@ -27,6 +27,10 @@ interface TruthPanelProps {
     severity: string;
   } | null;
   onBlockClick?: (blockId: number) => void;
+  onMissingDocClick?: () => void;
+  onConstraintClick?: () => void;
+  onDeadlineClick?: () => void;
+  onBlockingClick?: () => void;
 }
 
 function formatCurrency(cents: number) {
@@ -64,6 +68,10 @@ export function TruthPanel({
   nextDeadline,
   blocking,
   onBlockClick,
+  onMissingDocClick,
+  onConstraintClick,
+  onDeadlineClick,
+  onBlockingClick,
 }: TruthPanelProps) {
   const panels = [
     {
@@ -73,20 +81,14 @@ export function TruthPanel({
       hasData: !!bestPrice,
       iconColor: "text-green-600",
       bgColor: "bg-green-50",
+      hoverColor: "hover:ring-green-200",
+      onClick: bestPrice && onBlockClick ? () => onBlockClick(bestPrice.blockId) : undefined,
       content: bestPrice ? (
         <div>
           <div className="text-2xl font-semibold">{formatCurrency(bestPrice.priceCents)}</div>
           <div className="text-sm text-muted-foreground mt-1">
             {bestPrice.source || "Unknown source"}
           </div>
-          {onBlockClick && (
-            <button
-              onClick={() => onBlockClick(bestPrice.blockId)}
-              className="text-xs text-blue-600 hover:underline mt-1"
-            >
-              View block
-            </button>
-          )}
         </div>
       ) : (
         <div className="text-muted-foreground">No blocks available</div>
@@ -99,6 +101,8 @@ export function TruthPanel({
       hasData: !!biggestConstraint,
       iconColor: "text-amber-600",
       bgColor: "bg-amber-50",
+      hoverColor: "hover:ring-amber-200",
+      onClick: biggestConstraint && onConstraintClick ? onConstraintClick : undefined,
       content: biggestConstraint ? (
         <div>
           <div className="text-sm font-medium">{biggestConstraint.message}</div>
@@ -120,6 +124,8 @@ export function TruthPanel({
       hasData: !!missingDoc,
       iconColor: "text-orange-600",
       bgColor: "bg-orange-50",
+      hoverColor: "hover:ring-orange-200",
+      onClick: missingDoc && onMissingDocClick ? onMissingDocClick : undefined,
       content: missingDoc ? (
         <div>
           <div className="text-sm font-medium">{missingDoc.label}</div>
@@ -141,6 +147,8 @@ export function TruthPanel({
       hasData: !!nextDeadline,
       iconColor: nextDeadline && daysUntil(nextDeadline.date) <= 7 ? "text-red-600" : "text-blue-600",
       bgColor: nextDeadline && daysUntil(nextDeadline.date) <= 7 ? "bg-red-50" : "bg-blue-50",
+      hoverColor: nextDeadline && daysUntil(nextDeadline.date) <= 7 ? "hover:ring-red-200" : "hover:ring-blue-200",
+      onClick: nextDeadline && onDeadlineClick ? onDeadlineClick : undefined,
       content: nextDeadline ? (
         <div>
           <div className="text-lg font-semibold">{formatDate(nextDeadline.date)}</div>
@@ -170,6 +178,8 @@ export function TruthPanel({
       hasData: !!blocking?.active,
       iconColor: "text-red-600",
       bgColor: "bg-red-50",
+      hoverColor: "hover:ring-red-200",
+      onClick: blocking?.active && onBlockingClick ? onBlockingClick : undefined,
       content: blocking?.active ? (
         <div>
           <div className="text-sm font-medium text-red-700">{blocking.message}</div>
@@ -187,10 +197,17 @@ export function TruthPanel({
     <div className="grid grid-cols-5 gap-3">
       {panels.map((panel) => {
         const Icon = panel.icon;
+        const isInteractive = !!panel.onClick;
         return (
           <div
             key={panel.key}
-            className={`rounded-lg border p-4 ${panel.hasData ? panel.bgColor : "bg-slate-50"}`}
+            role={isInteractive ? "button" : undefined}
+            tabIndex={isInteractive ? 0 : undefined}
+            onClick={panel.onClick}
+            onKeyDown={isInteractive ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); panel.onClick?.(); } } : undefined}
+            className={`rounded-lg border p-4 transition-all ${panel.hasData ? panel.bgColor : "bg-slate-50"} ${
+              isInteractive ? `cursor-pointer hover:ring-2 ${panel.hoverColor}` : ""
+            }`}
           >
             <div className="flex items-center gap-2 mb-3">
               <Icon className={`h-4 w-4 ${panel.hasData ? panel.iconColor : "text-slate-400"}`} />

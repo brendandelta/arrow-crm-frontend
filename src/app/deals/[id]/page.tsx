@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -301,6 +301,8 @@ export default function DealDetailPage() {
   const [showAddTarget, setShowAddTarget] = useState(false);
   const [selectedTarget, setSelectedTarget] = useState<DealTarget | null>(null);
   const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "activity" | "targets">("targets");
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const [sidebarSection, setSidebarSection] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/${params.id}`)
@@ -458,6 +460,7 @@ export default function DealDetailPage() {
     dataRoomUrl: string | null;
     deckUrl: string | null;
     notionUrl: string | null;
+    ownerId: number | null;
   }>) => {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/${params.id}`,
@@ -480,6 +483,7 @@ export default function DealDetailPage() {
             data_room_url: data.dataRoomUrl,
             deck_url: data.deckUrl,
             notion_url: data.notionUrl,
+            owner_id: data.ownerId !== undefined ? data.ownerId : undefined,
           },
         }),
       }
@@ -488,6 +492,34 @@ export default function DealDetailPage() {
       throw new Error("Failed to update deal");
     }
     refreshDeal();
+  };
+
+  const handleMissingDocClick = () => {
+    setSidebarSection("documents");
+    sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleConstraintClick = () => {
+    setSidebarSection("tasks");
+    sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleDeadlineClick = () => {
+    if (deal?.truthPanel.nextDeadline?.type === "task") {
+      const allTasks = [...(deal.tasks.overdue || []), ...(deal.tasks.dueThisWeek || []), ...(deal.tasks.backlog || [])];
+      const match = allTasks.find(t =>
+        t.subject === deal.truthPanel.nextDeadline?.label ||
+        t.dueAt?.startsWith(deal.truthPanel.nextDeadline?.date || "")
+      );
+      if (match) { setSelectedTask(match); return; }
+    }
+    setSidebarSection("tasks");
+    sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleBlockingClick = () => {
+    setSidebarSection("tasks");
+    sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   if (loading) {
@@ -542,6 +574,10 @@ export default function DealDetailPage() {
           const block = deal.blocks.find((b) => b.id === blockId);
           if (block) setSelectedBlock(block);
         }}
+        onMissingDocClick={handleMissingDocClick}
+        onConstraintClick={handleConstraintClick}
+        onDeadlineClick={handleDeadlineClick}
+        onBlockingClick={handleBlockingClick}
       />
 
       {/* Deal Details - Inline Editable */}
@@ -651,7 +687,7 @@ export default function DealDetailPage() {
         </div>
 
         {/* Right Column - Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-6" ref={sidebarRef}>
           <Card>
             <CardContent className="pt-6">
               <DealSidebar
@@ -662,6 +698,8 @@ export default function DealDetailPage() {
                 advantages={deal.advantages}
                 riskFlags={deal.riskFlags}
                 lpMode={lpMode}
+                activeSection={sidebarSection}
+                onSectionChange={setSidebarSection}
                 onTaskToggle={handleTaskToggle}
                 onTaskClick={(task) => setSelectedTask(task)}
                 onAddTask={() => setShowAddTask(true)}

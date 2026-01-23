@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   CheckSquare,
   Clock,
@@ -700,6 +700,8 @@ interface DealSidebarProps {
   advantages: Advantage[];
   riskFlags: Record<string, { active: boolean; message: string; severity: string }>;
   lpMode: boolean;
+  activeSection?: string;
+  onSectionChange?: (section: string) => void;
   onTaskToggle?: (taskId: number, currentlyCompleted: boolean) => void;
   onTaskClick?: (task: Task) => void;
   onAddTask?: () => void;
@@ -717,6 +719,8 @@ export function DealSidebar({
   advantages,
   riskFlags,
   lpMode,
+  activeSection,
+  onSectionChange,
   onTaskToggle,
   onTaskClick,
   onAddTask,
@@ -725,7 +729,18 @@ export function DealSidebar({
   onAddAdvantage,
   onSwitchToTargetsTab,
 }: DealSidebarProps) {
-  const [expandedSection, setExpandedSection] = useState<string>("tasks");
+  const [internalSection, setInternalSection] = useState<string>("tasks");
+
+  useEffect(() => {
+    if (activeSection) setInternalSection(activeSection);
+  }, [activeSection]);
+
+  const expandedSection = internalSection;
+
+  const handleSectionChange = (section: string) => {
+    setInternalSection(section);
+    onSectionChange?.(section);
+  };
 
   const sections = [
     { key: "tasks", label: "Tasks", icon: CheckSquare },
@@ -743,7 +758,7 @@ export function DealSidebar({
           return (
             <button
               key={section.key}
-              onClick={() => setExpandedSection(section.key)}
+              onClick={() => handleSectionChange(section.key)}
               className={`flex items-center gap-1.5 px-3 py-2 text-sm border-b-2 transition-colors ${
                 expandedSection === section.key
                   ? "border-slate-900 text-slate-900 font-medium"
