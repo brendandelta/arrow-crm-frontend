@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Fragment } from "react";
 import { useRouter } from "next/navigation";
+import { CreateDealModal } from "./_components/CreateDealModal";
 import {
   Table,
   TableBody,
@@ -10,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, ChevronRight, ChevronDown } from "lucide-react";
+import { Search, ChevronRight, ChevronDown, Plus } from "lucide-react";
 import { KPIStrip } from "./_components/KPIStrip";
 import { DealsFilters } from "./_components/DealsFilters";
 import { ExpandedRowContent } from "./_components/ExpandableTableRow";
@@ -190,6 +191,7 @@ export default function DealsPage() {
   const [expandedDealId, setExpandedDealId] = useState<number | null>(null);
   const [expandedData, setExpandedData] = useState<Record<number, ExpandableRowData>>({});
   const [loadingExpanded, setLoadingExpanded] = useState<number | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Extract unique values for filters
   const allStages = Array.from(new Set(deals.map((d) => d.stage).filter(Boolean)));
@@ -359,7 +361,16 @@ export default function DealsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Deals</h1>
-        <ViewToggle activeView={viewMode} onViewChange={setViewMode} />
+        <div className="flex items-center gap-3">
+          <ViewToggle activeView={viewMode} onViewChange={setViewMode} />
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            New Deal
+          </button>
+        </div>
       </div>
 
       {/* KPI Strip */}
@@ -566,6 +577,10 @@ export default function DealsPage() {
             </TableBody>
           </Table>
         </div>
+      )}
+
+      {showCreateModal && (
+        <CreateDealModal onClose={() => setShowCreateModal(false)} />
       )}
     </div>
   );
