@@ -445,13 +445,15 @@ function InlineFollowUpForm({ dealId, taskableType, taskableId, onCancel, onSucc
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          subject: subject.trim(),
-          due_at: dueAt || null,
-          priority: priority === "high" ? 2 : priority === "low" ? 0 : 1,
-          assigned_to_id: assignedToId ? Number(assignedToId) : null,
-          deal_id: dealId,
-          taskable_type: taskableType,
-          taskable_id: taskableId,
+          task: {
+            subject: subject.trim(),
+            due_at: dueAt || null,
+            priority: priority === "high" ? 2 : priority === "low" ? 0 : 1,
+            assigned_to_id: assignedToId ? Number(assignedToId) : null,
+            deal_id: dealId,
+            taskable_type: taskableType,
+            taskable_id: taskableId,
+          },
         }),
       });
       onSuccess();

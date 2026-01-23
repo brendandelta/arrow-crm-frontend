@@ -113,20 +113,18 @@ export function ActivitySlideOut({
     setSaving(true);
     try {
       const payload = {
-        activity: {
-          deal_id: dealId,
-          kind: formData.kind,
-          subject: formData.subject || null,
-          body: formData.body || null,
-          occurred_at: formData.occurredAt || new Date().toISOString(),
-          starts_at: formData.startsAt || null,
-          ends_at: formData.endsAt || null,
-          outcome: formData.outcome || null,
-          direction: formData.direction || null,
-          is_task: formData.isTask,
-          task_completed: formData.taskCompleted,
-          task_due_at: formData.taskDueAt || null,
-        },
+        deal_id: dealId,
+        kind: formData.kind,
+        subject: formData.subject || null,
+        body: formData.body || null,
+        occurred_at: formData.occurredAt || new Date().toISOString(),
+        starts_at: formData.startsAt || null,
+        ends_at: formData.endsAt || null,
+        outcome: formData.outcome || null,
+        direction: formData.direction || null,
+        is_task: formData.isTask,
+        task_completed: formData.taskCompleted,
+        task_due_at: formData.taskDueAt || null,
       };
 
       const url = isNew

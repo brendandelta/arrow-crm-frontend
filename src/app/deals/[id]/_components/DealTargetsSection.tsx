@@ -726,13 +726,15 @@ function InlineAddTaskForm({ dealId, targetId, onCancel, onSuccess }: InlineAddT
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          subject: subject.trim(),
-          due_at: dueAt || null,
-          priority: priority === "high" ? 2 : priority === "low" ? 0 : 1,
-          assigned_to_id: assignedToId ? Number(assignedToId) : null,
-          deal_id: dealId,
-          taskable_type: "DealTarget",
-          taskable_id: targetId,
+          task: {
+            subject: subject.trim(),
+            due_at: dueAt || null,
+            priority: priority === "high" ? 2 : priority === "low" ? 0 : 1,
+            assigned_to_id: assignedToId ? Number(assignedToId) : null,
+            deal_id: dealId,
+            taskable_type: "DealTarget",
+            taskable_id: targetId,
+          },
         }),
       });
       onSuccess();

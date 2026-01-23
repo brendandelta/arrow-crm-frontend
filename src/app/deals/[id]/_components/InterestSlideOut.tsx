@@ -157,21 +157,19 @@ export function InterestSlideOut({
     setSaving(true);
     try {
       const payload = {
-        interest: {
-          deal_id: dealId,
-          investor_id: formData.investorId,
-          status: formData.status,
-          target_cents: parseCurrency(formData.targetCents),
-          min_cents: parseCurrency(formData.minCents),
-          max_cents: parseCurrency(formData.maxCents),
-          committed_cents: parseCurrency(formData.committedCents),
-          allocated_cents: parseCurrency(formData.allocatedCents),
-          allocated_block_id: formData.allocatedBlockId ? parseInt(formData.allocatedBlockId) : null,
-          source: formData.source || null,
-          next_step: formData.nextStep || null,
-          next_step_at: formData.nextStepAt || null,
-          internal_notes: formData.internalNotes || null,
-        },
+        deal_id: dealId,
+        investor_id: formData.investorId,
+        status: formData.status,
+        target_cents: parseCurrency(formData.targetCents),
+        min_cents: parseCurrency(formData.minCents),
+        max_cents: parseCurrency(formData.maxCents),
+        committed_cents: parseCurrency(formData.committedCents),
+        allocated_cents: parseCurrency(formData.allocatedCents),
+        allocated_block_id: formData.allocatedBlockId ? parseInt(formData.allocatedBlockId) : null,
+        source: formData.source || null,
+        next_step: formData.nextStep || null,
+        next_step_at: formData.nextStepAt || null,
+        internal_notes: formData.internalNotes || null,
       };
 
       const url = isNew
