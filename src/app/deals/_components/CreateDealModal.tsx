@@ -187,11 +187,11 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
       if (confidence) payload.confidence = parseInt(confidence, 10);
       if (expectedClose) payload.expected_close = expectedClose;
       if (deadline) payload.deadline = deadline;
-      if (valuation) payload.target_valuation_cents = parseCurrencyToCents(valuation);
+      if (valuation) payload.valuation_cents = parseCurrencyToCents(valuation);
       if (sharePrice) payload.share_price_cents = parseCurrencyToCents(sharePrice);
       if (source) payload.source = source;
       if (tags.length > 0) payload.tags = tags;
-      if (notes.trim()) payload.notes = notes.trim();
+      if (notes.trim()) payload.internal_notes = notes.trim();
       if (driveUrl.trim()) payload.drive_url = driveUrl.trim();
       if (dataRoomUrl.trim()) payload.data_room_url = dataRoomUrl.trim();
       if (deckUrl.trim()) payload.deck_url = deckUrl.trim();
@@ -200,7 +200,7 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deal: payload }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error("Failed to create deal");
