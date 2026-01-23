@@ -159,6 +159,7 @@ interface DealTarget {
   daysSinceContact: number | null;
   owner?: { id: number; firstName: string; lastName: string } | null;
   recentActivities?: Activity[];
+  tasks?: { id: number; subject: string; dueAt: string | null; overdue: boolean; assignedTo?: { id: number; firstName: string; lastName: string } | null }[];
 }
 
 interface DocumentItem {
@@ -806,14 +807,13 @@ export default function DealDetailPage() {
             status: selectedTarget.status,
             role: selectedTarget.role,
             priority: selectedTarget.priority,
-            nextStep: selectedTarget.nextStep,
-            nextStepAt: selectedTarget.nextStepAt,
             notes: selectedTarget.notes || null,
             ownerId: selectedTarget.owner?.id || null,
             ownerName: selectedTarget.owner ? `${selectedTarget.owner.firstName} ${selectedTarget.owner.lastName}` : null,
             firstContactedAt: selectedTarget.firstContactedAt || null,
             lastContactedAt: selectedTarget.lastContactedAt || null,
             activityCount: selectedTarget.activityCount,
+            tasks: selectedTarget.tasks || [],
           } : undefined}
           onClose={() => { setShowAddTarget(false); setSelectedTarget(null); }}
           onSaved={() => { refreshDeal(); }}

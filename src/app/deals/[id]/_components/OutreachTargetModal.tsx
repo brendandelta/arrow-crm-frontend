@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { X, Loader2, Search, ArrowRight, Plus, ExternalLink } from "lucide-react";
+import { X, Loader2, Search, ArrowRight, Plus, ExternalLink, Check, ChevronDown, ChevronRight, CalendarClock } from "lucide-react";
 import Link from "next/link";
 
 interface User {
@@ -20,6 +20,15 @@ interface SearchResult {
   org?: string;
 }
 
+interface TaskInfo {
+  id: number;
+  subject: string;
+  dueAt: string | null;
+  overdue: boolean;
+  priority?: number;
+  assignedTo?: { id: number; firstName: string; lastName: string } | null;
+}
+
 interface DealTarget {
   id?: number;
   dealId: number;
@@ -29,14 +38,13 @@ interface DealTarget {
   status: string;
   role: string | null;
   priority: number;
-  nextStep: string | null;
-  nextStepAt: string | null;
   notes: string | null;
   ownerId: number | null;
   ownerName?: string | null;
   firstContactedAt?: string | null;
   lastContactedAt?: string | null;
   activityCount?: number;
+  tasks?: TaskInfo[];
 }
 
 interface OutreachTargetModalProps {
@@ -266,9 +274,9 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
   const [role, setRole] = useState(target?.role || "");
   const [priority, setPriority] = useState(target?.priority ?? 2);
   const [ownerId, setOwnerId] = useState<number | null>(target?.ownerId || null);
-  const [nextStep, setNextStep] = useState(target?.nextStep || "");
-  const [nextStepAt, setNextStepAt] = useState(target?.nextStepAt?.split("T")[0] || "");
   const [notes, setNotes] = useState(target?.notes || "");
+  const [tasks, setTasks] = useState<TaskInfo[]>(target?.tasks || []);
+  const [showAddTask, setShowAddTask] = useState(false);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users`)
@@ -297,8 +305,6 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
         role: role || null,
         priority,
         owner_id: ownerId,
-        next_step: nextStep || null,
-        next_step_at: nextStepAt || null,
         notes: notes || null,
       };
 
@@ -488,32 +494,49 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
             </select>
           </div>
 
-          {/* Next Step */}
-          <div>
-            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
-              Next Step
-            </label>
-            <input
-              type="text"
-              value={nextStep}
-              onChange={(e) => setNextStep(e.target.value)}
-              className={inputClass}
-              placeholder="What's the next action?"
-            />
-          </div>
+          {/* Target Tasks */}
+          {isEdit && target.id && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  Target Tasks
+                </label>
+                {!showAddTask && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAddTask(true)}
+                    className="flex items-center gap-1 text-[11px] text-indigo-500 hover:text-indigo-700 transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Add Task
+                  </button>
+                )}
+              </div>
 
-          {/* Next Step Due Date */}
-          <div>
-            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
-              Follow-up Date
-            </label>
-            <input
-              type="date"
-              value={nextStepAt}
-              onChange={(e) => setNextStepAt(e.target.value)}
-              className={inputClass}
-            />
-          </div>
+              {showAddTask && (
+                <ModalAddTaskForm
+                  dealId={dealId}
+                  targetId={target.id}
+                  users={users}
+                  onCancel={() => setShowAddTask(false)}
+                  onSuccess={(newTask) => {
+                    setTasks([newTask, ...tasks]);
+                    setShowAddTask(false);
+                    onSaved();
+                  }}
+                />
+              )}
+
+              {tasks.length > 0 ? (
+                <ModalTaskList tasks={tasks} onTaskCompleted={(taskId) => {
+                  setTasks(tasks.filter(t => t.id !== taskId));
+                  onSaved();
+                }} />
+              ) : !showAddTask ? (
+                <p className="text-[12px] text-slate-300 italic py-2">No tasks yet</p>
+              ) : null}
+            </div>
+          )}
 
           {/* Notes */}
           <div>
@@ -564,6 +587,212 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
             {isEdit ? "Save" : "Add Target"}
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ Modal Task List ============
+
+function ModalTaskList({ tasks, onTaskCompleted }: { tasks: TaskInfo[]; onTaskCompleted: (id: number) => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const visibleTasks = expanded ? tasks : tasks.slice(0, 1);
+
+  return (
+    <div className="space-y-1">
+      {visibleTasks.map((task) => (
+        <ModalTaskItem key={task.id} task={task} onComplete={() => onTaskCompleted(task.id)} />
+      ))}
+      {tasks.length > 1 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600 ml-6 mt-1 transition-colors"
+        >
+          {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          {expanded ? "Show less" : `${tasks.length - 1} more task${tasks.length - 1 > 1 ? "s" : ""}`}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ModalTaskItem({ task, onComplete }: { task: TaskInfo; onComplete: () => void }) {
+  const [completing, setCompleting] = useState(false);
+  const [completed, setCompleted] = useState(false);
+
+  const handleComplete = async () => {
+    setCompleting(true);
+    setCompleted(true);
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${task.id}/complete`, {
+        method: "POST",
+      });
+      onComplete();
+    } catch (err) {
+      console.error("Failed to complete task:", err);
+      setCompleted(false);
+    }
+    setCompleting(false);
+  };
+
+  if (completed) {
+    return (
+      <div className="flex items-center gap-2 py-1.5 px-2 rounded-md bg-slate-50/50">
+        <div className="w-[18px] h-[18px] rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+          <Check className="h-3 w-3 text-white" />
+        </div>
+        <span className="text-[12px] text-slate-400 line-through truncate">{task.subject}</span>
+      </div>
+    );
+  }
+
+  const formatTaskDate = (dateStr: string | null) => {
+    if (!dateStr) return null;
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
+
+  return (
+    <div className="flex items-start gap-2 py-1.5 px-2 rounded-md group/task hover:bg-slate-50 transition-colors">
+      <button
+        type="button"
+        onClick={handleComplete}
+        disabled={completing}
+        className="mt-[1px] w-[18px] h-[18px] rounded-full border-[1.5px] border-slate-300 group-hover/task:border-emerald-400 flex items-center justify-center shrink-0 transition-all hover:bg-emerald-50 disabled:opacity-50"
+      >
+        <Check className="h-3 w-3 text-emerald-500 opacity-0 group-hover/task:opacity-60 transition-opacity" />
+      </button>
+      <div className="flex-1 min-w-0">
+        <div className={`text-[13px] leading-tight truncate ${task.overdue ? "text-rose-600 font-medium" : "text-slate-700"}`}>
+          {task.subject}
+        </div>
+        <div className="flex items-center gap-2 mt-0.5">
+          {task.dueAt && (
+            <span className={`text-[11px] ${task.overdue ? "text-rose-500 font-medium" : "text-slate-400"}`}>
+              {formatTaskDate(task.dueAt)}
+            </span>
+          )}
+          {task.assignedTo && (
+            <span className="text-[11px] text-slate-300">
+              {task.assignedTo.firstName}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============ Modal Add Task Form ============
+
+function ModalAddTaskForm({ dealId, targetId, users, onCancel, onSuccess }: {
+  dealId: number;
+  targetId: number;
+  users: User[];
+  onCancel: () => void;
+  onSuccess: (task: TaskInfo) => void;
+}) {
+  const [subject, setSubject] = useState("");
+  const [dueAt, setDueAt] = useState("");
+  const [taskPriority, setTaskPriority] = useState("normal");
+  const [assignedToId, setAssignedToId] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!subject.trim()) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task: {
+            subject: subject.trim(),
+            due_at: dueAt || null,
+            priority: taskPriority === "high" ? 2 : taskPriority === "low" ? 0 : 1,
+            assigned_to_id: assignedToId ? Number(assignedToId) : null,
+            deal_id: dealId,
+            taskable_type: "DealTarget",
+            taskable_id: targetId,
+          },
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        onSuccess({
+          id: data.id,
+          subject: data.subject || subject.trim(),
+          dueAt: data.dueAt || dueAt || null,
+          overdue: false,
+          assignedTo: assignedToId ? users.find(u => u.id === Number(assignedToId)) || null : null,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to create task:", err);
+    }
+    setSubmitting(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && subject.trim()) handleSubmit();
+    if (e.key === "Escape") onCancel();
+  };
+
+  return (
+    <div className="mb-3 p-3 bg-slate-50/80 rounded-lg border border-slate-200 space-y-2">
+      <input
+        type="text"
+        placeholder="What needs to be done?"
+        value={subject}
+        onChange={(e) => setSubject(e.target.value)}
+        onKeyDown={handleKeyDown}
+        className="w-full text-[13px] px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 placeholder:text-slate-300"
+        autoFocus
+      />
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5">
+          <CalendarClock className="h-3 w-3 text-slate-300" />
+          <input
+            type="date"
+            value={dueAt}
+            onChange={(e) => setDueAt(e.target.value)}
+            className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
+          />
+        </div>
+        <select
+          value={taskPriority}
+          onChange={(e) => setTaskPriority(e.target.value)}
+          className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
+        >
+          <option value="low">Low</option>
+          <option value="normal">Normal</option>
+          <option value="high">High</option>
+        </select>
+        <select
+          value={assignedToId}
+          onChange={(e) => setAssignedToId(e.target.value)}
+          className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
+        >
+          <option value="">Assign to...</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.firstName} {u.lastName}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex items-center gap-2 pt-0.5">
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!subject.trim() || submitting}
+          className="px-3 py-1.5 text-[12px] font-medium text-white bg-slate-800 rounded-md hover:bg-slate-700 disabled:opacity-40 transition-colors shadow-sm"
+        >
+          {submitting ? "Saving..." : "Add Task"}
+        </button>
+        <button type="button" onClick={onCancel} className="px-3 py-1.5 text-[12px] text-slate-400 hover:text-slate-600 transition-colors">
+          Cancel
+        </button>
       </div>
     </div>
   );

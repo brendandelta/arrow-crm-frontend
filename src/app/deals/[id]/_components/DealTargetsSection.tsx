@@ -447,10 +447,10 @@ function TargetRow({
         {/* Divider */}
         <div className="w-px bg-slate-100 my-3" />
 
-        {/* Right: Follow-up Tasks */}
+        {/* Right: Target Tasks */}
         <div className="w-[280px] shrink-0 px-5 py-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Follow-up</span>
+            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Target Tasks</span>
             {!isAddingTask && (
               <button
                 onClick={onStartAddTask}
@@ -498,7 +498,7 @@ function TargetRow({
               )}
             </div>
           ) : !isAddingTask ? (
-            <p className="text-[12px] text-slate-300 italic">No follow-up tasks</p>
+            <p className="text-[12px] text-slate-300 italic">No tasks yet</p>
           ) : null}
 
           {isAddingTask && (
