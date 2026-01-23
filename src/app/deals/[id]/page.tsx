@@ -17,6 +17,7 @@ import { BlockSlideOut } from "./_components/BlockSlideOut";
 import { InterestSlideOut } from "./_components/InterestSlideOut";
 import { ActivitySlideOut } from "./_components/ActivitySlideOut";
 import { TaskSlideOut } from "./_components/TaskSlideOut";
+import { AddTargetModal } from "../_components/mind-map/AddTargetModal";
 import { EditableDealDetails } from "./_components/EditableDealDetails";
 import { Task as SidebarTask } from "./_components/DealSidebar";
 // Import shared components
@@ -293,6 +294,7 @@ export default function DealDetailPage() {
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [selectedTask, setSelectedTask] = useState<SidebarTask | null>(null);
   const [showAddTask, setShowAddTask] = useState(false);
+  const [showAddTarget, setShowAddTarget] = useState(false);
   const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "activity" | "targets">("blocks");
 
   useEffect(() => {
@@ -589,6 +591,7 @@ export default function DealDetailPage() {
               targets={deal.targets}
               dealId={deal.id}
               onTargetUpdated={refreshDeal}
+              onAddTarget={() => setShowAddTarget(true)}
             />
           )}
 
@@ -740,6 +743,23 @@ export default function DealDetailPage() {
           }}
           onSave={handleTaskUpdate}
           onDelete={handleTaskDelete}
+        />
+      )}
+
+      {/* Add Target Modal */}
+      {showAddTarget && deal && (
+        <AddTargetModal
+          dealId={deal.id}
+          onClose={() => setShowAddTarget(false)}
+          onSave={async (data) => {
+            await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deal_targets`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data),
+            });
+            setShowAddTarget(false);
+            refreshDeal();
+          }}
         />
       )}
     </div>

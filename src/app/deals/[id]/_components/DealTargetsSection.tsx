@@ -11,6 +11,8 @@ import {
   Clock,
   MessageSquare,
   Video,
+  Plus,
+  ListTodo,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -26,6 +28,14 @@ interface Activity {
   subject: string | null;
   occurredAt: string;
   outcome?: string | null;
+}
+
+interface TaskInfo {
+  id: number;
+  subject: string;
+  dueAt: string | null;
+  overdue: boolean;
+  assignedTo?: { id: number; firstName: string; lastName: string } | null;
 }
 
 interface DealTarget {
@@ -44,12 +54,15 @@ interface DealTarget {
   daysSinceContact: number | null;
   owner?: Owner | null;
   recentActivities?: Activity[];
+  tasks?: TaskInfo[];
+  nextTask?: TaskInfo | null;
 }
 
 interface DealTargetsSectionProps {
   targets: DealTarget[];
   dealId: number;
   onTargetUpdated: () => void;
+  onAddTarget: () => void;
 }
 
 const STATUS_OPTIONS = [
@@ -91,10 +104,10 @@ const ACTIVITY_ICONS: Record<string, typeof Phone> = {
   video_call: Video,
 };
 
-export function DealTargetsSection({ targets, dealId, onTargetUpdated }: DealTargetsSectionProps) {
+export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarget }: DealTargetsSectionProps) {
   const [expandedTimelines, setExpandedTimelines] = useState<Set<number>>(new Set());
-  const [loggingEventFor, setLoggingEventFor] = useState<number | null>(null);
-  const [editingFollowUp, setEditingFollowUp] = useState<number | null>(null);
+  const [loggingEventFor, setLoggingEventFor] = useState<{ targetId: number; kind: string } | null>(null);
+  const [addingTaskFor, setAddingTaskFor] = useState<number | null>(null);
 
   // Summary counts
   const statusCounts = targets.reduce((acc, t) => {
@@ -129,20 +142,6 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated }: DealTar
     }
   };
 
-  const handleSetFollowUp = async (targetId: number, date: string) => {
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deal_targets/${targetId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ next_step_at: date }),
-      });
-      setEditingFollowUp(null);
-      onTargetUpdated();
-    } catch (err) {
-      console.error("Failed to set follow-up:", err);
-    }
-  };
-
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "Never";
     return new Date(dateStr).toLocaleDateString("en-US", {
@@ -154,20 +153,29 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated }: DealTar
   return (
     <div className="space-y-4">
       {/* Summary Bar */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {STATUS_OPTIONS.filter((s) => statusCounts[s.value]).map((s) => (
-          <span
-            key={s.value}
-            className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[s.value]}`}
-          >
-            {s.label}: {statusCounts[s.value]}
-          </span>
-        ))}
-        {staleCount > 0 && (
-          <Badge className="bg-amber-100 text-amber-700 text-xs ml-2">
-            {staleCount} need follow-up
-          </Badge>
-        )}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 flex-wrap">
+          {STATUS_OPTIONS.filter((s) => statusCounts[s.value]).map((s) => (
+            <span
+              key={s.value}
+              className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[s.value]}`}
+            >
+              {s.label}: {statusCounts[s.value]}
+            </span>
+          ))}
+          {staleCount > 0 && (
+            <Badge className="bg-amber-100 text-amber-700 text-xs ml-2">
+              {staleCount} need follow-up
+            </Badge>
+          )}
+        </div>
+        <button
+          onClick={onAddTarget}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Add Target
+        </button>
       </div>
 
       {/* Target Rows */}
@@ -181,15 +189,15 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated }: DealTar
               target={target}
               dealId={dealId}
               isTimelineExpanded={expandedTimelines.has(target.id)}
-              isLoggingEvent={loggingEventFor === target.id}
-              isEditingFollowUp={editingFollowUp === target.id}
+              isLoggingEvent={loggingEventFor?.targetId === target.id}
+              loggingKind={loggingEventFor?.targetId === target.id ? loggingEventFor.kind : undefined}
+              isAddingTask={addingTaskFor === target.id}
               onToggleTimeline={() => toggleTimeline(target.id)}
-              onStartLogEvent={() => setLoggingEventFor(target.id)}
+              onStartLogEvent={(kind: string) => setLoggingEventFor({ targetId: target.id, kind })}
               onCancelLogEvent={() => setLoggingEventFor(null)}
-              onStartEditFollowUp={() => setEditingFollowUp(target.id)}
-              onCancelEditFollowUp={() => setEditingFollowUp(null)}
+              onStartAddTask={() => setAddingTaskFor(target.id)}
+              onCancelAddTask={() => setAddingTaskFor(null)}
               onStatusChange={handleStatusChange}
-              onSetFollowUp={handleSetFollowUp}
               onTargetUpdated={onTargetUpdated}
               formatDate={formatDate}
             />
@@ -207,14 +215,14 @@ interface TargetRowProps {
   dealId: number;
   isTimelineExpanded: boolean;
   isLoggingEvent: boolean;
-  isEditingFollowUp: boolean;
+  loggingKind?: string;
+  isAddingTask: boolean;
   onToggleTimeline: () => void;
-  onStartLogEvent: () => void;
+  onStartLogEvent: (kind: string) => void;
   onCancelLogEvent: () => void;
-  onStartEditFollowUp: () => void;
-  onCancelEditFollowUp: () => void;
+  onStartAddTask: () => void;
+  onCancelAddTask: () => void;
   onStatusChange: (targetId: number, status: string) => void;
-  onSetFollowUp: (targetId: number, date: string) => void;
   onTargetUpdated: () => void;
   formatDate: (date: string | null) => string;
 }
@@ -224,23 +232,27 @@ function TargetRow({
   dealId,
   isTimelineExpanded,
   isLoggingEvent,
-  isEditingFollowUp,
+  loggingKind,
+  isAddingTask,
   onToggleTimeline,
   onStartLogEvent,
   onCancelLogEvent,
-  onStartEditFollowUp,
-  onCancelEditFollowUp,
+  onStartAddTask,
+  onCancelAddTask,
   onStatusChange,
-  onSetFollowUp,
   onTargetUpdated,
   formatDate,
 }: TargetRowProps) {
   const isStale = target.isStale || (target.daysSinceContact !== null && target.daysSinceContact > 7);
 
-  // Derive next action
-  const nextAction = target.nextStep
-    ? `${target.nextStep}${target.nextStepAt ? ` · ${formatDate(target.nextStepAt)}` : ""}`
-    : null;
+  // Use nextTask from backend if available, fall back to legacy nextStep
+  const nextTask = target.nextTask;
+  const nextActionText = nextTask
+    ? `${nextTask.subject}${nextTask.dueAt ? ` · ${formatDate(nextTask.dueAt)}` : ""}`
+    : target.nextStep
+      ? `${target.nextStep}${target.nextStepAt ? ` · ${formatDate(target.nextStepAt)}` : ""}`
+      : null;
+  const isOverdue = nextTask?.overdue || (target.nextStepAt && new Date(target.nextStepAt) < new Date());
 
   return (
     <div
@@ -261,7 +273,7 @@ function TargetRow({
             )}
           </div>
 
-          {/* Status + Last + Next */}
+          {/* Status + Last contact */}
           <div className="flex items-center gap-3 mt-1.5 flex-wrap">
             {/* Status dropdown */}
             <div className="flex items-center gap-1">
@@ -282,37 +294,20 @@ function TargetRow({
               Last: {target.daysSinceContact !== null ? `${target.daysSinceContact}d ago` : "Never"}
             </span>
 
-            {/* Next follow-up */}
-            {isEditingFollowUp ? (
-              <div className="flex items-center gap-1">
-                <input
-                  type="date"
-                  className="text-xs border rounded px-1.5 py-0.5"
-                  autoFocus
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      onSetFollowUp(target.id, e.target.value);
-                    }
-                  }}
-                  onBlur={() => onCancelEditFollowUp()}
-                />
-              </div>
-            ) : (
-              <button
-                onClick={onStartEditFollowUp}
-                className="text-xs text-blue-600 hover:text-blue-800"
-              >
-                Next: {target.nextStepAt ? formatDate(target.nextStepAt) : "Set"}
-              </button>
+            {/* Open tasks count */}
+            {target.tasks && target.tasks.length > 0 && (
+              <span className="text-xs text-slate-500">
+                {target.tasks.length} open task{target.tasks.length !== 1 ? "s" : ""}
+              </span>
             )}
           </div>
 
           {/* Next action line */}
-          {nextAction && (
+          {nextActionText && (
             <div className="mt-1 text-xs text-slate-600 flex items-center gap-1">
               <span className="text-slate-400">→</span>
-              <span className={target.nextStepAt && new Date(target.nextStepAt) < new Date() ? "text-red-600 font-medium" : ""}>
-                {nextAction}
+              <span className={isOverdue ? "text-red-600 font-medium" : ""}>
+                {nextActionText}
               </span>
             </div>
           )}
@@ -333,7 +328,7 @@ function TargetRow({
           return (
             <button
               key={kind.value}
-              onClick={() => onStartLogEvent()}
+              onClick={() => onStartLogEvent(kind.value)}
               className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 transition-colors"
             >
               <Icon className="h-3 w-3" />
@@ -342,11 +337,11 @@ function TargetRow({
           );
         })}
         <button
-          onClick={onStartEditFollowUp}
+          onClick={onStartAddTask}
           className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 bg-slate-50 hover:bg-slate-100 rounded border border-slate-200 transition-colors"
         >
-          <CalendarClock className="h-3 w-3" />
-          Follow-up
+          <ListTodo className="h-3 w-3" />
+          Add Task
         </button>
       </div>
 
@@ -355,9 +350,23 @@ function TargetRow({
         <InlineLogEventForm
           dealId={dealId}
           targetId={target.id}
+          initialKind={loggingKind || "call"}
           onCancel={onCancelLogEvent}
           onSuccess={() => {
             onCancelLogEvent();
+            onTargetUpdated();
+          }}
+        />
+      )}
+
+      {/* Inline Add Task Form */}
+      {isAddingTask && (
+        <InlineAddTaskForm
+          dealId={dealId}
+          targetId={target.id}
+          onCancel={onCancelAddTask}
+          onSuccess={() => {
+            onCancelAddTask();
             onTargetUpdated();
           }}
         />
@@ -403,33 +412,73 @@ function TargetRow({
 interface InlineLogEventFormProps {
   dealId: number;
   targetId: number;
+  initialKind?: string;
   onCancel: () => void;
   onSuccess: () => void;
 }
 
-function InlineLogEventForm({ dealId, targetId, onCancel, onSuccess }: InlineLogEventFormProps) {
-  const [kind, setKind] = useState("call");
+const DIRECTIONS = [
+  { value: "outbound", label: "Outbound" },
+  { value: "inbound", label: "Inbound" },
+];
+
+const CALL_OUTCOMES = [
+  { value: "connected", label: "Connected" },
+  { value: "no_answer", label: "No Answer" },
+  { value: "left_voicemail", label: "Left Voicemail" },
+  { value: "scheduled_followup", label: "Scheduled Follow-up" },
+];
+
+const MEETING_OUTCOMES = [
+  { value: "completed", label: "Completed" },
+  { value: "no_show", label: "No Show" },
+  { value: "cancelled", label: "Cancelled" },
+  { value: "scheduled_followup", label: "Scheduled Follow-up" },
+];
+
+const KINDS_WITH_DIRECTION = ["call", "email", "whatsapp", "sms", "linkedin_message"];
+const KINDS_WITH_OUTCOME = ["call", "meeting"];
+const KINDS_WITH_TIME = ["meeting"];
+
+function InlineLogEventForm({ dealId, targetId, initialKind = "call", onCancel, onSuccess }: InlineLogEventFormProps) {
+  const [kind, setKind] = useState(initialKind);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [direction, setDirection] = useState("outbound");
+  const [outcome, setOutcome] = useState("");
+  const [startsAt, setStartsAt] = useState("");
+  const [endsAt, setEndsAt] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const showDirection = KINDS_WITH_DIRECTION.includes(kind);
+  const showOutcome = KINDS_WITH_OUTCOME.includes(kind);
+  const showTime = KINDS_WITH_TIME.includes(kind);
+  const outcomeOptions = kind === "meeting" ? MEETING_OUTCOMES : CALL_OUTCOMES;
 
   const handleSubmit = async () => {
     if (!subject.trim()) return;
     setSubmitting(true);
 
+    const payload: Record<string, unknown> = {
+      kind,
+      subject: subject.trim(),
+      body: body.trim() || null,
+      regarding_type: "DealTarget",
+      regarding_id: targetId,
+      deal_id: dealId,
+      occurred_at: new Date().toISOString(),
+    };
+
+    if (showDirection) payload.direction = direction;
+    if (showOutcome && outcome) payload.outcome = outcome;
+    if (showTime && startsAt) payload.starts_at = startsAt;
+    if (showTime && endsAt) payload.ends_at = endsAt;
+
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/activities`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          kind,
-          subject: subject.trim(),
-          body: body.trim() || null,
-          regarding_type: "DealTarget",
-          regarding_id: targetId,
-          deal_id: dealId,
-          occurred_at: new Date().toISOString(),
-        }),
+        body: JSON.stringify(payload),
       });
       onSuccess();
     } catch (err) {
@@ -467,6 +516,66 @@ function InlineLogEventForm({ dealId, targetId, onCancel, onSuccess }: InlineLog
         autoFocus
       />
 
+      {/* Type-specific fields */}
+      <div className="flex items-center gap-3 flex-wrap">
+        {/* Direction: call, email, message types */}
+        {showDirection && (
+          <div className="flex items-center gap-1.5">
+            {DIRECTIONS.map((d) => (
+              <button
+                key={d.value}
+                onClick={() => setDirection(d.value)}
+                className={`text-xs px-2 py-1 rounded ${
+                  direction === d.value
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+                }`}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Outcome: call, meeting */}
+        {showOutcome && (
+          <select
+            value={outcome}
+            onChange={(e) => setOutcome(e.target.value)}
+            className="text-xs border rounded px-2 py-1"
+          >
+            <option value="">Outcome...</option>
+            {outcomeOptions.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {/* Meeting time fields */}
+      {showTime && (
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-slate-500">Start:</span>
+            <input
+              type="datetime-local"
+              value={startsAt}
+              onChange={(e) => setStartsAt(e.target.value)}
+              className="text-xs border rounded px-2 py-1"
+            />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-slate-500">End:</span>
+            <input
+              type="datetime-local"
+              value={endsAt}
+              onChange={(e) => setEndsAt(e.target.value)}
+              className="text-xs border rounded px-2 py-1"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Body (optional) */}
       <textarea
         placeholder="Notes (optional)"
@@ -484,6 +593,97 @@ function InlineLogEventForm({ dealId, targetId, onCancel, onSuccess }: InlineLog
           className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? "Saving..." : "Log Event"}
+        </button>
+        <button
+          onClick={onCancel}
+          className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============ InlineAddTaskForm Component ============
+
+interface InlineAddTaskFormProps {
+  dealId: number;
+  targetId: number;
+  onCancel: () => void;
+  onSuccess: () => void;
+}
+
+function InlineAddTaskForm({ dealId, targetId, onCancel, onSuccess }: InlineAddTaskFormProps) {
+  const [subject, setSubject] = useState("");
+  const [dueAt, setDueAt] = useState("");
+  const [priority, setPriority] = useState("normal");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!subject.trim()) return;
+    setSubmitting(true);
+
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: subject.trim(),
+          due_at: dueAt || null,
+          priority: priority === "high" ? 2 : priority === "low" ? 0 : 1,
+          deal_id: dealId,
+          taskable_type: "DealTarget",
+          taskable_id: targetId,
+        }),
+      });
+      onSuccess();
+    } catch (err) {
+      console.error("Failed to create task:", err);
+    }
+    setSubmitting(false);
+  };
+
+  return (
+    <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
+      <input
+        type="text"
+        placeholder="Task description (required)"
+        value={subject}
+        onChange={(e) => setSubject(e.target.value)}
+        className="w-full text-sm px-3 py-1.5 border rounded focus:outline-none focus:ring-2 focus:ring-slate-400"
+        autoFocus
+      />
+
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
+          <CalendarClock className="h-3.5 w-3.5 text-slate-400" />
+          <input
+            type="date"
+            value={dueAt}
+            onChange={(e) => setDueAt(e.target.value)}
+            className="text-xs border rounded px-2 py-1"
+          />
+        </div>
+
+        <select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value)}
+          className="text-xs border rounded px-2 py-1"
+        >
+          <option value="low">Low</option>
+          <option value="normal">Normal</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleSubmit}
+          disabled={!subject.trim() || submitting}
+          className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 rounded hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {submitting ? "Saving..." : "Add Task"}
         </button>
         <button
           onClick={onCancel}
