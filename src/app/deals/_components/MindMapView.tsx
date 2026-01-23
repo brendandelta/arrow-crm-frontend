@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import { MindMapCanvas } from "./mind-map/MindMapCanvas";
 import { useMindMapData } from "./mind-map/useMindMapData";
 
@@ -11,15 +11,12 @@ export function MindMapView() {
     loading,
     searchQuery,
     setSearchQuery,
-    toggleExpand,
-    focusDealId,
-    setFocus,
     highlightedNodeIds,
   } = useMindMapData();
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[600px] text-muted-foreground">
+      <div className="flex items-center justify-center h-[600px] text-slate-400">
         Loading mind map...
       </div>
     );
@@ -27,39 +24,26 @@ export function MindMapView() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-220px)] min-h-[500px]">
-      {/* Toolbar */}
-      <div className="flex items-center gap-3 mb-3">
-        {/* Search */}
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      {/* Search */}
+      <div className="mb-3">
+        <div className="relative max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search deals..."
+            placeholder="Search deals or targets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
+            className="w-full pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 transition-shadow shadow-sm"
           />
         </div>
-
-        {/* Focus mode exit */}
-        {focusDealId && (
-          <button
-            onClick={() => setFocus(null)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-50 text-blue-700 rounded-md border border-blue-200 hover:bg-blue-100"
-          >
-            <X className="h-3.5 w-3.5" />
-            Exit focus
-          </button>
-        )}
       </div>
 
       {/* Canvas */}
-      <div className="flex-1 rounded-lg border border-slate-200 overflow-hidden bg-white">
+      <div className="flex-1 rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         <MindMapCanvas
           nodes={nodes}
           edges={edges}
           highlightedNodeIds={highlightedNodeIds}
-          onToggleExpand={toggleExpand}
         />
       </div>
     </div>

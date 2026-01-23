@@ -2,15 +2,17 @@ import dagre from "@dagrejs/dagre";
 import { type Node, type Edge } from "@xyflow/react";
 
 const NODE_WIDTHS: Record<string, number> = {
-  root: 160,
-  deal: 240,
-  child: 200,
+  root: 120,
+  deal: 170,
+  category: 130,
+  child: 210,
 };
 
 const NODE_HEIGHTS: Record<string, number> = {
-  root: 60,
-  deal: 110,
-  child: 80,
+  root: 44,
+  deal: 38,
+  category: 30,
+  child: 44,
 };
 
 export function computeLayout(
@@ -21,8 +23,8 @@ export function computeLayout(
   g.setDefaultEdgeLabel(() => ({}));
   g.setGraph({
     rankdir: "LR",
-    ranksep: 180,
-    nodesep: 40,
+    ranksep: 100,
+    nodesep: 16,
     marginx: 40,
     marginy: 40,
   });
@@ -30,8 +32,8 @@ export function computeLayout(
   nodes.forEach((node) => {
     const nodeType = node.type || "child";
     g.setNode(node.id, {
-      width: NODE_WIDTHS[nodeType] || 200,
-      height: NODE_HEIGHTS[nodeType] || 80,
+      width: NODE_WIDTHS[nodeType] || 210,
+      height: NODE_HEIGHTS[nodeType] || 44,
     });
   });
 
@@ -44,8 +46,8 @@ export function computeLayout(
   const layoutedNodes = nodes.map((node) => {
     const nodeWithPosition = g.node(node.id);
     const nodeType = node.type || "child";
-    const width = NODE_WIDTHS[nodeType] || 200;
-    const height = NODE_HEIGHTS[nodeType] || 80;
+    const width = NODE_WIDTHS[nodeType] || 210;
+    const height = NODE_HEIGHTS[nodeType] || 44;
 
     return {
       ...node,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { type Node, type Edge } from "@xyflow/react";
 import { computeLayout } from "./layout";
 import type { MindMapResponse, MindMapDeal } from "./types";
@@ -6,9 +6,7 @@ import type { MindMapResponse, MindMapDeal } from "./types";
 export function useMindMapData() {
   const [data, setData] = useState<MindMapResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [expandedDeals, setExpandedDeals] = useState<Set<number>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
-  const [focusDealId, setFocusDealId] = useState<number | null>(null);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/mind_map`)
@@ -24,57 +22,28 @@ export function useMindMapData() {
       });
   }, []);
 
-  const toggleExpand = useCallback((dealId: number) => {
-    setExpandedDeals((prev) => {
-      const next = new Set(prev);
-      if (next.has(dealId)) {
-        next.delete(dealId);
-      } else {
-        next.add(dealId);
-      }
-      return next;
-    });
-  }, []);
-
-  const setFocus = useCallback((dealId: number | null) => {
-    setFocusDealId(dealId);
-  }, []);
-
   const { nodes, edges } = useMemo(() => {
     if (!data) return { nodes: [], edges: [] };
 
     const rawNodes: Node[] = [];
     const rawEdges: Edge[] = [];
-
     const groups = data.groups || [];
 
-    // Filter for focus mode
-    const filteredGroups = focusDealId
-      ? groups.map((g) => ({
-          ...g,
-          deals: g.deals.filter((d) => d.id === focusDealId),
-        })).filter((g) => g.deals.length > 0)
-      : groups;
-
-    filteredGroups.forEach((group) => {
+    groups.forEach((group) => {
       const rootId = `root-${group.owner}`;
 
-      // Root node
+      // Root node ("Arrow" or "Liberator")
       rawNodes.push({
         id: rootId,
         type: "root",
         position: { x: 0, y: 0 },
-        data: {
-          label: group.label,
-          dealCount: group.deals.length,
-        },
+        data: { label: group.label.replace(" Deals", "") },
       });
 
       group.deals.forEach((deal: MindMapDeal) => {
         const dealNodeId = `deal-${deal.id}`;
-        const isExpanded = expandedDeals.has(deal.id);
 
-        // Deal node
+        // Deal node (just the name)
         rawNodes.push({
           id: dealNodeId,
           type: "deal",
@@ -82,12 +51,7 @@ export function useMindMapData() {
           data: {
             dealId: deal.id,
             name: deal.name,
-            company: deal.company,
-            status: deal.status,
-            riskLevel: deal.riskLevel,
-            nextAction: deal.nextAction,
-            expanded: isExpanded,
-            onToggleExpand: toggleExpand,
+            hasTargets: deal.targets.length > 0 || deal.interests.length > 0,
             onNavigate: () => {},
           },
         });
@@ -97,48 +61,100 @@ export function useMindMapData() {
           id: `e-${rootId}-${dealNodeId}`,
           source: rootId,
           target: dealNodeId,
-          type: "smoothstep",
-          style: { stroke: "#94a3b8", strokeWidth: 1.5 },
+          type: "default",
+          style: { stroke: "#a5b4fc", strokeWidth: 2, opacity: 0.6 },
+          animated: false,
         });
 
-        // Children (only if expanded)
-        if (isExpanded) {
-          const children = [
-            ...deal.blocks.map((b) => ({ ...b, childType: "block" as const })),
-            ...deal.interests.map((i) => ({ ...i, childType: "interest" as const })),
-            ...deal.targets.map((t) => ({ ...t, childType: "target" as const })),
-          ];
+        // "Targets" category node
+        const hasTargets = deal.targets.length > 0;
+        const hasInterests = deal.interests.length > 0;
 
-          children.forEach((child) => {
-            const childNodeId = `${child.childType}-${child.id}`;
+        if (hasTargets) {
+          const targetsCatId = `cat-targets-${deal.id}`;
+          rawNodes.push({
+            id: targetsCatId,
+            type: "category",
+            position: { x: 0, y: 0 },
+            data: { label: "Targets", count: deal.targets.length },
+          });
+          rawEdges.push({
+            id: `e-${dealNodeId}-${targetsCatId}`,
+            source: dealNodeId,
+            target: targetsCatId,
+            type: "default",
+            style: { stroke: "#a5b4fc", strokeWidth: 1.5, opacity: 0.5 },
+          });
+
+          deal.targets.forEach((target) => {
+            const targetNodeId = `target-${deal.id}-${target.id}`;
+            const nextLabel = target.nextAction.kind !== "none"
+              ? target.nextAction.label
+              : "No follow-up set";
 
             rawNodes.push({
-              id: childNodeId,
+              id: targetNodeId,
               type: "child",
               position: { x: 0, y: 0 },
               data: {
-                childId: child.id,
-                name: child.name,
-                childType: child.childType,
-                status: child.status,
-                nextAction: child.nextAction,
+                name: target.name,
+                nextAction: nextLabel,
+                isOverdue: target.nextAction.isOverdue,
                 dealId: deal.id,
                 onNavigate: () => {},
-                // Block-specific
-                ...("sizeCents" in child ? { sizeCents: child.sizeCents, priceCents: child.priceCents, constraints: child.constraints } : {}),
-                // Interest-specific
-                ...("committedCents" in child ? { committedCents: child.committedCents, blockName: child.blockName } : {}),
-                // Target-specific
-                ...("lastActivityAt" in child ? { lastActivityAt: child.lastActivityAt, isStale: child.isStale } : {}),
               },
             });
-
             rawEdges.push({
-              id: `e-${dealNodeId}-${childNodeId}`,
-              source: dealNodeId,
-              target: childNodeId,
-              type: "smoothstep",
-              style: { stroke: "#cbd5e1", strokeWidth: 1 },
+              id: `e-${targetsCatId}-${targetNodeId}`,
+              source: targetsCatId,
+              target: targetNodeId,
+              type: "default",
+              style: { stroke: "#cbd5e1", strokeWidth: 1.5, opacity: 0.4 },
+            });
+          });
+        }
+
+        // "Interests" category node
+        if (hasInterests) {
+          const interestsCatId = `cat-interests-${deal.id}`;
+          rawNodes.push({
+            id: interestsCatId,
+            type: "category",
+            position: { x: 0, y: 0 },
+            data: { label: "Interests", count: deal.interests.length },
+          });
+          rawEdges.push({
+            id: `e-${dealNodeId}-${interestsCatId}`,
+            source: dealNodeId,
+            target: interestsCatId,
+            type: "default",
+            style: { stroke: "#a5b4fc", strokeWidth: 1.5, opacity: 0.5 },
+          });
+
+          deal.interests.forEach((interest) => {
+            const interestNodeId = `interest-${deal.id}-${interest.id}`;
+            const nextLabel = interest.nextAction.kind !== "none"
+              ? interest.nextAction.label
+              : "No follow-up set";
+
+            rawNodes.push({
+              id: interestNodeId,
+              type: "child",
+              position: { x: 0, y: 0 },
+              data: {
+                name: interest.name,
+                nextAction: nextLabel,
+                isOverdue: interest.nextAction.isOverdue,
+                dealId: deal.id,
+                onNavigate: () => {},
+              },
+            });
+            rawEdges.push({
+              id: `e-${interestsCatId}-${interestNodeId}`,
+              source: interestsCatId,
+              target: interestNodeId,
+              type: "default",
+              style: { stroke: "#cbd5e1", strokeWidth: 1.5, opacity: 0.4 },
             });
           });
         }
@@ -146,9 +162,9 @@ export function useMindMapData() {
     });
 
     return computeLayout(rawNodes, rawEdges);
-  }, [data, expandedDeals, focusDealId, toggleExpand]);
+  }, [data]);
 
-  // Compute search-highlighted node IDs
+  // Search highlighting
   const highlightedNodeIds = useMemo(() => {
     if (!searchQuery.trim()) return null;
     const query = searchQuery.toLowerCase();
@@ -157,8 +173,7 @@ export function useMindMapData() {
         .filter((n) => {
           const d = n.data as Record<string, unknown>;
           const name = (d.name as string) || (d.label as string) || "";
-          const company = (d.company as string) || "";
-          return name.toLowerCase().includes(query) || company.toLowerCase().includes(query);
+          return name.toLowerCase().includes(query);
         })
         .map((n) => n.id)
     );
@@ -170,9 +185,6 @@ export function useMindMapData() {
     loading,
     searchQuery,
     setSearchQuery,
-    toggleExpand,
-    focusDealId,
-    setFocus,
     highlightedNodeIds,
   };
 }

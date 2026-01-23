@@ -15,11 +15,13 @@ import "@xyflow/react/dist/style.css";
 import { useRouter } from "next/navigation";
 import { RootNode } from "./RootNode";
 import { DealNode } from "./DealNode";
+import { CategoryNode } from "./CategoryNode";
 import { ChildNode } from "./ChildNode";
 
 const nodeTypes: NodeTypes = {
   root: RootNode,
   deal: DealNode,
+  category: CategoryNode,
   child: ChildNode,
 };
 
@@ -27,14 +29,12 @@ interface MindMapCanvasProps {
   nodes: Node[];
   edges: Edge[];
   highlightedNodeIds: Set<string> | null;
-  onToggleExpand: (dealId: number) => void;
 }
 
 export function MindMapCanvas({
   nodes,
   edges,
   highlightedNodeIds,
-  onToggleExpand,
 }: MindMapCanvasProps) {
   const router = useRouter();
 
@@ -45,67 +45,59 @@ export function MindMapCanvas({
     [router]
   );
 
-  // Inject callbacks into node data
+  // Inject navigate callback and apply search highlighting
   const nodesWithCallbacks = nodes.map((node) => {
-    if (node.type === "deal") {
+    const withNav =
+      node.type === "deal" || node.type === "child"
+        ? { ...node, data: { ...node.data, onNavigate: handleNavigate } }
+        : node;
+
+    if (highlightedNodeIds) {
       return {
-        ...node,
-        data: {
-          ...node.data,
-          onToggleExpand,
-          onNavigate: handleNavigate,
-        },
-        style: highlightedNodeIds
-          ? highlightedNodeIds.has(node.id)
-            ? { opacity: 1, boxShadow: "0 0 0 2px #3b82f6", borderRadius: "8px" }
-            : { opacity: 0.3 }
-          : undefined,
+        ...withNav,
+        style: highlightedNodeIds.has(node.id)
+          ? { opacity: 1, filter: "none" }
+          : { opacity: 0.2, filter: "grayscale(1)" },
       };
     }
-    if (node.type === "child") {
-      return {
-        ...node,
-        data: {
-          ...node.data,
-          onNavigate: handleNavigate,
-        },
-        style: highlightedNodeIds
-          ? highlightedNodeIds.has(node.id)
-            ? { opacity: 1, boxShadow: "0 0 0 2px #3b82f6", borderRadius: "8px" }
-            : { opacity: 0.3 }
-          : undefined,
-      };
-    }
-    return {
-      ...node,
-      style: highlightedNodeIds
-        ? highlightedNodeIds.has(node.id)
-          ? { opacity: 1 }
-          : { opacity: 0.3 }
-        : undefined,
-    };
+
+    return withNav;
   });
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full" style={{ background: "#fafbfd" }}>
       <ReactFlow
         nodes={nodesWithCallbacks}
         edges={edges}
         nodeTypes={nodeTypes}
         fitView
-        minZoom={0.2}
+        fitViewOptions={{ padding: 0.3 }}
+        minZoom={0.3}
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
+        defaultEdgeOptions={{
+          type: "default",
+          style: { strokeLinecap: "round", strokeLinejoin: "round" },
+        }}
       >
-        <Controls position="bottom-left" />
+        <Controls
+          position="bottom-left"
+          showInteractive={false}
+          className="!border-slate-200 !shadow-sm"
+        />
         <MiniMap
           position="bottom-right"
-          nodeStrokeWidth={3}
           pannable
           zoomable
-          className="!bg-slate-50 !border-slate-200"
+          maskColor="rgba(248,250,252,0.7)"
+          className="!bg-white !border-slate-200 !shadow-sm !rounded-lg"
         />
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#e2e8f0" />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={24}
+          size={1}
+          color="#e2e8f0"
+        />
       </ReactFlow>
     </div>
   );
