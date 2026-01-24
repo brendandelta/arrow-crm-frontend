@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import {
   CheckSquare,
   Clock,
@@ -11,7 +10,6 @@ import {
   CheckCircle,
   Plus,
   Search,
-  Filter,
   ChevronDown,
   ChevronRight,
   Building2,
@@ -22,9 +20,13 @@ import {
   Loader2,
   UserPlus,
   FileText,
+  X,
+  ArrowUpDown,
+  Layers,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TasksSlideOut } from "./_components/TasksSlideOut";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Owner {
   id: number;
@@ -66,7 +68,7 @@ interface Task {
   updatedAt: string;
 }
 
-interface User {
+interface BackendUser {
   id: number;
   firstName: string;
   lastName: string;
@@ -102,6 +104,8 @@ interface TaskStats {
 
 type ViewType = "my" | "all" | "overdue" | "due-soon" | "unassigned" | "completed";
 type AttachmentFilter = "all" | "deal" | "project" | "general";
+type GroupBy = "dueDate" | "priority" | "assignee" | "type" | "none";
+type SortBy = "priority" | "dueDate" | "created" | "alpha";
 
 interface ViewConfig {
   id: ViewType;
@@ -112,7 +116,7 @@ interface ViewConfig {
 }
 
 const VIEWS: ViewConfig[] = [
-  { id: "my", label: "My Tasks", icon: User, countKey: "open" },
+  { id: "my", label: "My Tasks", icon: User },
   { id: "all", label: "All Open", icon: Inbox, countKey: "open" },
   { id: "overdue", label: "Overdue", icon: AlertCircle, countKey: "overdue", color: "text-red-600" },
   { id: "due-soon", label: "Due Soon", icon: Clock, countKey: "dueSoon", color: "text-amber-600" },
@@ -124,7 +128,35 @@ const ATTACHMENT_FILTERS: { id: AttachmentFilter; label: string; icon: React.Ele
   { id: "all", label: "All", icon: ListFilter },
   { id: "deal", label: "Deal Tasks", icon: Building2 },
   { id: "project", label: "Project Tasks", icon: FolderKanban },
-  { id: "general", label: "Get Shit Done", icon: CheckSquare },
+  { id: "general", label: "General", icon: CheckSquare },
+];
+
+const GROUP_BY_OPTIONS: { id: GroupBy; label: string }[] = [
+  { id: "dueDate", label: "Due Date" },
+  { id: "priority", label: "Priority" },
+  { id: "assignee", label: "Assignee" },
+  { id: "type", label: "Type" },
+  { id: "none", label: "None" },
+];
+
+const SORT_BY_OPTIONS: { id: SortBy; label: string }[] = [
+  { id: "priority", label: "Priority" },
+  { id: "dueDate", label: "Due Date" },
+  { id: "created", label: "Created" },
+  { id: "alpha", label: "Alphabetical" },
+];
+
+const PRIORITY_OPTIONS = [
+  { value: 3, label: "High", dotColor: "bg-red-500" },
+  { value: 2, label: "Medium", dotColor: "bg-amber-500" },
+  { value: 1, label: "Low", dotColor: "bg-slate-400" },
+];
+
+const STATUS_OPTIONS = [
+  { value: "open", label: "Open", color: "bg-blue-100 text-blue-700" },
+  { value: "in_progress", label: "In Progress", color: "bg-purple-100 text-purple-700" },
+  { value: "blocked", label: "Blocked", color: "bg-red-100 text-red-700" },
+  { value: "waiting", label: "Waiting", color: "bg-amber-100 text-amber-700" },
 ];
 
 function formatDate(dateStr: string | null | undefined) {
@@ -155,7 +187,7 @@ function SubtaskRow({
   onRefresh,
 }: {
   subtask: Task;
-  users: User[];
+  users: BackendUser[];
   onToggle: () => void;
   onAssigneeChange: (userId: number | null) => void;
   onDateChange: (date: string) => void;
@@ -362,7 +394,7 @@ function TaskRow({
   showAttachment = true,
 }: {
   task: Task;
-  users: User[];
+  users: BackendUser[];
   onToggleComplete: (task: Task) => void;
   onClick: (task: Task) => void;
   onAssigneeChange: (taskId: number, userId: number | null) => void;
@@ -587,7 +619,7 @@ function TaskRow({
     const endpoint = subtask.completed ? "uncomplete" : "complete";
     setTogglingId(subtask.id);
 
-    // Optimistic update
+    // Optimistic update - subtask stays in place with checkmark shown
     setLocalSubtasks((prev) =>
       prev.map((st) =>
         st.id === subtask.id ? { ...st, completed: !st.completed } : st
@@ -600,13 +632,12 @@ function TaskRow({
         { method: "POST" }
       );
       if (!res.ok) {
+        // Revert on failure
         setLocalSubtasks((prev) =>
           prev.map((st) =>
             st.id === subtask.id ? { ...st, completed: subtask.completed } : st
           )
         );
-      } else {
-        onRefresh();
       }
     } catch (err) {
       console.error("Failed to toggle subtask:", err);
@@ -777,14 +808,24 @@ function TaskRow({
                 )}
               </div>
               {showAttachment && task.attachmentName && (
-                <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                <a
+                  href={
+                    task.attachmentType === "deal" && task.dealId
+                      ? `/deals/${task.dealId}`
+                      : task.attachmentType === "project" && task.projectId
+                      ? `/projects/${task.projectId}`
+                      : undefined
+                  }
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 hover:text-blue-600 hover:underline transition-colors cursor-pointer"
+                >
                   {task.attachmentType === "deal" ? (
                     <Building2 className="h-3 w-3" />
                   ) : task.attachmentType === "project" ? (
                     <FolderKanban className="h-3 w-3" />
                   ) : null}
                   {task.attachmentName}
-                </span>
+                </a>
               )}
             </div>
           )}
@@ -1168,7 +1209,7 @@ function TaskGroup({
 }: {
   title: string;
   tasks: Task[];
-  users: User[];
+  users: BackendUser[];
   defaultExpanded?: boolean;
   onToggleComplete: (task: Task) => void;
   onTaskClick: (task: Task) => void;
@@ -1229,20 +1270,173 @@ function TaskGroup({
   );
 }
 
+function FilterChip({
+  label,
+  active,
+  onClick,
+  onClear,
+  children,
+  open,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  onClear?: () => void;
+  children?: React.ReactNode;
+  open: boolean;
+}) {
+  const chipRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        chipRef.current && !chipRef.current.contains(e.target as Node) &&
+        dropdownRef.current && !dropdownRef.current.contains(e.target as Node)
+      ) {
+        onClick(); // close
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open, onClick]);
+
+  return (
+    <div className="relative" ref={chipRef}>
+      <button
+        onClick={onClick}
+        className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border transition-all ${
+          active
+            ? "bg-slate-100 border-slate-300 text-slate-900 font-medium"
+            : "border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+        }`}
+      >
+        <span>{label}</span>
+        {active && onClear ? (
+          <X
+            className="h-3 w-3 text-slate-400 hover:text-slate-600"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClear();
+            }}
+          />
+        ) : (
+          <ChevronDown className="h-3 w-3" />
+        )}
+      </button>
+      {open && children && (
+        <div
+          ref={dropdownRef}
+          className="absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 py-1 min-w-[180px]"
+        >
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function sortTasks(tasks: Task[], sortBy: SortBy): Task[] {
+  return [...tasks].sort((a, b) => {
+    switch (sortBy) {
+      case "priority":
+        return b.priority - a.priority;
+      case "dueDate": {
+        if (!a.dueAt && !b.dueAt) return 0;
+        if (!a.dueAt) return 1;
+        if (!b.dueAt) return -1;
+        return new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime();
+      }
+      case "created":
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case "alpha":
+        return a.subject.localeCompare(b.subject);
+      default:
+        return 0;
+    }
+  });
+}
+
+function groupTasks(
+  tasks: Task[],
+  groupBy: GroupBy,
+  recentlyCompletedIds: Set<number>
+): { title: string; tasks: Task[]; variant?: "default" | "danger" | "warning" }[] {
+  const isEffectivelyCompleted = (t: Task) => t.completed && !recentlyCompletedIds.has(t.id);
+
+  switch (groupBy) {
+    case "dueDate": {
+      const overdue = tasks.filter((t) => t.overdue && !isEffectivelyCompleted(t));
+      const dueToday = tasks.filter((t) => t.dueToday && !t.overdue && !isEffectivelyCompleted(t));
+      const upcoming = tasks.filter((t) => !t.overdue && !t.dueToday && !isEffectivelyCompleted(t) && t.dueAt);
+      const noDate = tasks.filter((t) => !t.dueAt && !isEffectivelyCompleted(t));
+      const completed = tasks.filter((t) => isEffectivelyCompleted(t));
+      const groups: { title: string; tasks: Task[]; variant?: "default" | "danger" | "warning" }[] = [];
+      if (overdue.length > 0) groups.push({ title: "Overdue", tasks: overdue, variant: "danger" });
+      if (dueToday.length > 0) groups.push({ title: "Due Today", tasks: dueToday, variant: "warning" });
+      if (upcoming.length > 0) groups.push({ title: "Upcoming", tasks: upcoming, variant: "default" });
+      if (noDate.length > 0) groups.push({ title: "No Due Date", tasks: noDate, variant: "default" });
+      if (completed.length > 0) groups.push({ title: "Completed", tasks: completed, variant: "default" });
+      return groups;
+    }
+    case "priority": {
+      const high = tasks.filter((t) => t.priority === 3);
+      const medium = tasks.filter((t) => t.priority === 2);
+      const low = tasks.filter((t) => t.priority === 1);
+      const groups: { title: string; tasks: Task[]; variant?: "default" | "danger" | "warning" }[] = [];
+      if (high.length > 0) groups.push({ title: "High Priority", tasks: high, variant: "danger" });
+      if (medium.length > 0) groups.push({ title: "Medium Priority", tasks: medium, variant: "warning" });
+      if (low.length > 0) groups.push({ title: "Low Priority", tasks: low, variant: "default" });
+      return groups;
+    }
+    case "assignee": {
+      const grouped: Record<string, Task[]> = {};
+      tasks.forEach((t) => {
+        const key = t.assignedTo ? `${t.assignedTo.firstName} ${t.assignedTo.lastName}` : "Unassigned";
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(t);
+      });
+      return Object.entries(grouped).map(([title, tasks]) => ({ title, tasks, variant: "default" as const }));
+    }
+    case "type": {
+      const deals = tasks.filter((t) => t.attachmentType === "deal");
+      const projects = tasks.filter((t) => t.attachmentType === "project");
+      const general = tasks.filter((t) => t.attachmentType !== "deal" && t.attachmentType !== "project");
+      const groups: { title: string; tasks: Task[]; variant?: "default" | "danger" | "warning" }[] = [];
+      if (deals.length > 0) groups.push({ title: "Deal Tasks", tasks: deals, variant: "default" });
+      if (projects.length > 0) groups.push({ title: "Project Tasks", tasks: projects, variant: "default" });
+      if (general.length > 0) groups.push({ title: "General Tasks", tasks: general, variant: "default" });
+      return groups;
+    }
+    case "none":
+    default:
+      return [{ title: "All Tasks", tasks, variant: "default" as const }];
+  }
+}
+
 export default function TasksPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { user } = useAuth();
 
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [recentlyCompletedIds, setRecentlyCompletedIds] = useState<Set<number>>(new Set());
+  const recentlyCompletedRef = useRef<Set<number>>(new Set());
   const [stats, setStats] = useState<TaskStats | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
+  const [myTasksCount, setMyTasksCount] = useState<number | null>(null);
+  const [users, setUsers] = useState<BackendUser[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [currentView, setCurrentView] = useState<ViewType>("all");
   const [attachmentFilter, setAttachmentFilter] = useState<AttachmentFilter>("all");
-  const [assigneeFilter, setAssigneeFilter] = useState<string>("");
-  const [priorityFilter, setPriorityFilter] = useState<string>("");
+  const [assigneeFilter, setAssigneeFilter] = useState<number[]>([]);
+  const [priorityFilter, setPriorityFilter] = useState<number[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [groupBy, setGroupBy] = useState<GroupBy>("dueDate");
+  const [sortBy, setSortBy] = useState<SortBy>("priority");
+
+  // Filter bar dropdown states
+  const [openFilter, setOpenFilter] = useState<string | null>(null);
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [slideOutOpen, setSlideOutOpen] = useState(false);
@@ -1251,16 +1445,33 @@ export default function TasksPage() {
   const fetchTasks = useCallback(async () => {
     const params = new URLSearchParams();
 
-    // Build query params based on current view and filters
-    if (currentView === "overdue") params.append("status", "overdue");
-    if (currentView === "due-soon") params.append("status", "due_soon");
-    if (currentView === "completed") params.append("status", "completed");
-    if (currentView !== "completed") params.append("status", "open");
-    if (currentView === "unassigned") params.append("unassigned", "true");
+    // Build query params based on current view
+    switch (currentView) {
+      case "overdue":
+        params.append("status", "overdue");
+        break;
+      case "due-soon":
+        params.append("status", "due_soon");
+        break;
+      case "completed":
+        params.append("status", "completed");
+        break;
+      case "unassigned":
+        params.append("status", "open");
+        params.append("unassigned", "true");
+        break;
+      case "my":
+        params.append("status", "open");
+        if (user?.backendUserId) {
+          params.append("assigned_to_id", String(user.backendUserId));
+        }
+        break;
+      default: // "all"
+        params.append("status", "open");
+        break;
+    }
 
     if (attachmentFilter !== "all") params.append("attachment", attachmentFilter);
-    if (assigneeFilter) params.append("assigned_to_id", assigneeFilter);
-    if (priorityFilter) params.append("priority", priorityFilter);
 
     // Only root tasks by default
     params.append("root_only", "true");
@@ -1270,12 +1481,22 @@ export default function TasksPage() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks?${params.toString()}`
       );
       const data = await res.json();
-      setTasks(Array.isArray(data) ? data : []);
+      const fetchedTasks: Task[] = Array.isArray(data) ? data : [];
+
+      // Preserve recently-completed tasks that won't be in the API response
+      // (since API returns only open tasks when not viewing completed view)
+      setTasks((prevTasks) => {
+        const fetchedIds = new Set(fetchedTasks.map((t) => t.id));
+        const preservedTasks = prevTasks.filter(
+          (t) => recentlyCompletedRef.current.has(t.id) && !fetchedIds.has(t.id)
+        );
+        return [...fetchedTasks, ...preservedTasks];
+      });
     } catch (err) {
       console.error("Failed to fetch tasks:", err);
       setTasks([]);
     }
-  }, [currentView, attachmentFilter, assigneeFilter, priorityFilter]);
+  }, [currentView, attachmentFilter, user?.backendUserId]);
 
   const fetchStats = async () => {
     try {
@@ -1286,6 +1507,19 @@ export default function TasksPage() {
       console.error("Failed to fetch stats:", err);
     }
   };
+
+  const fetchMyTasksCount = useCallback(async () => {
+    if (!user?.backendUserId) return;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks?status=open&assigned_to_id=${user.backendUserId}&root_only=true`
+      );
+      const data = await res.json();
+      setMyTasksCount(Array.isArray(data) ? data.length : 0);
+    } catch (err) {
+      console.error("Failed to fetch my tasks count:", err);
+    }
+  }, [user?.backendUserId]);
 
   const fetchUsers = async () => {
     try {
@@ -1298,28 +1532,71 @@ export default function TasksPage() {
   };
 
   useEffect(() => {
-    Promise.all([fetchTasks(), fetchStats(), fetchUsers()]).finally(() => {
+    Promise.all([fetchTasks(), fetchStats(), fetchUsers(), fetchMyTasksCount()]).finally(() => {
       setLoading(false);
     });
   }, []);
+
+  // Re-fetch my tasks count when backend user ID is resolved
+  useEffect(() => {
+    if (user?.backendUserId) {
+      fetchMyTasksCount();
+    }
+  }, [user?.backendUserId, fetchMyTasksCount]);
 
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
 
   const handleToggleComplete = async (task: Task) => {
+    const isCompleting = !task.completed;
     const endpoint = task.completed ? "uncomplete" : "complete";
+
+    // Optimistic update: toggle completed flag locally
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === task.id ? { ...t, completed: isCompleting } : t
+      )
+    );
+
+    // Track recently completed tasks so they stay in their current group
+    if (isCompleting) {
+      setRecentlyCompletedIds((prev) => {
+        const next = new Set([...prev, task.id]);
+        recentlyCompletedRef.current = next;
+        return next;
+      });
+    } else {
+      setRecentlyCompletedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(task.id);
+        recentlyCompletedRef.current = next;
+        return next;
+      });
+    }
+
     try {
-      const res = await fetch(
+      await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${task.id}/${endpoint}`,
         { method: "POST" }
       );
-      if (res.ok) {
-        fetchTasks();
-        fetchStats();
-      }
+      fetchStats();
     } catch (err) {
       console.error("Failed to toggle task:", err);
+      // Revert on error
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === task.id ? { ...t, completed: !isCompleting } : t
+        )
+      );
+      if (isCompleting) {
+        setRecentlyCompletedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(task.id);
+          recentlyCompletedRef.current = next;
+          return next;
+        });
+      }
     }
   };
 
@@ -1368,67 +1645,135 @@ export default function TasksPage() {
     fetchStats();
   };
 
-  // Filter tasks by search
+  // Filter tasks client-side (search + multi-select filters)
   const filteredTasks = tasks.filter((task) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      task.subject.toLowerCase().includes(query) ||
-      task.attachmentName?.toLowerCase().includes(query) ||
-      task.assignedTo?.firstName.toLowerCase().includes(query) ||
-      task.assignedTo?.lastName.toLowerCase().includes(query)
-    );
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        task.subject.toLowerCase().includes(query) ||
+        task.attachmentName?.toLowerCase().includes(query) ||
+        task.assignedTo?.firstName.toLowerCase().includes(query) ||
+        task.assignedTo?.lastName.toLowerCase().includes(query);
+      if (!matchesSearch) return false;
+    }
+
+    // Priority multi-select
+    if (priorityFilter.length > 0 && !priorityFilter.includes(task.priority)) {
+      return false;
+    }
+
+    // Status multi-select
+    if (statusFilter.length > 0 && !statusFilter.includes(task.status)) {
+      return false;
+    }
+
+    // Assignee multi-select
+    if (assigneeFilter.length > 0) {
+      if (!task.assignedTo || !assigneeFilter.includes(task.assignedTo.id)) {
+        return false;
+      }
+    }
+
+    return true;
   });
 
-  // Group tasks for display
-  const overdueTasks = filteredTasks.filter((t) => t.overdue && !t.completed);
-  const dueTodayTasks = filteredTasks.filter(
-    (t) => t.dueToday && !t.overdue && !t.completed
+  // Group and sort tasks for display
+  const taskGroups = groupTasks(
+    sortTasks(filteredTasks, sortBy),
+    currentView === "completed" ? "none" : groupBy,
+    recentlyCompletedIds
   );
-  const upcomingTasks = filteredTasks.filter(
-    (t) => !t.overdue && !t.dueToday && !t.completed && t.dueAt
-  );
-  const noDueDateTasks = filteredTasks.filter(
-    (t) => !t.dueAt && !t.completed
-  );
-  const completedTasks = filteredTasks.filter((t) => t.completed);
+
+  const hasActiveFilters = priorityFilter.length > 0 || statusFilter.length > 0 || assigneeFilter.length > 0 || attachmentFilter !== "all";
+
+  const clearAllFilters = () => {
+    setPriorityFilter([]);
+    setStatusFilter([]);
+    setAssigneeFilter([]);
+    setAttachmentFilter("all");
+  };
 
   return (
     <div className="flex gap-6 h-[calc(100vh-8rem)]">
-      {/* Left Sidebar - Views */}
-      <div className="w-64 flex-shrink-0 space-y-6">
+      {/* Left Sidebar */}
+      <div className="w-48 flex-shrink-0 space-y-5">
         {/* Views */}
-        <div>
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-            Views
-          </h3>
-          <div className="space-y-1">
-            {VIEWS.map((view) => {
-              const Icon = view.icon;
-              const count = stats
+        <div className="space-y-1">
+          {VIEWS.map((view) => {
+            const Icon = view.icon;
+            const count = view.id === "my"
+              ? myTasksCount
+              : stats
                 ? view.countKey
                   ? stats[view.countKey as keyof TaskStats]
                   : 0
                 : 0;
 
+            return (
+              <button
+                key={view.id}
+                onClick={() => {
+                  setCurrentView(view.id);
+                  setAttachmentFilter("all");
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
+                  currentView === view.id && attachmentFilter === "all"
+                    ? "bg-slate-900 text-white"
+                    : "hover:bg-slate-100"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Icon className={`h-4 w-4 ${view.color || ""}`} />
+                  <span>{view.label}</span>
+                </div>
+                {typeof count === "number" && count > 0 && (
+                  <span
+                    className={`text-xs ${
+                      currentView === view.id && attachmentFilter === "all"
+                        ? "text-slate-300"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Type Views */}
+        <div>
+          <div className="h-px bg-slate-200 mb-3" />
+          <div className="space-y-1">
+            {ATTACHMENT_FILTERS.filter(f => f.id !== "all").map((filter) => {
+              const Icon = filter.icon;
+              const count = stats?.byAttachment
+                ? stats.byAttachment[filter.id as keyof typeof stats.byAttachment]
+                : 0;
+
               return (
                 <button
-                  key={view.id}
-                  onClick={() => setCurrentView(view.id)}
+                  key={filter.id}
+                  onClick={() => {
+                    setAttachmentFilter(filter.id);
+                    setCurrentView("all");
+                  }}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
-                    currentView === view.id
+                    attachmentFilter === filter.id
                       ? "bg-slate-900 text-white"
                       : "hover:bg-slate-100"
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <Icon className={`h-4 w-4 ${view.color || ""}`} />
-                    <span>{view.label}</span>
+                    <Icon className="h-4 w-4" />
+                    <span>{filter.label}</span>
                   </div>
                   {typeof count === "number" && count > 0 && (
                     <span
                       className={`text-xs ${
-                        currentView === view.id
+                        attachmentFilter === filter.id
                           ? "text-slate-300"
                           : "text-muted-foreground"
                       }`}
@@ -1441,79 +1786,6 @@ export default function TasksPage() {
             })}
           </div>
         </div>
-
-        {/* Attachment Filter */}
-        <div>
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-            Type
-          </h3>
-          <div className="space-y-1">
-            {ATTACHMENT_FILTERS.map((filter) => {
-              const Icon = filter.icon;
-              const count = stats?.byAttachment
-                ? filter.id === "all"
-                  ? stats.open
-                  : stats.byAttachment[filter.id as keyof typeof stats.byAttachment]
-                : 0;
-
-              return (
-                <button
-                  key={filter.id}
-                  onClick={() => setAttachmentFilter(filter.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
-                    attachmentFilter === filter.id
-                      ? "bg-slate-100 font-medium"
-                      : "hover:bg-slate-50"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4" />
-                    <span>{filter.label}</span>
-                  </div>
-                  {typeof count === "number" && count > 0 && (
-                    <span className="text-xs text-muted-foreground">{count}</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Assignee Filter */}
-        <div>
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-            Assignee
-          </h3>
-          <select
-            value={assigneeFilter}
-            onChange={(e) => setAssigneeFilter(e.target.value)}
-            className="w-full px-3 py-2 text-sm border rounded-md"
-          >
-            <option value="">All team members</option>
-            {users.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.firstName} {user.lastName}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Priority Filter */}
-        <div>
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-            Priority
-          </h3>
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="w-full px-3 py-2 text-sm border rounded-md"
-          >
-            <option value="">All priorities</option>
-            <option value="3">High</option>
-            <option value="2">Medium</option>
-            <option value="1">Low</option>
-          </select>
-        </div>
       </div>
 
       {/* Main Content */}
@@ -1523,8 +1795,9 @@ export default function TasksPage() {
           <div>
             <h1 className="text-xl font-semibold">Tasks</h1>
             <p className="text-sm text-muted-foreground">
-              {VIEWS.find((v) => v.id === currentView)?.label}
-              {attachmentFilter !== "all" && ` - ${ATTACHMENT_FILTERS.find((f) => f.id === attachmentFilter)?.label}`}
+              {attachmentFilter !== "all"
+                ? ATTACHMENT_FILTERS.find((f) => f.id === attachmentFilter)?.label
+                : VIEWS.find((v) => v.id === currentView)?.label}
             </p>
           </div>
           <button
@@ -1537,7 +1810,7 @@ export default function TasksPage() {
         </div>
 
         {/* Search */}
-        <div className="relative mb-4">
+        <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
@@ -1548,6 +1821,204 @@ export default function TasksPage() {
           />
         </div>
 
+        {/* Filter Bar */}
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          {/* Type Filter */}
+          <FilterChip
+            label={attachmentFilter === "all" ? "Type" : ATTACHMENT_FILTERS.find(f => f.id === attachmentFilter)?.label || "Type"}
+            active={attachmentFilter !== "all"}
+            open={openFilter === "type"}
+            onClick={() => setOpenFilter(openFilter === "type" ? null : "type")}
+            onClear={() => setAttachmentFilter("all")}
+          >
+            {ATTACHMENT_FILTERS.map((filter) => {
+              const Icon = filter.icon;
+              return (
+                <button
+                  key={filter.id}
+                  onClick={() => {
+                    setAttachmentFilter(filter.id);
+                    setOpenFilter(null);
+                  }}
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                    attachmentFilter === filter.id ? "bg-slate-100 font-medium" : ""
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5 text-slate-500" />
+                  {filter.label}
+                </button>
+              );
+            })}
+          </FilterChip>
+
+          {/* Assignee Filter */}
+          <FilterChip
+            label={
+              assigneeFilter.length === 0
+                ? "Assignee"
+                : assigneeFilter.length === 1
+                  ? users.find(u => u.id === assigneeFilter[0])?.firstName || "1 person"
+                  : `${assigneeFilter.length} people`
+            }
+            active={assigneeFilter.length > 0}
+            open={openFilter === "assignee"}
+            onClick={() => setOpenFilter(openFilter === "assignee" ? null : "assignee")}
+            onClear={() => setAssigneeFilter([])}
+          >
+            {users.map((u) => (
+              <button
+                key={u.id}
+                onClick={() => {
+                  setAssigneeFilter((prev) =>
+                    prev.includes(u.id)
+                      ? prev.filter((id) => id !== u.id)
+                      : [...prev, u.id]
+                  );
+                }}
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                  assigneeFilter.includes(u.id) ? "bg-slate-100" : ""
+                }`}
+              >
+                <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-medium ${
+                  assigneeFilter.includes(u.id) ? "bg-slate-700 text-white" : "bg-slate-200 text-slate-600"
+                }`}>
+                  {u.firstName[0]}
+                </span>
+                <span>{u.firstName} {u.lastName}</span>
+                {assigneeFilter.includes(u.id) && <Check className="h-3 w-3 ml-auto text-slate-600" />}
+              </button>
+            ))}
+          </FilterChip>
+
+          {/* Priority Filter */}
+          <FilterChip
+            label={
+              priorityFilter.length === 0
+                ? "Priority"
+                : priorityFilter.map(p => PRIORITY_OPTIONS.find(o => o.value === p)?.label).join(", ")
+            }
+            active={priorityFilter.length > 0}
+            open={openFilter === "priority"}
+            onClick={() => setOpenFilter(openFilter === "priority" ? null : "priority")}
+            onClear={() => setPriorityFilter([])}
+          >
+            {PRIORITY_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  setPriorityFilter((prev) =>
+                    prev.includes(option.value)
+                      ? prev.filter((v) => v !== option.value)
+                      : [...prev, option.value]
+                  );
+                }}
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                  priorityFilter.includes(option.value) ? "bg-slate-100" : ""
+                }`}
+              >
+                <span className={`w-2.5 h-2.5 rounded-full ${option.dotColor}`} />
+                <span>{option.label}</span>
+                {priorityFilter.includes(option.value) && <Check className="h-3 w-3 ml-auto text-slate-600" />}
+              </button>
+            ))}
+          </FilterChip>
+
+          {/* Status Filter */}
+          <FilterChip
+            label={
+              statusFilter.length === 0
+                ? "Status"
+                : statusFilter.map(s => STATUS_OPTIONS.find(o => o.value === s)?.label).join(", ")
+            }
+            active={statusFilter.length > 0}
+            open={openFilter === "status"}
+            onClick={() => setOpenFilter(openFilter === "status" ? null : "status")}
+            onClear={() => setStatusFilter([])}
+          >
+            {STATUS_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => {
+                  setStatusFilter((prev) =>
+                    prev.includes(option.value)
+                      ? prev.filter((v) => v !== option.value)
+                      : [...prev, option.value]
+                  );
+                }}
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                  statusFilter.includes(option.value) ? "bg-slate-100" : ""
+                }`}
+              >
+                <span className={`px-1.5 py-0.5 rounded text-xs ${option.color}`}>{option.label}</span>
+                {statusFilter.includes(option.value) && <Check className="h-3 w-3 ml-auto text-slate-600" />}
+              </button>
+            ))}
+          </FilterChip>
+
+          {/* Separator */}
+          <div className="w-px h-6 bg-slate-200 mx-1" />
+
+          {/* Group By */}
+          <FilterChip
+            label={`Group: ${GROUP_BY_OPTIONS.find(o => o.id === groupBy)?.label}`}
+            active={groupBy !== "dueDate"}
+            open={openFilter === "groupBy"}
+            onClick={() => setOpenFilter(openFilter === "groupBy" ? null : "groupBy")}
+          >
+            {GROUP_BY_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => {
+                  setGroupBy(option.id);
+                  setOpenFilter(null);
+                }}
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                  groupBy === option.id ? "bg-slate-100 font-medium" : ""
+                }`}
+              >
+                <Layers className="h-3.5 w-3.5 text-slate-400" />
+                {option.label}
+                {groupBy === option.id && <Check className="h-3 w-3 ml-auto text-slate-600" />}
+              </button>
+            ))}
+          </FilterChip>
+
+          {/* Sort By */}
+          <FilterChip
+            label={`Sort: ${SORT_BY_OPTIONS.find(o => o.id === sortBy)?.label}`}
+            active={sortBy !== "priority"}
+            open={openFilter === "sortBy"}
+            onClick={() => setOpenFilter(openFilter === "sortBy" ? null : "sortBy")}
+          >
+            {SORT_BY_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => {
+                  setSortBy(option.id);
+                  setOpenFilter(null);
+                }}
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
+                  sortBy === option.id ? "bg-slate-100 font-medium" : ""
+                }`}
+              >
+                <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
+                {option.label}
+                {sortBy === option.id && <Check className="h-3 w-3 ml-auto text-slate-600" />}
+              </button>
+            ))}
+          </FilterChip>
+
+          {/* Clear All */}
+          {hasActiveFilters && (
+            <button
+              onClick={clearAllFilters}
+              className="text-xs text-slate-500 hover:text-slate-700 ml-1"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+
         {/* Task List */}
         <div className="flex-1 overflow-y-auto space-y-4">
           {loading ? (
@@ -1555,81 +2026,31 @@ export default function TasksPage() {
               Loading...
             </div>
           ) : filteredTasks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-              <CheckSquare className="h-12 w-12 mb-4 opacity-50" />
-              <p>No tasks found</p>
+            <div className="flex flex-col items-center pt-12 text-muted-foreground">
+              <CheckSquare className="h-10 w-10 mb-3 opacity-50" />
+              <p className="text-sm">No tasks found</p>
               <button
                 onClick={handleCreateTask}
-                className="mt-4 text-sm text-slate-600 hover:text-slate-900 underline"
+                className="mt-2 text-sm text-slate-600 hover:text-slate-900 underline"
               >
                 Create your first task
               </button>
             </div>
-          ) : currentView === "completed" ? (
-            // Show completed tasks as a simple list
-            <div className="border rounded-lg overflow-hidden">
-              {completedTasks.map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
+          ) : (
+            <>
+              {taskGroups.map((group) => (
+                <TaskGroup
+                  key={group.title}
+                  title={group.title}
+                  tasks={group.tasks}
                   users={users}
                   onToggleComplete={handleToggleComplete}
-                  onClick={handleTaskClick}
+                  onTaskClick={handleTaskClick}
                   onAssigneeChange={handleAssigneeChange}
                   onRefresh={handleRefresh}
+                  variant={group.variant}
                 />
               ))}
-            </div>
-          ) : (
-            // Grouped view for open tasks
-            <>
-              {overdueTasks.length > 0 && (
-                <TaskGroup
-                  title="Overdue"
-                  tasks={overdueTasks}
-                  users={users}
-                  onToggleComplete={handleToggleComplete}
-                  onTaskClick={handleTaskClick}
-                  onAssigneeChange={handleAssigneeChange}
-                  onRefresh={handleRefresh}
-                  variant="danger"
-                />
-              )}
-              {dueTodayTasks.length > 0 && (
-                <TaskGroup
-                  title="Due Today"
-                  tasks={dueTodayTasks}
-                  users={users}
-                  onToggleComplete={handleToggleComplete}
-                  onTaskClick={handleTaskClick}
-                  onAssigneeChange={handleAssigneeChange}
-                  onRefresh={handleRefresh}
-                  variant="warning"
-                />
-              )}
-              {upcomingTasks.length > 0 && (
-                <TaskGroup
-                  title="Upcoming"
-                  tasks={upcomingTasks}
-                  users={users}
-                  onToggleComplete={handleToggleComplete}
-                  onTaskClick={handleTaskClick}
-                  onAssigneeChange={handleAssigneeChange}
-                  onRefresh={handleRefresh}
-                />
-              )}
-              {noDueDateTasks.length > 0 && (
-                <TaskGroup
-                  title="No Due Date"
-                  tasks={noDueDateTasks}
-                  users={users}
-                  defaultExpanded={overdueTasks.length === 0 && dueTodayTasks.length === 0}
-                  onToggleComplete={handleToggleComplete}
-                  onTaskClick={handleTaskClick}
-                  onAssigneeChange={handleAssigneeChange}
-                  onRefresh={handleRefresh}
-                />
-              )}
             </>
           )}
         </div>

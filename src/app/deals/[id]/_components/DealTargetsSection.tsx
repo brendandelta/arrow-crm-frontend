@@ -299,6 +299,7 @@ function TargetRow({
 
   return (
     <div
+      id={`target-card-${target.id}`}
       className={`group/card rounded-lg border bg-white transition-all hover:shadow-sm ${
         isStale
           ? "border-l-[3px] border-l-amber-400 border-t-slate-200 border-r-slate-200 border-b-slate-200"

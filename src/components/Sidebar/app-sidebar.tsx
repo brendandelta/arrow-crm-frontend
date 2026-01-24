@@ -6,8 +6,6 @@ import {
   CircleDollarSign,
   FileText,
   Home,
-  LifeBuoy,
-  Settings,
   Users,
   Calendar,
   TrendingUp,
@@ -17,7 +15,6 @@ import {
 } from "lucide-react"
 
 import { NavMain } from "@/components/Sidebar/nav-main"
-import { NavSecondary } from "@/components/Sidebar/nav-secondary"
 import { NavUser } from "@/components/Sidebar/nav-user"
 import {
   Sidebar,
@@ -30,11 +27,6 @@ import {
 } from "@/components/ui/sidebar"
 
 const data = {
-  user: {
-    name: "Gabriel Borden",
-    email: "gabe@arrow.fund",
-    avatar: "",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -68,7 +60,6 @@ const data = {
       icon: Users,
       items: [
         { title: "All Contacts", url: "/people" },
-        { title: "New Contact", url: "/people/new" },
         { title: "Champions", url: "/people/champions" },
         { title: "Hot", url: "/people/hot" },
       ],
@@ -105,18 +96,6 @@ const data = {
       icon: FileText,
     },
   ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings,
-    },
-  ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -141,10 +120,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   )

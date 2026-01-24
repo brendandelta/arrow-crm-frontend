@@ -18,8 +18,10 @@ import {
   Search,
   Columns3,
   ChevronDown,
-  Filter
+  Filter,
+  Plus,
 } from "lucide-react";
+import { ContactSlideOut } from "./_components/ContactSlideOut";
 import { LinkedInIcon, TwitterIcon, InstagramIcon } from "@/components/icons/SocialIcons";
 import { WarmthBadge } from "@/components/WarmthBadge";
 import { OrgKindBadge } from "@/components/OrgKindBadge";
@@ -222,6 +224,7 @@ export default function PeoplePage() {
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [isInitialized, setIsInitialized] = useState(false);
+  const [showContactSlideOut, setShowContactSlideOut] = useState(false);
 
   // Search and filter state - initialized from localStorage
   const [searchQuery, setSearchQuery] = useState("");
@@ -581,6 +584,13 @@ export default function PeoplePage() {
             <span className="text-orange-600">{hotCount} hot</span>
           </div>
         </div>
+        <button
+          onClick={() => setShowContactSlideOut(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+          New Contact
+        </button>
       </div>
 
       {/* Toolbar */}
@@ -1194,6 +1204,15 @@ export default function PeoplePage() {
       {selectedPeople.length > 0 && (
         <BulkActionBar selectedPeople={selectedPeople} onClear={clearSelection} />
       )}
+
+      <ContactSlideOut
+        isOpen={showContactSlideOut}
+        onClose={() => setShowContactSlideOut(false)}
+        onSave={(newContact) => {
+          // Add the new contact to the list and navigate to their page
+          router.push(`/people/${newContact.id}`);
+        }}
+      />
     </div>
   );
 }

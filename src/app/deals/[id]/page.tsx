@@ -11,7 +11,7 @@ import { TruthPanel } from "./_components/TruthPanel";
 import { BlocksSection } from "./_components/BlocksSection";
 import { InterestsSection } from "./_components/InterestsSection";
 import { ActivityFeed } from "./_components/ActivityFeed";
-import { DealSidebar } from "./_components/DealSidebar";
+import { DealSidebar, Task as SidebarTask } from "./_components/DealSidebar";
 import { DealTargetsSection } from "./_components/DealTargetsSection";
 import { BlockSlideOut } from "./_components/BlockSlideOut";
 import { InterestSlideOut } from "./_components/InterestSlideOut";
@@ -19,10 +19,10 @@ import { ActivitySlideOut } from "./_components/ActivitySlideOut";
 import { TaskSlideOut } from "./_components/TaskSlideOut";
 import { OutreachTargetModal } from "./_components/OutreachTargetModal";
 import { EditableDealDetails } from "./_components/EditableDealDetails";
-import { Task as SidebarTask } from "./_components/DealSidebar";
 // Import shared components
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
 import { useLPMode } from "@/contexts/LPModeContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Types
 interface Company {
@@ -289,6 +289,8 @@ export default function DealDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { lpMode, toggleLpMode } = useLPMode();
+  const { user } = useAuth();
+  const currentUserId = user?.backendUserId ?? null;
   const [deal, setDeal] = useState<Deal | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
@@ -494,12 +496,12 @@ export default function DealDetailPage() {
   };
 
   const handleMissingDocClick = () => {
-    setSidebarSection("documents");
+    setSidebarSection("diligence");
     sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleConstraintClick = () => {
-    setSidebarSection("tasks");
+    setSidebarSection("next-actions");
     sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -512,13 +514,39 @@ export default function DealDetailPage() {
       );
       if (match) { setSelectedTask(match); return; }
     }
-    setSidebarSection("tasks");
+    setSidebarSection("next-actions");
     sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleBlockingClick = () => {
-    setSidebarSection("tasks");
+    setSidebarSection("next-actions");
     sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleScrollToTarget = (targetId: number) => {
+    setActiveTab("targets");
+    // Wait for render, then scroll to the target card
+    setTimeout(() => {
+      const el = document.getElementById(`target-card-${targetId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Add highlight ring briefly
+        el.classList.add("ring-2", "ring-indigo-400", "ring-offset-2");
+        setTimeout(() => {
+          el.classList.remove("ring-2", "ring-indigo-400", "ring-offset-2");
+        }, 2000);
+      }
+    }, 100);
+  };
+
+  const handleFollowUpUpdate = (targetId: number, nextStepAt: string | null) => {
+    if (!deal) return;
+    setDeal({
+      ...deal,
+      targets: deal.targets.map((t) =>
+        t.id === targetId ? { ...t, nextStepAt } : t
+      ),
+    });
   };
 
   if (loading) {
@@ -697,21 +725,20 @@ export default function DealDetailPage() {
                 advantages={deal.advantages}
                 riskFlags={deal.riskFlags}
                 lpMode={lpMode}
+                currentUserId={currentUserId}
                 activeSection={sidebarSection}
                 onSectionChange={setSidebarSection}
                 onTaskToggle={handleTaskToggle}
                 onTaskClick={(task) => setSelectedTask(task)}
                 onAddTask={() => setShowAddTask(true)}
-                onTargetClick={(target) => {
-                  // Could open target slide-out
-                }}
+                onScrollToTarget={handleScrollToTarget}
+                onFollowUpUpdate={handleFollowUpUpdate}
                 onDocumentUpload={(kind) => {
                   // Could open upload modal
                 }}
                 onAddAdvantage={() => {
                   // Could open add advantage modal
                 }}
-                onSwitchToTargetsTab={() => setActiveTab("targets")}
               />
             </CardContent>
           </Card>
