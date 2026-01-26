@@ -93,6 +93,7 @@ function HeatBadge({ heat, label }: { heat: number; label: string }) {
 }
 
 function BlockStatusBadge({ status }: { status: string }) {
+  const s = status || "available";
   const styles: Record<string, string> = {
     available: "bg-green-100 text-green-700",
     reserved: "bg-yellow-100 text-yellow-700",
@@ -100,8 +101,8 @@ function BlockStatusBadge({ status }: { status: string }) {
     withdrawn: "bg-slate-100 text-slate-600",
   };
   return (
-    <Badge className={styles[status] || styles.available}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+    <Badge className={styles[s] || styles.available}>
+      {s.charAt(0).toUpperCase() + s.slice(1)}
     </Badge>
   );
 }
@@ -141,9 +142,9 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
           </div>
           <button
             onClick={onAddBlock}
-            className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md transition-colors shadow-sm"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5" />
             Add Block
           </button>
         </div>

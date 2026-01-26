@@ -17,7 +17,17 @@ import {
   User,
   Pencil,
   Trash2,
+  LayoutGrid,
+  LayoutList,
 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
 interface Owner {
@@ -113,6 +123,7 @@ const ACTIVITY_ICONS: Record<string, typeof Phone> = {
 };
 
 export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarget, onTargetClick }: DealTargetsSectionProps) {
+  const [viewMode, setViewMode] = useState<"table" | "card">("card");
   const [expandedTimelines, setExpandedTimelines] = useState<Set<number>>(new Set());
   const [loggingEventFor, setLoggingEventFor] = useState<{ targetId: number; kind: string } | null>(null);
   const [addingTaskFor, setAddingTaskFor] = useState<number | null>(null);
@@ -152,37 +163,120 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarg
   };
 
   return (
-    <div className="space-y-4">
-      {/* Summary Bar */}
+    <div className="space-y-3">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {STATUS_OPTIONS.filter((s) => statusCounts[s.value]).map((s) => (
-            <span
-              key={s.value}
-              className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[s.value]}`}
-            >
-              {statusCounts[s.value]} {s.label}
-            </span>
-          ))}
-          {staleCount > 0 && (
-            <Badge className="bg-amber-50 text-amber-600 text-[11px] border border-amber-200">
-              {staleCount} stale
-            </Badge>
-          )}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {STATUS_OPTIONS.filter((s) => statusCounts[s.value]).map((s) => (
+              <span
+                key={s.value}
+                className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[s.value]}`}
+              >
+                {statusCounts[s.value]} {s.label}
+              </span>
+            ))}
+            {staleCount > 0 && (
+              <Badge className="bg-amber-50 text-amber-600 text-[11px] border border-amber-200">
+                {staleCount} stale
+              </Badge>
+            )}
+          </div>
         </div>
-        <button
-          onClick={onAddTarget}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md transition-colors shadow-sm"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add Target
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center border rounded-md overflow-hidden">
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-1.5 ${viewMode === "table" ? "bg-slate-100" : "hover:bg-slate-50"}`}
+            >
+              <LayoutList className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("card")}
+              className={`p-1.5 ${viewMode === "card" ? "bg-slate-100" : "hover:bg-slate-50"}`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+          </div>
+          <button
+            onClick={onAddTarget}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md transition-colors shadow-sm"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add Target
+          </button>
+        </div>
       </div>
 
-      {/* Target Cards */}
+      {/* Content */}
       {targets.length === 0 ? (
         <div className="text-center py-12 text-sm text-slate-400">
           No outreach targets for this deal
+        </div>
+      ) : viewMode === "table" ? (
+        <div className="rounded-md border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Target</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Last Contact</TableHead>
+                <TableHead>Owner</TableHead>
+                <TableHead>Next Step</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {targets.map((target) => {
+                const isStale = target.isStale || (target.daysSinceContact !== null && target.daysSinceContact > 7);
+                return (
+                  <TableRow
+                    key={target.id}
+                    className={`cursor-pointer hover:bg-slate-50 ${isStale ? "bg-amber-50/50" : ""}`}
+                    onClick={() => onTargetClick?.(target)}
+                  >
+                    <TableCell>
+                      <div className="font-medium">{target.targetName}</div>
+                      <div className="text-xs text-muted-foreground">{target.activityCount} events</div>
+                    </TableCell>
+                    <TableCell>
+                      <select
+                        value={target.status}
+                        onChange={(e) => { e.stopPropagation(); handleStatusChange(target.id, e.target.value); }}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`text-[11px] px-2 py-0.5 rounded-full border-0 font-medium cursor-pointer appearance-none ${STATUS_COLORS[target.status] || "bg-slate-100 text-slate-600"}`}
+                      >
+                        {STATUS_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground capitalize">
+                      {target.role?.replace(/_/g, " ") || "—"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {target.daysSinceContact !== null
+                          ? target.daysSinceContact === 0
+                            ? "Today"
+                            : `${target.daysSinceContact}d ago`
+                          : "Never"}
+                      </div>
+                      {isStale && (
+                        <span className="text-[11px] text-amber-600 font-medium">Stale</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {target.owner ? `${target.owner.firstName}` : "—"}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {target.nextStep || (target.nextStepAt ? formatDate(target.nextStepAt) : "—")}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
       ) : (
         <div className="space-y-2">

@@ -638,8 +638,8 @@ export default function DealDetailPage() {
           <div className="flex border-b">
             {[
               { key: "targets", label: "Outreach Targets", count: deal.targets.length },
-              { key: "blocks", label: "Blocks", count: deal.blocks.length },
               { key: "interests", label: "Interests", count: deal.interests.length },
+              { key: "blocks", label: "Blocks", count: deal.blocks.length },
               { key: "activity", label: "Activity", count: deal.activities.length },
             ].map((tab) => (
               <button

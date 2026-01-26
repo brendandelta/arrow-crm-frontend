@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, AlertCircle, Check, CalendarClock } from "lucide-react";
+import { Plus, AlertCircle, Check, CalendarClock, LayoutGrid, LayoutList } from "lucide-react";
 import { FunnelVisualization } from "./FunnelVisualization";
 
 interface Person {
@@ -123,12 +123,12 @@ export function InterestsSection({
   onAddInterest,
   onInterestsUpdated,
 }: InterestsSectionProps) {
+  const [viewMode, setViewMode] = useState<"table" | "card">("table");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [addingFollowUpFor, setAddingFollowUpFor] = useState<number | null>(null);
 
   const filteredInterests = statusFilter
     ? interests.filter((i) => {
-        // Map funnel keys to interest statuses
         const statusMap: Record<string, string[]> = {
           prospecting: ["prospecting"],
           contacted: ["contacted"],
@@ -144,7 +144,7 @@ export function InterestsSection({
   const staleCount = interests.filter((i) => i.isStale).length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -157,13 +157,29 @@ export function InterestsSection({
             </span>
           )}
         </div>
-        <button
-          onClick={onAddInterest}
-          className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
-        >
-          <Plus className="h-4 w-4" />
-          Add Interest
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center border rounded-md overflow-hidden">
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-1.5 ${viewMode === "table" ? "bg-slate-100" : "hover:bg-slate-50"}`}
+            >
+              <LayoutList className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("card")}
+              className={`p-1.5 ${viewMode === "card" ? "bg-slate-100" : "hover:bg-slate-50"}`}
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+          </div>
+          <button
+            onClick={onAddInterest}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md transition-colors shadow-sm"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add Interest
+          </button>
+        </div>
       </div>
 
       {/* Funnel */}
@@ -189,12 +205,12 @@ export function InterestsSection({
         </div>
       )}
 
-      {/* Table */}
+      {/* Content */}
       {filteredInterests.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground border rounded-lg">
           {statusFilter ? "No interests in this stage" : "No investor interests yet"}
         </div>
-      ) : (
+      ) : viewMode === "table" ? (
         <div className="rounded-md border overflow-hidden">
           <Table>
             <TableHeader>
@@ -308,6 +324,58 @@ export function InterestsSection({
               ))}
             </TableBody>
           </Table>
+        </div>
+      ) : (
+        /* Card View */
+        <div className="grid grid-cols-2 gap-3">
+          {filteredInterests.map((interest) => (
+            <div
+              key={interest.id}
+              onClick={() => onInterestClick?.(interest)}
+              className={`p-4 border rounded-lg cursor-pointer hover:border-slate-300 hover:bg-slate-50 transition-colors ${
+                interest.isStale ? "border-l-[3px] border-l-amber-400" : ""
+              }`}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <div className="font-medium">{interest.investor?.name || "No investor"}</div>
+                  {interest.contact && (
+                    <div className="text-sm text-muted-foreground">
+                      {interest.contact.firstName} {interest.contact.lastName}
+                    </div>
+                  )}
+                </div>
+                <InterestStatusBadge status={interest.status} />
+              </div>
+
+              <div className="flex items-center justify-between text-sm">
+                <div>
+                  <div className="text-muted-foreground">Target</div>
+                  <div className="text-lg font-semibold">{formatCurrency(interest.targetCents)}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-muted-foreground">Committed</div>
+                  <div className="font-medium">{formatCurrency(interest.committedCents)}</div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between mt-3 pt-3 border-t">
+                {interest.allocatedBlock ? (
+                  <span className="text-xs text-muted-foreground">
+                    Block: {interest.allocatedBlock.seller || "—"} ({formatCurrency(interest.allocatedBlock.priceCents)}/sh)
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">Not mapped to block</span>
+                )}
+                {interest.isStale && (
+                  <span className="flex items-center gap-1 text-[11px] text-amber-600">
+                    <AlertCircle className="h-3 w-3" />
+                    Stale
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
