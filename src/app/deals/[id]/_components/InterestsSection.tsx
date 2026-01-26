@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, useMemo, Fragment } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -12,6 +12,10 @@ import {
 } from "@/components/ui/table";
 import { Plus, AlertCircle, Check, CalendarClock, LayoutGrid, LayoutList } from "lucide-react";
 import { FunnelVisualization } from "./FunnelVisualization";
+import { useTableFiltering } from "./table-filtering/useTableFiltering";
+import { FilterableHeader } from "./table-filtering/FilterableHeader";
+import { ActiveFiltersBar } from "./table-filtering/ActiveFiltersBar";
+import type { ColumnDef } from "./table-filtering/types";
 
 interface Person {
   id: number;
@@ -115,6 +119,85 @@ function InterestStatusBadge({ status }: { status: string }) {
   );
 }
 
+const INTEREST_STATUS_OPTIONS = [
+  { value: "prospecting", label: "Prospecting", color: "bg-slate-100 text-slate-600" },
+  { value: "contacted", label: "Contacted", color: "bg-slate-200 text-slate-700" },
+  { value: "soft_circled", label: "Soft Circled", color: "bg-blue-100 text-blue-700" },
+  { value: "committed", label: "Committed", color: "bg-purple-100 text-purple-700" },
+  { value: "allocated", label: "Allocated", color: "bg-indigo-100 text-indigo-700" },
+  { value: "funded", label: "Funded", color: "bg-emerald-100 text-emerald-700" },
+  { value: "declined", label: "Declined", color: "bg-red-100 text-red-600" },
+  { value: "withdrawn", label: "Withdrawn", color: "bg-slate-100 text-slate-500" },
+];
+
+const INTEREST_COLUMNS: ColumnDef<Interest>[] = [
+  {
+    id: "investor",
+    label: "Investor",
+    filterType: "text",
+    accessor: (row) => row.investor?.name ?? null,
+    sortLabels: ["A → Z", "Z → A"],
+  },
+  {
+    id: "contact",
+    label: "Contact",
+    filterType: "text",
+    accessor: (row) =>
+      row.contact ? `${row.contact.firstName} ${row.contact.lastName}` : null,
+    sortLabels: ["A → Z", "Z → A"],
+  },
+  {
+    id: "target",
+    label: "Target",
+    filterType: "currency",
+    accessor: (row) => row.targetCents,
+    align: "right",
+    sortLabels: ["Low → High", "High → Low"],
+  },
+  {
+    id: "committed",
+    label: "Committed",
+    filterType: "currency",
+    accessor: (row) => row.committedCents,
+    align: "right",
+    sortLabels: ["Low → High", "High → Low"],
+  },
+  {
+    id: "block",
+    label: "Block",
+    filterType: "boolean",
+    accessor: (row) => (row.allocatedBlock ? true : false),
+    booleanLabels: ["Mapped", "Not mapped"],
+    sortable: false,
+  },
+  {
+    id: "followUp",
+    label: "Follow-up",
+    filterType: "boolean",
+    accessor: (row) => (row.nextTask ? true : false),
+    booleanLabels: ["Has task", "No task"],
+    sortable: false,
+  },
+  {
+    id: "status",
+    label: "Status",
+    filterType: "enum",
+    accessor: (row) => row.status,
+    enumOptions: INTEREST_STATUS_OPTIONS,
+    sortLabels: ["A → Z", "Z → A"],
+  },
+];
+
+// Maps funnel stage names to their DB status values
+const FUNNEL_TO_STATUS: Record<string, string> = {
+  prospecting: "prospecting",
+  contacted: "contacted",
+  softCircled: "soft_circled",
+  committed: "committed",
+  allocated: "allocated",
+  funded: "funded",
+};
+
 export function InterestsSection({
   interests,
   dealId,
@@ -123,23 +206,47 @@ export function InterestsSection({
   onAddInterest,
   onInterestsUpdated,
 }: InterestsSectionProps) {
-  const [viewMode, setViewMode] = useState<"table" | "card">("table");
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"table" | "card">("card");
   const [addingFollowUpFor, setAddingFollowUpFor] = useState<number | null>(null);
 
-  const filteredInterests = statusFilter
-    ? interests.filter((i) => {
-        const statusMap: Record<string, string[]> = {
-          prospecting: ["prospecting"],
-          contacted: ["contacted"],
-          softCircled: ["soft_circled"],
-          committed: ["committed"],
-          allocated: ["allocated"],
-          funded: ["funded"],
-        };
-        return statusMap[statusFilter]?.includes(i.status);
-      })
-    : interests;
+  const {
+    filteredData,
+    activeFilters,
+    hasActiveFilters,
+    setFilter,
+    clearFilter,
+    clearAllFilters,
+    toggleSort,
+    setSort,
+    getSortDirection,
+    getEnumCounts,
+    filters,
+  } = useTableFiltering(interests, INTEREST_COLUMNS);
+
+  // Derive funnel active stage from current status enum filter
+  const statusFilter = filters.get("status");
+  const activeFunnelStage = useMemo(() => {
+    if (!statusFilter || statusFilter.type !== "enum") return null;
+    // If exactly one status is selected and it matches a funnel stage, show that stage active
+    if (statusFilter.selected.size === 1) {
+      const selectedStatus = Array.from(statusFilter.selected)[0];
+      const entry = Object.entries(FUNNEL_TO_STATUS).find(([, v]) => v === selectedStatus);
+      return entry ? entry[0] : null;
+    }
+    return null;
+  }, [statusFilter]);
+
+  const handleFunnelClick = (stage: string) => {
+    const dbStatus = FUNNEL_TO_STATUS[stage];
+    if (!dbStatus) return;
+
+    // If already filtering by this stage, clear the filter
+    if (activeFunnelStage === stage) {
+      clearFilter("status");
+    } else {
+      setFilter("status", { type: "enum", selected: new Set([dbStatus]) });
+    }
+  };
 
   const staleCount = interests.filter((i) => i.isStale).length;
 
@@ -160,16 +267,16 @@ export function InterestsSection({
         <div className="flex items-center gap-2">
           <div className="flex items-center border rounded-md overflow-hidden">
             <button
-              onClick={() => setViewMode("table")}
-              className={`p-1.5 ${viewMode === "table" ? "bg-slate-100" : "hover:bg-slate-50"}`}
-            >
-              <LayoutList className="h-4 w-4" />
-            </button>
-            <button
               onClick={() => setViewMode("card")}
               className={`p-1.5 ${viewMode === "card" ? "bg-slate-100" : "hover:bg-slate-50"}`}
             >
               <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-1.5 ${viewMode === "table" ? "bg-slate-100" : "hover:bg-slate-50"}`}
+            >
+              <LayoutList className="h-4 w-4" />
             </button>
           </div>
           <button
@@ -185,47 +292,55 @@ export function InterestsSection({
       {/* Funnel */}
       <FunnelVisualization
         funnel={funnel}
-        onStageClick={(stage) => setStatusFilter(statusFilter === stage ? null : stage)}
-        activeStage={statusFilter}
+        onStageClick={handleFunnelClick}
+        activeStage={activeFunnelStage}
       />
 
-      {/* Filter indicator */}
-      {statusFilter && (
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Filtered by:</span>
-          <Badge variant="secondary" className="capitalize">
-            {statusFilter.replace(/([A-Z])/g, " $1").trim()}
-          </Badge>
-          <button
-            onClick={() => setStatusFilter(null)}
-            className="text-xs text-slate-500 hover:text-slate-700"
-          >
-            Clear
-          </button>
-        </div>
-      )}
-
       {/* Content */}
-      {filteredInterests.length === 0 ? (
+      {interests.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground border rounded-lg">
-          {statusFilter ? "No interests in this stage" : "No investor interests yet"}
+          No investor interests yet
         </div>
       ) : viewMode === "table" ? (
         <div className="rounded-md border overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[200px]">Investor</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead className="text-right">Target</TableHead>
-                <TableHead className="text-right">Committed</TableHead>
-                <TableHead>Block</TableHead>
-                <TableHead>Follow-up</TableHead>
-                <TableHead>Status</TableHead>
+                {INTEREST_COLUMNS.map((col) => (
+                  <FilterableHeader
+                    key={col.id}
+                    column={col}
+                    filterValue={activeFilters.find((f) => f.columnId === col.id)?.filterValue}
+                    sortDirection={getSortDirection(col.id)}
+                    enumCounts={getEnumCounts(col.id)}
+                    onFilterChange={setFilter}
+                    onSortToggle={toggleSort}
+                    onSortSet={setSort}
+                  />
+                ))}
               </TableRow>
+              <ActiveFiltersBar
+                filters={activeFilters}
+                colSpan={INTEREST_COLUMNS.length}
+                onClearFilter={clearFilter}
+                onClearAll={clearAllFilters}
+              />
             </TableHeader>
             <TableBody>
-              {filteredInterests.map((interest) => (
+              {filteredData.length === 0 && hasActiveFilters ? (
+                <TableRow>
+                  <TableCell colSpan={INTEREST_COLUMNS.length} className="text-center py-8">
+                    <div className="text-sm text-slate-400">No results match your filters</div>
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-xs text-blue-600 hover:text-blue-800 mt-1"
+                    >
+                      Clear filters
+                    </button>
+                  </TableCell>
+                </TableRow>
+              ) : (
+              filteredData.map((interest) => (
                 <Fragment key={interest.id}>
                 <TableRow
                   className={`cursor-pointer hover:bg-slate-50 ${
@@ -321,14 +436,15 @@ export function InterestsSection({
                   </TableRow>
                 )}
                 </Fragment>
-              ))}
+              ))
+              )}
             </TableBody>
           </Table>
         </div>
       ) : (
         /* Card View */
         <div className="grid grid-cols-2 gap-3">
-          {filteredInterests.map((interest) => (
+          {filteredData.map((interest) => (
             <div
               key={interest.id}
               onClick={() => onInterestClick?.(interest)}

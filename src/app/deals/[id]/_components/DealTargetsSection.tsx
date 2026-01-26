@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Phone,
   Mail,
@@ -29,6 +29,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { useTableFiltering } from "./table-filtering/useTableFiltering";
+import { FilterableHeader } from "./table-filtering/FilterableHeader";
+import { ActiveFiltersBar } from "./table-filtering/ActiveFiltersBar";
+import type { ColumnDef } from "./table-filtering/types";
 
 interface Owner {
   id: number;
@@ -122,11 +126,86 @@ const ACTIVITY_ICONS: Record<string, typeof Phone> = {
   video_call: Video,
 };
 
+const TARGET_COLUMNS: ColumnDef<DealTarget>[] = [
+  {
+    id: "target",
+    label: "Target",
+    filterType: "text",
+    accessor: (row) => row.targetName,
+    sortLabels: ["A → Z", "Z → A"],
+  },
+  {
+    id: "status",
+    label: "Status",
+    filterType: "enum",
+    accessor: (row) => row.status,
+    enumOptions: STATUS_OPTIONS.map((s) => ({
+      value: s.value,
+      label: s.label,
+      color: STATUS_COLORS[s.value],
+    })),
+    sortLabels: ["A → Z", "Z → A"],
+  },
+  {
+    id: "role",
+    label: "Role",
+    filterType: "text",
+    accessor: (row) => row.role?.replace(/_/g, " ") ?? null,
+    sortLabels: ["A → Z", "Z → A"],
+  },
+  {
+    id: "lastContact",
+    label: "Last Contact",
+    filterType: "datePreset",
+    accessor: (row) => row.lastContactedAt ?? null,
+    sortAccessor: (row) => {
+      if (!row.lastContactedAt) return null;
+      return new Date(row.lastContactedAt).getTime();
+    },
+    datePresets: [
+      { value: "today", label: "Today" },
+      { value: "this_week", label: "This week" },
+      { value: "7plus_days", label: "7+ days" },
+      { value: "never", label: "Never" },
+    ],
+    sortLabels: ["Recent first", "Oldest first"],
+  },
+  {
+    id: "owner",
+    label: "Owner",
+    filterType: "text",
+    accessor: (row) => (row.owner ? `${row.owner.firstName} ${row.owner.lastName}` : null),
+    sortAccessor: (row) => row.owner?.firstName ?? null,
+    sortLabels: ["A → Z", "Z → A"],
+  },
+  {
+    id: "nextStep",
+    label: "Next Step",
+    filterType: "text",
+    accessor: (row) => row.nextStep ?? null,
+    sortLabels: ["A → Z", "Z → A"],
+  },
+];
+
 export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarget, onTargetClick }: DealTargetsSectionProps) {
   const [viewMode, setViewMode] = useState<"table" | "card">("card");
   const [expandedTimelines, setExpandedTimelines] = useState<Set<number>>(new Set());
   const [loggingEventFor, setLoggingEventFor] = useState<{ targetId: number; kind: string } | null>(null);
   const [addingTaskFor, setAddingTaskFor] = useState<number | null>(null);
+
+  const {
+    filteredData,
+    activeFilters,
+    hasActiveFilters,
+    setFilter,
+    clearFilter,
+    clearAllFilters,
+    toggleSort,
+    setSort,
+    getSortDirection,
+    getEnumCounts,
+    getDatePresetCounts,
+  } = useTableFiltering(targets, TARGET_COLUMNS);
 
   const statusCounts = targets.reduce((acc, t) => {
     acc[t.status] = (acc[t.status] || 0) + 1;
@@ -186,16 +265,16 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarg
         <div className="flex items-center gap-2">
           <div className="flex items-center border rounded-md overflow-hidden">
             <button
-              onClick={() => setViewMode("table")}
-              className={`p-1.5 ${viewMode === "table" ? "bg-slate-100" : "hover:bg-slate-50"}`}
-            >
-              <LayoutList className="h-4 w-4" />
-            </button>
-            <button
               onClick={() => setViewMode("card")}
               className={`p-1.5 ${viewMode === "card" ? "bg-slate-100" : "hover:bg-slate-50"}`}
             >
               <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-1.5 ${viewMode === "table" ? "bg-slate-100" : "hover:bg-slate-50"}`}
+            >
+              <LayoutList className="h-4 w-4" />
             </button>
           </div>
           <button
@@ -218,16 +297,42 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarg
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Target</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Last Contact</TableHead>
-                <TableHead>Owner</TableHead>
-                <TableHead>Next Step</TableHead>
+                {TARGET_COLUMNS.map((col) => (
+                  <FilterableHeader
+                    key={col.id}
+                    column={col}
+                    filterValue={activeFilters.find((f) => f.columnId === col.id)?.filterValue}
+                    sortDirection={getSortDirection(col.id)}
+                    enumCounts={getEnumCounts(col.id)}
+                    datePresetCounts={getDatePresetCounts(col.id)}
+                    onFilterChange={setFilter}
+                    onSortToggle={toggleSort}
+                    onSortSet={setSort}
+                  />
+                ))}
               </TableRow>
+              <ActiveFiltersBar
+                filters={activeFilters}
+                colSpan={TARGET_COLUMNS.length}
+                onClearFilter={clearFilter}
+                onClearAll={clearAllFilters}
+              />
             </TableHeader>
             <TableBody>
-              {targets.map((target) => {
+              {filteredData.length === 0 && hasActiveFilters ? (
+                <TableRow>
+                  <TableCell colSpan={TARGET_COLUMNS.length} className="text-center py-8">
+                    <div className="text-sm text-slate-400">No results match your filters</div>
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-xs text-blue-600 hover:text-blue-800 mt-1"
+                    >
+                      Clear filters
+                    </button>
+                  </TableCell>
+                </TableRow>
+              ) : (
+              filteredData.map((target) => {
                 const isStale = target.isStale || (target.daysSinceContact !== null && target.daysSinceContact > 7);
                 return (
                   <TableRow
@@ -274,13 +379,14 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarg
                     </TableCell>
                   </TableRow>
                 );
-              })}
+              })
+              )}
             </TableBody>
           </Table>
         </div>
       ) : (
         <div className="space-y-2">
-          {targets.map((target) => (
+          {filteredData.map((target) => (
             <TargetRow
               key={target.id}
               target={target}

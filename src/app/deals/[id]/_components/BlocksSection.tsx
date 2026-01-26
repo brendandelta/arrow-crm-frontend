@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect, useMemo, Fragment } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -11,6 +11,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Plus, LayoutGrid, LayoutList, Flame, ChevronDown, ChevronRight, Check, CalendarClock } from "lucide-react";
+import { useTableFiltering } from "./table-filtering/useTableFiltering";
+import { FilterableHeader } from "./table-filtering/FilterableHeader";
+import { ActiveFiltersBar } from "./table-filtering/ActiveFiltersBar";
+import type { ColumnDef } from "./table-filtering/types";
 
 interface TaskInfo {
   id: number;
@@ -107,10 +111,114 @@ function BlockStatusBadge({ status }: { status: string }) {
   );
 }
 
+const BLOCK_STATUS_OPTIONS = [
+  { value: "available", label: "Available", color: "bg-green-100 text-green-700" },
+  { value: "reserved", label: "Reserved", color: "bg-yellow-100 text-yellow-700" },
+  { value: "sold", label: "Sold", color: "bg-purple-100 text-purple-700" },
+  { value: "withdrawn", label: "Withdrawn", color: "bg-slate-100 text-slate-600" },
+];
+
+const HEAT_OPTIONS = [
+  { value: "0", label: "Cold", color: "bg-slate-100 text-slate-600" },
+  { value: "1", label: "Warm", color: "bg-yellow-100 text-yellow-700" },
+  { value: "2", label: "Hot", color: "bg-orange-100 text-orange-700" },
+  { value: "3", label: "Very Hot", color: "bg-red-100 text-red-700" },
+];
+
+const BLOCK_COLUMNS: ColumnDef<Block>[] = [
+  {
+    id: "seller",
+    label: "Seller",
+    filterType: "text",
+    accessor: (row) => row.seller?.name ?? null,
+    sortLabels: ["A → Z", "Z → A"],
+  },
+  {
+    id: "contact",
+    label: "Contact",
+    filterType: "text",
+    accessor: (row) =>
+      row.contact ? `${row.contact.firstName} ${row.contact.lastName}` : null,
+    sortLabels: ["A → Z", "Z → A"],
+  },
+  {
+    id: "shares",
+    label: "Shares",
+    filterType: "number",
+    accessor: (row) => row.shares ?? null,
+    align: "right",
+    sortLabels: ["Low → High", "High → Low"],
+  },
+  {
+    id: "price",
+    label: "Price",
+    filterType: "currency",
+    accessor: (row) => row.priceCents ?? null,
+    align: "right",
+    sortLabels: ["Low → High", "High → Low"],
+  },
+  {
+    id: "total",
+    label: "Total",
+    filterType: "currency",
+    accessor: (row) => row.totalCents ?? null,
+    align: "right",
+    sortLabels: ["Low → High", "High → Low"],
+  },
+  {
+    id: "heat",
+    label: "Heat",
+    filterType: "enum",
+    accessor: (row) => String(row.heat),
+    sortAccessor: (row) => row.heat,
+    enumOptions: HEAT_OPTIONS,
+    sortLabels: ["Cold → Hot", "Hot → Cold"],
+  },
+  {
+    id: "status",
+    label: "Status",
+    filterType: "enum",
+    accessor: (row) => row.status,
+    enumOptions: BLOCK_STATUS_OPTIONS,
+    sortLabels: ["A → Z", "Z → A"],
+  },
+  {
+    id: "followUp",
+    label: "Follow-up",
+    filterType: "boolean",
+    accessor: (row) => (row.nextTask ? true : false),
+    booleanLabels: ["Has task", "No task"],
+    sortable: false,
+  },
+  {
+    id: "mapped",
+    label: "Mapped",
+    filterType: "boolean",
+    accessor: (row) => ((row.mappedInterestsCount ?? 0) > 0 ? true : false),
+    sortAccessor: (row) => row.mappedInterestsCount ?? 0,
+    booleanLabels: ["Has interests", "No interests"],
+    align: "right",
+    sortLabels: ["Fewest", "Most"],
+  },
+];
+
 export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBlocksUpdated }: BlocksSectionProps) {
-  const [viewMode, setViewMode] = useState<"table" | "card">("table");
+  const [viewMode, setViewMode] = useState<"table" | "card">("card");
   const [expandedBlockId, setExpandedBlockId] = useState<number | null>(null);
   const [addingFollowUpFor, setAddingFollowUpFor] = useState<number | null>(null);
+
+  const {
+    filteredData,
+    activeFilters,
+    hasActiveFilters,
+    setFilter,
+    clearFilter,
+    clearAllFilters,
+    toggleSort,
+    setSort,
+    getSortDirection,
+    getEnumCounts,
+  } = useTableFiltering(blocks, BLOCK_COLUMNS);
 
   const toggleExpand = (blockId: number, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -128,16 +236,16 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
         <div className="flex items-center gap-2">
           <div className="flex items-center border rounded-md overflow-hidden">
             <button
-              onClick={() => setViewMode("table")}
-              className={`p-1.5 ${viewMode === "table" ? "bg-slate-100" : "hover:bg-slate-50"}`}
-            >
-              <LayoutList className="h-4 w-4" />
-            </button>
-            <button
               onClick={() => setViewMode("card")}
               className={`p-1.5 ${viewMode === "card" ? "bg-slate-100" : "hover:bg-slate-50"}`}
             >
               <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-1.5 ${viewMode === "table" ? "bg-slate-100" : "hover:bg-slate-50"}`}
+            >
+              <LayoutList className="h-4 w-4" />
             </button>
           </div>
           <button
@@ -161,19 +269,41 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8"></TableHead>
-                <TableHead>Seller</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead className="text-right">Shares</TableHead>
-                <TableHead className="text-right">Price</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead>Heat</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Follow-up</TableHead>
-                <TableHead className="text-right">Mapped</TableHead>
+                {BLOCK_COLUMNS.map((col) => (
+                  <FilterableHeader
+                    key={col.id}
+                    column={col}
+                    filterValue={activeFilters.find((f) => f.columnId === col.id)?.filterValue}
+                    sortDirection={getSortDirection(col.id)}
+                    enumCounts={getEnumCounts(col.id)}
+                    onFilterChange={setFilter}
+                    onSortToggle={toggleSort}
+                    onSortSet={setSort}
+                  />
+                ))}
               </TableRow>
+              <ActiveFiltersBar
+                filters={activeFilters}
+                colSpan={BLOCK_COLUMNS.length + 1}
+                onClearFilter={clearFilter}
+                onClearAll={clearAllFilters}
+              />
             </TableHeader>
             <TableBody>
-              {blocks.map((block) => (
+              {filteredData.length === 0 && hasActiveFilters ? (
+                <TableRow>
+                  <TableCell colSpan={BLOCK_COLUMNS.length + 1} className="text-center py-8">
+                    <div className="text-sm text-slate-400">No results match your filters</div>
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-xs text-blue-600 hover:text-blue-800 mt-1"
+                    >
+                      Clear filters
+                    </button>
+                  </TableCell>
+                </TableRow>
+              ) : (
+              filteredData.map((block) => (
                 <Fragment key={block.id}>
                   <TableRow
                     className="cursor-pointer hover:bg-slate-50"
@@ -308,14 +438,15 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
                     </TableRow>
                   )}
                 </Fragment>
-              ))}
+              ))
+              )}
             </TableBody>
           </Table>
         </div>
       ) : (
         /* Card View */
         <div className="grid grid-cols-2 gap-3">
-          {blocks.map((block) => (
+          {filteredData.map((block) => (
             <div
               key={block.id}
               onClick={() => onBlockClick(block)}
