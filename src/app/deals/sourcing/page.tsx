@@ -11,7 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Circle, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { PriorityBadge } from "../_components/PriorityBadge";
 
 interface Deal {
   id: number;
@@ -44,21 +45,6 @@ function formatCurrency(cents: number) {
     return `$${(dollars / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
   }
   return `$${dollars.toFixed(0)}`;
-}
-
-function PriorityIndicator({ priority }: { priority: number }) {
-  const colors = ["text-slate-300", "text-yellow-500", "text-orange-500", "text-red-500"];
-  return (
-    <div className="flex gap-0.5">
-      {[1, 2, 3].map((i) => (
-        <Circle
-          key={i}
-          className={`h-2 w-2 ${i <= priority ? colors[priority] : "text-slate-200"}`}
-          fill={i <= priority ? "currentColor" : "none"}
-        />
-      ))}
-    </div>
-  );
 }
 
 function formatDate(dateStr: string | null) {
@@ -151,7 +137,7 @@ export default function SourcingDealsPage() {
                     <Badge variant="outline" className="capitalize">{deal.kind}</Badge>
                   </TableCell>
                   <TableCell className="text-center">
-                    <PriorityIndicator priority={deal.priority} />
+                    <PriorityBadge priority={deal.priority} compact />
                   </TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground">
                     {formatCurrency(deal.valuation || 0)}

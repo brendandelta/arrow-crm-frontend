@@ -15,12 +15,12 @@ import {
   FolderOpen,
   FileText,
   Presentation,
-  BookOpen,
   ChevronRight,
   ChevronDown,
   DollarSign,
   User,
 } from "lucide-react";
+import { DEAL_PRIORITIES, getPriorityConfig } from "../../_components/priority";
 
 interface Owner {
   id: number;
@@ -29,6 +29,7 @@ interface Owner {
 }
 
 export interface DealDetailsData {
+  priority: number;
   stage: string | null;
   confidence: number | null;
   sharePrice: number | null;
@@ -42,7 +43,6 @@ export interface DealDetailsData {
   driveUrl: string | null;
   dataRoomUrl: string | null;
   deckUrl: string | null;
-  notionUrl: string | null;
   owner: Owner | null;
   ownerId?: number | null;
 }
@@ -132,7 +132,6 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
     { key: "driveUrl", label: "Drive", icon: FolderOpen, url: deal.driveUrl },
     { key: "dataRoomUrl", label: "Data Room", icon: FileText, url: deal.dataRoomUrl },
     { key: "deckUrl", label: "Deck", icon: Presentation, url: deal.deckUrl },
-    { key: "notionUrl", label: "Notion", icon: BookOpen, url: deal.notionUrl },
   ];
 
   const hasTermsData = !!(deal.valuation || deal.sharePrice || deal.source);
@@ -153,6 +152,14 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
                 placeholder="Set stage"
                 onSave={(val) => saveField("stage", val)}
                 displayClass={STAGE_COLORS[deal.stage || ""] || "bg-slate-50 text-slate-600"}
+              />
+            </FieldRow>
+
+            {/* Priority */}
+            <FieldRow label="Priority">
+              <InlinePrioritySelector
+                value={deal.priority}
+                onSave={(val) => saveField("priority", val)}
               />
             </FieldRow>
 
@@ -318,6 +325,42 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
         </div>
       </div>
     </Card>
+  );
+}
+
+// ============ Inline Priority Selector ============
+
+function InlinePrioritySelector({ value, onSave }: { value: number; onSave: (val: number) => void }) {
+  const [editing, setEditing] = useState(false);
+  const config = getPriorityConfig(value);
+
+  if (editing) {
+    return (
+      <div className="flex gap-1">
+        {DEAL_PRIORITIES.map((p) => (
+          <button
+            key={p.value}
+            type="button"
+            onClick={() => { onSave(p.value); setEditing(false); }}
+            className={`px-2 py-0.5 text-[11px] font-medium rounded-full border transition-colors ${
+              p.value === value ? p.color : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setEditing(true)}
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-medium rounded-full border cursor-pointer transition-colors hover:opacity-80 ${config.color}`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} />
+      {config.label}
+    </button>
   );
 }
 

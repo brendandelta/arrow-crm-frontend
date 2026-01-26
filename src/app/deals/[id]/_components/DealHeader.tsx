@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft, Building2, Calendar, ExternalLink, FileText, Eye, EyeOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PriorityBadge } from "../../_components/PriorityBadge";
 
 interface Company {
   id: number;
@@ -25,6 +26,7 @@ interface DealHeaderProps {
   status: string;
   stage: string | null;
   kind: string;
+  priority: number;
   owner: Owner | null;
   softCircled: number;
   totalCommitted: number;
@@ -86,6 +88,7 @@ export function DealHeader({
   status,
   stage,
   kind,
+  priority,
   owner,
   softCircled,
   totalCommitted,
@@ -174,6 +177,7 @@ export function DealHeader({
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-semibold">{name}</h1>
             <StatusBadge status={status} />
+            <PriorityBadge priority={priority} />
             <Badge variant="outline" className="capitalize">
               {kind}
             </Badge>

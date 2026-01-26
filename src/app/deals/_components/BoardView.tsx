@@ -2,6 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, Calendar, Users } from "lucide-react";
+import { PriorityBadge } from "./PriorityBadge";
 import { formatCurrency } from "./utils";
 import { DemandProgressBar } from "@/components/deals/DemandProgressBar";
 
@@ -79,7 +80,10 @@ function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="min-w-0 flex-1">
-          <h4 className="font-medium text-sm truncate">{deal.name}</h4>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <h4 className="font-medium text-sm truncate">{deal.name}</h4>
+            <PriorityBadge priority={deal.priority} compact />
+          </div>
           {deal.company && (
             <p className="text-xs text-muted-foreground truncate">{deal.company}</p>
           )}

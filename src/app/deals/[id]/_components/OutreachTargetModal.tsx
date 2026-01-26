@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Loader2, Search, ArrowRight, Plus, ExternalLink, Check, ChevronDown, ChevronRight, CalendarClock } from "lucide-react";
 import Link from "next/link";
+import { DEAL_PRIORITIES } from "../../_components/priority";
 
 interface User {
   id: number;
@@ -63,13 +64,6 @@ const STATUSES = [
   { value: "committed", label: "Committed", color: "bg-green-50 text-green-700 border-green-200" },
   { value: "passed", label: "Passed", color: "bg-red-50 text-red-600 border-red-200" },
   { value: "on_hold", label: "On Hold", color: "bg-yellow-50 text-yellow-700 border-yellow-200" },
-];
-
-const PRIORITIES = [
-  { value: 0, label: "Now", color: "bg-red-50 text-red-700 border-red-200" },
-  { value: 1, label: "High", color: "bg-orange-50 text-orange-700 border-orange-200" },
-  { value: 2, label: "Medium", color: "bg-yellow-50 text-yellow-700 border-yellow-200" },
-  { value: 3, label: "Low", color: "bg-slate-100 text-slate-600 border-slate-200" },
 ];
 
 const ROLES = [
@@ -445,7 +439,7 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
               Priority
             </label>
             <div className="flex gap-1.5">
-              {PRIORITIES.map((p) => (
+              {DEAL_PRIORITIES.map((p) => (
                 <button
                   key={p.value}
                   type="button"

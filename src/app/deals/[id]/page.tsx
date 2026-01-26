@@ -227,7 +227,6 @@ interface Deal {
   driveUrl: string | null;
   dataRoomUrl: string | null;
   deckUrl: string | null;
-  notionUrl: string | null;
   tags: string[] | null;
   notes: string | null;
   structureNotes: string | null;
@@ -449,6 +448,7 @@ export default function DealDetailPage() {
   };
 
   const handleDealUpdate = async (data: Partial<{
+    priority: number;
     stage: string | null;
     confidence: number | null;
     sharePrice: number | null;
@@ -462,7 +462,6 @@ export default function DealDetailPage() {
     driveUrl: string | null;
     dataRoomUrl: string | null;
     deckUrl: string | null;
-    notionUrl: string | null;
     ownerId: number | null;
   }>) => {
     const res = await fetch(
@@ -471,6 +470,7 @@ export default function DealDetailPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          priority: data.priority,
           stage: data.stage,
           confidence: data.confidence,
           share_price_cents: data.sharePrice,
@@ -484,7 +484,6 @@ export default function DealDetailPage() {
           drive_url: data.driveUrl,
           data_room_url: data.dataRoomUrl,
           deck_url: data.deckUrl,
-          notion_url: data.notionUrl,
           owner_id: data.ownerId !== undefined ? data.ownerId : undefined,
         }),
       }
@@ -574,6 +573,7 @@ export default function DealDetailPage() {
         status={deal.status}
         stage={deal.stage}
         kind={deal.kind}
+        priority={deal.priority}
         owner={deal.owner}
         softCircled={deal.softCircled}
         totalCommitted={deal.totalCommitted}
@@ -610,6 +610,7 @@ export default function DealDetailPage() {
       {/* Deal Details - Inline Editable */}
       <EditableDealDetails
         deal={{
+          priority: deal.priority,
           stage: deal.stage,
           confidence: deal.confidence,
           sharePrice: deal.sharePrice,
@@ -623,7 +624,6 @@ export default function DealDetailPage() {
           driveUrl: deal.driveUrl,
           dataRoomUrl: deal.dataRoomUrl,
           deckUrl: deal.deckUrl,
-          notionUrl: deal.notionUrl,
           owner: deal.owner,
         }}
         lpMode={lpMode}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { X, Loader2, Search, ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { DEAL_PRIORITIES } from "./priority";
 
 interface User {
   id: number;
@@ -357,14 +358,14 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Priority</label>
                 <div className="flex gap-1">
-                  {([{ value: 0, label: "Now" }, { value: 1, label: "High" }, { value: 2, label: "Med" }, { value: 3, label: "Low" }]).map((p) => (
+                  {DEAL_PRIORITIES.map((p) => (
                     <button
                       key={p.value}
                       type="button"
                       onClick={() => setPriority(p.value)}
                       className={`flex-1 py-2 text-xs font-medium rounded-lg border transition-colors ${
                         priority === p.value
-                          ? "bg-indigo-100 text-indigo-700 border-indigo-200"
+                          ? p.color
                           : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                       }`}
                     >
