@@ -352,7 +352,7 @@ export default function DealsPage() {
     setSort,
     getSortDirection,
     getEnumCounts,
-  } = useTableFiltering(deals, dealColumns);
+  } = useTableFiltering(deals, dealColumns, "arrow_filters_deals");
 
   // Apply global search on top of hook filtering
   const filteredDeals = useMemo(() => {

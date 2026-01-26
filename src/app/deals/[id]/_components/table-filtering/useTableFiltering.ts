@@ -1,11 +1,114 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import type { ColumnDef, FilterValue, SortConfig, SortDirection, ActiveFilter } from "./types";
 
-export function useTableFiltering<T>(data: T[], columns: ColumnDef<T>[]) {
-  const [filters, setFilters] = useState<Map<string, FilterValue>>(new Map());
-  const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
+// --- Serialization helpers for localStorage ---
+// FilterValue uses Set<string> for enum/datePreset, which doesn't survive JSON.stringify.
+
+interface SerializedFilterValue {
+  type: FilterValue["type"];
+  query?: string;
+  selected?: string[];
+  min?: number;
+  max?: number;
+  value?: "has" | "lacks";
+}
+
+interface PersistedState {
+  filters: [string, SerializedFilterValue][];
+  sortConfig: SortConfig | null;
+}
+
+function serializeFilterValue(fv: FilterValue): SerializedFilterValue {
+  switch (fv.type) {
+    case "enum":
+    case "datePreset":
+      return { type: fv.type, selected: Array.from(fv.selected) };
+    case "text":
+      return { type: fv.type, query: fv.query };
+    case "currency":
+    case "number":
+      return { type: fv.type, min: fv.min, max: fv.max };
+    case "boolean":
+      return { type: fv.type, value: fv.value };
+  }
+}
+
+function deserializeFilterValue(raw: SerializedFilterValue): FilterValue {
+  switch (raw.type) {
+    case "enum":
+    case "datePreset":
+      return { type: raw.type, selected: new Set(raw.selected ?? []) };
+    case "text":
+      return { type: "text", query: raw.query ?? "" };
+    case "currency":
+      return { type: "currency", min: raw.min, max: raw.max };
+    case "number":
+      return { type: "number", min: raw.min, max: raw.max };
+    case "boolean":
+      return { type: "boolean", value: raw.value ?? "has" };
+  }
+}
+
+function serializeState(
+  filters: Map<string, FilterValue>,
+  sortConfig: SortConfig | null
+): string {
+  const payload: PersistedState = {
+    filters: Array.from(filters.entries()).map(([k, v]) => [k, serializeFilterValue(v)]),
+    sortConfig,
+  };
+  return JSON.stringify(payload);
+}
+
+function deserializeState(json: string): {
+  filters: Map<string, FilterValue>;
+  sortConfig: SortConfig | null;
+} | null {
+  try {
+    const parsed: PersistedState = JSON.parse(json);
+    const filters = new Map<string, FilterValue>();
+    for (const [k, raw] of parsed.filters) {
+      filters.set(k, deserializeFilterValue(raw));
+    }
+    return { filters, sortConfig: parsed.sortConfig ?? null };
+  } catch {
+    return null;
+  }
+}
+
+export function useTableFiltering<T>(
+  data: T[],
+  columns: ColumnDef<T>[],
+  persistKey?: string
+) {
+  const [filters, setFilters] = useState<Map<string, FilterValue>>(() => {
+    if (persistKey && typeof window !== "undefined") {
+      const stored = localStorage.getItem(persistKey);
+      if (stored) {
+        const state = deserializeState(stored);
+        if (state) return state.filters;
+      }
+    }
+    return new Map();
+  });
+  const [sortConfig, setSortConfig] = useState<SortConfig | null>(() => {
+    if (persistKey && typeof window !== "undefined") {
+      const stored = localStorage.getItem(persistKey);
+      if (stored) {
+        const state = deserializeState(stored);
+        if (state) return state.sortConfig;
+      }
+    }
+    return null;
+  });
+
+  // --- Persist to localStorage ---
+  useEffect(() => {
+    if (!persistKey) return;
+    localStorage.setItem(persistKey, serializeState(filters, sortConfig));
+  }, [persistKey, filters, sortConfig]);
 
   // --- Filter actions ---
 
@@ -31,7 +134,10 @@ export function useTableFiltering<T>(data: T[], columns: ColumnDef<T>[]) {
 
   const clearAllFilters = useCallback(() => {
     setFilters(new Map());
-  }, []);
+    if (persistKey) {
+      localStorage.removeItem(persistKey);
+    }
+  }, [persistKey]);
 
   const hasActiveFilters = filters.size > 0;
 
