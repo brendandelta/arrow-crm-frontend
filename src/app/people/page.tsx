@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -25,6 +25,7 @@ import { ContactSlideOut } from "./_components/ContactSlideOut";
 import { LinkedInIcon, TwitterIcon, InstagramIcon } from "@/components/icons/SocialIcons";
 import { WarmthBadge } from "@/components/WarmthBadge";
 import { OrgKindBadge } from "@/components/OrgKindBadge";
+import { SourceBadge } from "@/components/SourceBadge";
 import { FilterableColumnHeader } from "./_components/FilterableColumnHeader";
 import { PhoneCell } from "./_components/PhoneCell";
 import { ActionsDropdown } from "./_components/ActionsDropdown";
@@ -38,6 +39,20 @@ import {
   OPERATORS_BY_TYPE,
   applyFilter,
 } from "@/lib/table-filters";
+import {
+  getAllSources,
+  SOURCE_CATEGORIES,
+  resolveSource,
+} from "@/lib/sources";
+import {
+  SmartSearchBar,
+  ExplainTooltip,
+} from "./_components/SmartSearchBar";
+import type {
+  SmartSearchQuery,
+  SmartSearchResult,
+  ParsedPerson,
+} from "@/lib/smart-search";
 
 // Column definitions
 const ALL_COLUMNS = [
@@ -82,14 +97,32 @@ const ORG_KIND_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-const SOURCE_OPTIONS = [
-  { value: "all", label: "All Sources" },
-  { value: "referral", label: "Referral" },
-  { value: "linkedin", label: "LinkedIn" },
-  { value: "conference", label: "Conference" },
-  { value: "cold_outreach", label: "Cold Outreach" },
-  { value: "inbound", label: "Inbound" },
-  { value: "other", label: "Other" },
+// Source filter options — built from the canonical source list
+function buildSourceOptions(people: Person[]) {
+  // Get unique source values actually used by people
+  const usedSources = new Set(people.map((p) => p.source).filter(Boolean) as string[]);
+  // Merge with known sources for complete list
+  const allSources = getAllSources();
+  const knownNames = new Set(allSources.map((s) => s.name));
+  const options: { value: string; label: string }[] = [{ value: "all", label: "All Sources" }];
+  for (const src of allSources) {
+    if (usedSources.has(src.name)) {
+      options.push({ value: src.name, label: src.name });
+    }
+  }
+  // Add any used sources not in the known list
+  for (const name of usedSources) {
+    if (!knownNames.has(name)) {
+      options.push({ value: name, label: name });
+    }
+  }
+  return options;
+}
+
+// Source category filter options
+const SOURCE_CATEGORY_OPTIONS = [
+  { value: "all", label: "All Categories" },
+  ...SOURCE_CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
 ];
 
 interface Person {
@@ -231,6 +264,23 @@ export default function PeoplePage() {
   const [warmthFilter, setWarmthFilter] = useState("all");
   const [orgKindFilter, setOrgKindFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
+  const [sourceCategoryFilter, setSourceCategoryFilter] = useState("all");
+
+  // Smart Search state
+  const [smartSearchResults, setSmartSearchResults] = useState<SmartSearchResult[] | null>(null);
+  const [searchSource, setSearchSource] = useState<"deterministic" | "llm" | null>(null);
+  const useSmartSearch = true;
+
+  // Smart search result map for quick lookup (must be before filteredPeople)
+  const smartResultMap = useMemo(() => {
+    if (!smartSearchResults) return null;
+    const map = new Map<number, SmartSearchResult>();
+    for (const r of smartSearchResults) {
+      map.set(r.personId, r);
+    }
+    return map;
+  }, [smartSearchResults]);
+
   const [visibleColumns, setVisibleColumns] = useState<Set<ColumnId>>(
     new Set(DEFAULT_VISIBLE_COLUMNS)
   );
@@ -343,8 +393,12 @@ export default function PeoplePage() {
 
   // Filter people based on search, global filters, and column filters
   const filteredPeople = people.filter((person) => {
-    // Search filter
-    if (searchQuery) {
+    // Smart search takes over filtering when active
+    if (useSmartSearch && smartSearchResults !== null) {
+      if (!smartResultMap?.has(person.id)) return false;
+      // Still apply global filters on top of smart search
+    } else if (searchQuery) {
+      // Fallback: basic text search
       const query = searchQuery.toLowerCase();
       const searchableText = [
         person.firstName,
@@ -377,6 +431,14 @@ export default function PeoplePage() {
       return false;
     }
 
+    // Source category filter (global)
+    if (sourceCategoryFilter !== "all") {
+      const resolved = resolveSource(person.source);
+      if (!resolved || resolved.category !== sourceCategoryFilter) {
+        return false;
+      }
+    }
+
     // Column-level filters
     for (const [columnId, filter] of Object.entries(columnFilters)) {
       if (!matchesColumnFilter(person, columnId, filter)) {
@@ -387,8 +449,14 @@ export default function PeoplePage() {
     return true;
   });
 
-  // Apply sorting
+  // Apply sorting — smart search results override sort with relevance score
   const sortedPeople = [...filteredPeople].sort((a, b) => {
+    // When smart search is active and no explicit sort, sort by relevance score
+    if (useSmartSearch && smartSearchResults !== null && !sortConfig) {
+      const scoreA = smartResultMap?.get(a.id)?.score ?? 0;
+      const scoreB = smartResultMap?.get(b.id)?.score ?? 0;
+      return scoreB - scoreA;
+    }
     if (!sortConfig) return 0;
 
     const { columnId, direction } = sortConfig;
@@ -462,6 +530,70 @@ export default function PeoplePage() {
   const championsCount = people.filter((p) => p.warmth === 3).length;
   const hotCount = people.filter((p) => p.warmth === 2).length;
 
+  // Analytics: new this week + top sources
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const newThisWeek = people.filter(
+    (p) => new Date(p.createdAt) >= oneWeekAgo
+  ).length;
+
+  const sourceCounts = people.reduce<Record<string, number>>((acc, p) => {
+    if (p.source) {
+      const resolved = resolveSource(p.source);
+      const name = resolved?.name ?? p.source;
+      acc[name] = (acc[name] || 0) + 1;
+    }
+    return acc;
+  }, {});
+  const topSources = Object.entries(sourceCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5);
+
+  // Build source filter options dynamically
+  const sourceFilterOptions = buildSourceOptions(people);
+
+  // Smart search helpers
+  const knownOrgs = useMemo(
+    () => [...new Set(people.map((p) => p.org).filter(Boolean) as string[])],
+    [people]
+  );
+
+  const knownSources = useMemo(
+    () => [...new Set(people.map((p) => p.source).filter(Boolean) as string[])],
+    [people]
+  );
+
+  const parsedPeople: ParsedPerson[] = useMemo(
+    () =>
+      people.map((p) => ({
+        id: p.id,
+        firstName: p.firstName,
+        lastName: p.lastName,
+        title: p.title,
+        org: p.org,
+        orgId: p.orgId,
+        orgKind: p.orgKind,
+        email: p.email,
+        warmth: p.warmth,
+        source: p.source,
+        tags: p.tags,
+        city: p.city,
+        state: p.state,
+        country: p.country,
+        createdAt: p.createdAt,
+        lastContactedAt: p.lastContactedAt,
+      })),
+    [people]
+  );
+
+  const handleSmartSearchResults = useCallback(
+    (results: SmartSearchResult[] | null, _query: SmartSearchQuery | null, source: "deterministic" | "llm") => {
+      setSmartSearchResults(results);
+      setSearchSource(results ? source : null);
+    },
+    []
+  );
+
   const selectedPeople = sortedPeople.filter(p => selectedIds.has(p.id));
   const allSelected = sortedPeople.length > 0 && sortedPeople.every(p => selectedIds.has(p.id));
   const someSelected = selectedIds.size > 0 && !allSelected;
@@ -469,7 +601,8 @@ export default function PeoplePage() {
   const activeFiltersCount =
     (warmthFilter !== "all" ? 1 : 0) +
     (orgKindFilter !== "all" ? 1 : 0) +
-    (sourceFilter !== "all" ? 1 : 0);
+    (sourceFilter !== "all" ? 1 : 0) +
+    (sourceCategoryFilter !== "all" ? 1 : 0);
 
   const columnFiltersCount = Object.keys(columnFilters).length;
 
@@ -528,6 +661,7 @@ export default function PeoplePage() {
     setWarmthFilter("all");
     setOrgKindFilter("all");
     setSourceFilter("all");
+    setSourceCategoryFilter("all");
     setColumnFilters({});
     setSortConfig(null);
   };
@@ -579,6 +713,8 @@ export default function PeoplePage() {
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span>{people.length} total</span>
             <span>·</span>
+            <span className="text-blue-600">{newThisWeek} new this week</span>
+            <span>·</span>
             <span className="text-green-600">{championsCount} champions</span>
             <span>·</span>
             <span className="text-orange-600">{hotCount} hot</span>
@@ -593,25 +729,69 @@ export default function PeoplePage() {
         </button>
       </div>
 
+      {/* Top Sources Analytics */}
+      {topSources.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Top Sources:</span>
+          {topSources.map(([name, count]) => {
+            const resolved = resolveSource(name);
+            const config = resolved
+              ? SOURCE_CATEGORIES.find((c) => c.value === resolved.category)
+              : null;
+            return (
+              <button
+                key={name}
+                onClick={() => {
+                  setSourceFilter(name);
+                  setShowFilterDropdown(false);
+                }}
+                className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs rounded-full border transition-colors ${
+                  sourceFilter === name
+                    ? "border-blue-400 bg-blue-50 text-blue-700"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                {config && (
+                  <span className={`h-1.5 w-1.5 rounded-full ${config.color}`} />
+                )}
+                <span>{name}</span>
+                <span className="text-slate-400">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Toolbar */}
       <div className="flex items-center gap-3 flex-wrap">
-        {/* Search */}
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search people..."
-            className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-            >
-              <X className="h-4 w-4" />
-            </button>
+        {/* Smart Search */}
+        <div className="flex-1 min-w-[200px] max-w-lg">
+          {useSmartSearch ? (
+            <SmartSearchBar
+              people={parsedPeople}
+              knownOrgs={knownOrgs}
+              knownSources={knownSources}
+              onResults={handleSmartSearchResults}
+            />
+          ) : (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search people..."
+                className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -722,7 +902,24 @@ export default function PeoplePage() {
                     onChange={(e) => setSourceFilter(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    {SOURCE_OPTIONS.map((option) => (
+                    {sourceFilterOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                    Source Category
+                  </label>
+                  <select
+                    value={sourceCategoryFilter}
+                    onChange={(e) => setSourceCategoryFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {SOURCE_CATEGORY_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
@@ -744,9 +941,16 @@ export default function PeoplePage() {
         </div>
 
         {/* Results count when filtered */}
-        {(searchQuery || activeFiltersCount > 0 || columnFiltersCount > 0) && (
+        {(searchQuery || smartSearchResults !== null || activeFiltersCount > 0 || columnFiltersCount > 0) && (
           <div className="text-sm text-slate-500">
-            Showing {sortedPeople.length} of {people.length} people
+            {smartSearchResults !== null ? (
+              <span>
+                <span className="text-indigo-600 font-medium">{sortedPeople.length}</span>
+                {searchSource === "llm" ? " AI-powered results" : " results ranked by relevance"}
+              </span>
+            ) : (
+              <>Showing {sortedPeople.length} of {people.length} people</>
+            )}
           </div>
         )}
 
@@ -1037,6 +1241,12 @@ export default function PeoplePage() {
                           {getInitials(person.firstName, person.lastName)}
                         </div>
                         <div className="font-medium">{person.firstName} {person.lastName}</div>
+                        {/* Smart search explainability */}
+                        {smartResultMap?.has(person.id) && (
+                          <ExplainTooltip
+                            explanations={smartResultMap.get(person.id)!.explanations}
+                          />
+                        )}
                       </div>
                     </TableCell>
                   )}
@@ -1117,7 +1327,7 @@ export default function PeoplePage() {
                   {visibleColumns.has("source") && (
                     <TableCell className="text-sm">
                       {person.source ? (
-                        <span className="capitalize">{person.source.replace(/_/g, " ")}</span>
+                        <SourceBadge source={person.source} />
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
