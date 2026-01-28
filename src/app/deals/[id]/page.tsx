@@ -11,7 +11,7 @@ import { TruthPanel } from "./_components/TruthPanel";
 import { BlocksSection } from "./_components/BlocksSection";
 import { InterestsSection } from "./_components/InterestsSection";
 import { ActivityFeed } from "./_components/ActivityFeed";
-import { DealSidebar, Task as SidebarTask, Edge } from "./_components/DealSidebar";
+import { DealSidebar, Task as SidebarTask } from "./_components/DealSidebar";
 import { DealTargetsSection } from "./_components/DealTargetsSection";
 import { BlockSlideOut } from "./_components/BlockSlideOut";
 import { InterestSlideOut } from "./_components/InterestSlideOut";
@@ -195,6 +195,22 @@ interface RiskFlag {
   missing?: string[];
 }
 
+// Edge from backend API (matches DealSidebar.Edge interface)
+interface DealEdge {
+  id: number;
+  title: string;
+  edgeType: "information" | "relationship" | "structural" | "timing";
+  confidence: number;
+  timeliness: number;
+  notes?: string | null;
+  relatedPersonId?: number | null;
+  relatedPerson?: { id: number; firstName: string; lastName: string } | null;
+  relatedOrgId?: number | null;
+  relatedOrg?: { id: number; name: string } | null;
+  createdBy?: { id: number; firstName: string; lastName: string } | null;
+  createdAt: string;
+}
+
 interface Deal {
   id: number;
   name: string;
@@ -259,6 +275,7 @@ interface Deal {
     items: DocumentItem[];
   };
   advantages: Advantage[];
+  edges: DealEdge[];
   blocks: Block[];
   interests: Interest[];
   targets: DealTarget[];
@@ -494,47 +511,6 @@ export default function DealDetailPage() {
     refreshDeal();
   };
 
-  // Map advantages to edges format for the new sidebar design
-  const mapAdvantagesToEdges = (advantages: Advantage[]): Edge[] => {
-    const edgeTypeMap: Record<string, Edge["edgeType"]> = {
-      information: "information",
-      relationship: "relationship",
-      structural: "structural",
-      timing: "timing",
-      // Map old kinds to new types
-      info: "information",
-      intel: "information",
-      connection: "relationship",
-      contact: "relationship",
-      structure: "structural",
-      deal_structure: "structural",
-      time: "timing",
-      deadline: "timing",
-    };
-
-    const timelinessToNumber = (timeliness: string | null): number => {
-      if (!timeliness) return 3;
-      const lower = timeliness.toLowerCase();
-      if (lower.includes("high") || lower.includes("urgent") || lower.includes("fresh")) return 5;
-      if (lower.includes("medium") || lower.includes("recent")) return 3;
-      if (lower.includes("low") || lower.includes("stale") || lower.includes("old")) return 1;
-      return 3;
-    };
-
-    return advantages.map((adv) => ({
-      id: adv.id,
-      title: adv.title,
-      edgeType: edgeTypeMap[adv.kind.toLowerCase()] || "information",
-      confidence: adv.confidence ?? 3,
-      timeliness: timelinessToNumber(adv.timeliness),
-      notes: adv.description,
-      relatedPersonId: null,
-      relatedOrgId: null,
-      createdBy: null,
-      createdAt: new Date().toISOString(),
-    }));
-  };
-
   const handleTaskStatusChange = async (taskId: number, status: "open" | "waiting" | "completed") => {
     try {
       if (status === "completed") {
@@ -760,7 +736,7 @@ export default function DealDetailPage() {
                 tasks={deal.tasks}
                 dealId={deal.id}
                 documentChecklist={deal.documentChecklist}
-                edges={mapAdvantagesToEdges(deal.advantages)}
+                edges={deal.edges || []}
                 activities={deal.activities}
                 lpMode={lpMode}
                 currentUserId={currentUserId}
