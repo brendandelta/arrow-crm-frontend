@@ -11,7 +11,7 @@ import { TruthPanel } from "./_components/TruthPanel";
 import { BlocksSection } from "./_components/BlocksSection";
 import { InterestsSection } from "./_components/InterestsSection";
 import { ActivityFeed } from "./_components/ActivityFeed";
-import { DealSidebar, Task as SidebarTask } from "./_components/DealSidebar";
+import { DealSidebar, Task as SidebarTask, Edge } from "./_components/DealSidebar";
 import { DealTargetsSection } from "./_components/DealTargetsSection";
 import { BlockSlideOut } from "./_components/BlockSlideOut";
 import { InterestSlideOut } from "./_components/InterestSlideOut";
@@ -494,6 +494,67 @@ export default function DealDetailPage() {
     refreshDeal();
   };
 
+  // Map advantages to edges format for the new sidebar design
+  const mapAdvantagesToEdges = (advantages: Advantage[]): Edge[] => {
+    const edgeTypeMap: Record<string, Edge["edgeType"]> = {
+      information: "information",
+      relationship: "relationship",
+      structural: "structural",
+      timing: "timing",
+      // Map old kinds to new types
+      info: "information",
+      intel: "information",
+      connection: "relationship",
+      contact: "relationship",
+      structure: "structural",
+      deal_structure: "structural",
+      time: "timing",
+      deadline: "timing",
+    };
+
+    const timelinessToNumber = (timeliness: string | null): number => {
+      if (!timeliness) return 3;
+      const lower = timeliness.toLowerCase();
+      if (lower.includes("high") || lower.includes("urgent") || lower.includes("fresh")) return 5;
+      if (lower.includes("medium") || lower.includes("recent")) return 3;
+      if (lower.includes("low") || lower.includes("stale") || lower.includes("old")) return 1;
+      return 3;
+    };
+
+    return advantages.map((adv) => ({
+      id: adv.id,
+      title: adv.title,
+      edgeType: edgeTypeMap[adv.kind.toLowerCase()] || "information",
+      confidence: adv.confidence ?? 3,
+      timeliness: timelinessToNumber(adv.timeliness),
+      notes: adv.description,
+      relatedPersonId: null,
+      relatedOrgId: null,
+      createdBy: null,
+      createdAt: new Date().toISOString(),
+    }));
+  };
+
+  const handleTaskStatusChange = async (taskId: number, status: "open" | "waiting" | "completed") => {
+    try {
+      if (status === "completed") {
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${taskId}/complete`,
+          { method: "POST", headers: { "Content-Type": "application/json" } }
+        );
+      } else if (status === "open") {
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${taskId}/uncomplete`,
+          { method: "POST", headers: { "Content-Type": "application/json" } }
+        );
+      }
+      // For "waiting" status, we'd need a separate endpoint or patch
+      refreshDeal();
+    } catch (err) {
+      console.error("Failed to update task status:", err);
+    }
+  };
+
   const handleMissingDocClick = () => {
     setSidebarSection("diligence");
     sidebarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -698,11 +759,9 @@ export default function DealDetailPage() {
               <DealSidebar
                 tasks={deal.tasks}
                 dealId={deal.id}
-                targets={deal.targets}
                 documentChecklist={deal.documentChecklist}
-                advantages={deal.advantages}
+                edges={mapAdvantagesToEdges(deal.advantages)}
                 activities={deal.activities}
-                riskFlags={deal.riskFlags}
                 lpMode={lpMode}
                 currentUserId={currentUserId}
                 activeSection={sidebarSection}
@@ -710,16 +769,24 @@ export default function DealDetailPage() {
                 onTaskToggle={handleTaskToggle}
                 onTaskClick={(task) => setSelectedTask(task)}
                 onAddTask={() => setShowAddTask(true)}
-                onScrollToTarget={handleScrollToTarget}
-                onFollowUpUpdate={handleFollowUpUpdate}
+                onTaskStatusChange={handleTaskStatusChange}
                 onDocumentUpload={(kind) => {
                   // Could open upload modal
                 }}
-                onAddAdvantage={() => {
-                  // Could open add advantage modal
+                onAddDocument={() => {
+                  // Could open document upload modal
+                }}
+                onAddEdge={() => {
+                  // Could open add edge modal
+                }}
+                onEdgeClick={(edge) => {
+                  // Could open edge detail
+                }}
+                onActOnEdge={(edge) => {
+                  // Creates a task from the edge
+                  setShowAddTask(true);
                 }}
                 onActivityClick={(activity) => setSelectedActivity(activity)}
-                onAddActivity={() => setShowAddActivity(true)}
               />
             </CardContent>
           </Card>

@@ -5,7 +5,6 @@ import {
   CheckSquare,
   Clock,
   AlertTriangle,
-  Users,
   FileText,
   Shield,
   ChevronDown,
@@ -14,12 +13,18 @@ import {
   Plus,
   Upload,
   CalendarDays,
-  Pencil,
   MessageSquare,
   Mail,
   Phone,
   Video,
   FileEdit,
+  Users,
+  Briefcase,
+  Target,
+  Lightbulb,
+  Zap,
+  Circle,
+  Pause,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -32,6 +37,9 @@ export interface Task {
   dueAt: string | null;
   completed: boolean;
   overdue: boolean;
+  status?: "open" | "waiting" | "completed";
+  taskType?: "outreach" | "interest" | "block" | "internal" | "edge";
+  priority?: "high" | "medium" | "low" | number | null;
   assignedTo?: {
     id: number;
     firstName: string;
@@ -42,24 +50,11 @@ export interface Task {
   subtaskCount?: number;
   completedSubtaskCount?: number;
   dealId?: number;
-  priority?: number | null;
   taskableType?: string | null;
   taskableId?: number | null;
-}
-
-export interface DealTarget {
-  id: number;
-  targetName: string;
-  targetType: string;
-  targetId?: number;
-  status: string;
-  lastActivityAt: string | null;
-  nextStep: string | null;
-  nextStepAt: string | null;
-  isStale: boolean;
-  daysSinceContact: number | null;
-  firstContactedAt?: string | null;
-  owner?: { id: number; firstName: string; lastName: string } | null;
+  relatedBlockId?: number | null;
+  relatedInterestId?: number | null;
+  relatedTargetId?: number | null;
 }
 
 interface DocumentItem {
@@ -75,16 +70,46 @@ interface DocumentItem {
   } | null;
 }
 
-interface Advantage {
+export interface Edge {
+  id: number;
+  title: string;
+  edgeType: "information" | "relationship" | "structural" | "timing";
+  confidence: number; // 1-5
+  timeliness: number; // 1-5
+  notes?: string | null;
+  relatedPersonId?: number | null;
+  relatedOrgId?: number | null;
+  createdBy?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  } | null;
+  createdAt: string;
+}
+
+export interface Activity {
   id: number;
   kind: string;
-  title: string;
-  description?: string | null;
-  confidence: number | null;
-  confidenceLabel: string;
-  timeliness: string | null;
-  timelinessLabel: string;
-  source?: string | null;
+  subject: string | null;
+  body?: string | null;
+  occurredAt: string;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  outcome?: string | null;
+  direction?: string | null;
+  isTask?: boolean;
+  taskCompleted?: boolean;
+  taskDueAt?: string | null;
+  performedBy?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  } | null;
+  assignedTo?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  } | null;
 }
 
 // ============ Constants ============
@@ -101,20 +126,30 @@ const CRITICAL_DOC_KINDS = [
   "rofr_waiver",
 ];
 
-const DOC_CATEGORIES: Record<string, string[]> = {
-  "Deal Sourcing & Diligence": ["teaser", "cim", "data_room", "cap_table", "financials", "pitch_deck", "valuation_409a", "investor_update", "compliance_memo"],
-  "Confidentiality": ["nda", "ncnda", "intro_agreement", "finder_agreement"],
-  "Transaction & Transfer": ["loi_term_sheet", "purchase_agreement", "assignment_agreement", "stock_transfer_agreement", "consent_to_transfer", "rofr_waiver", "board_consent", "joinder", "escrow_agreement", "closing_instructions", "wire_instructions"],
-  "SPV Formation": ["spv_formation_packet", "series_designation", "ein_letter", "banking_docs", "authorized_signers", "beneficial_ownership", "tax_forms", "insurance_policy"],
-  "Investor Onboarding": ["subscription_agreement", "investor_questionnaire", "kyc_aml", "accredited_verification", "side_letter", "mfn_side_letter", "capital_call_notice", "closing_notice"],
-  "Economics & Arrangements": ["co_gp_agreement", "fee_split_agreement", "carry_allocation", "broker_engagement", "side_agreement"],
-  "Token & Special": ["token_purchase", "token_warrant", "saft", "custody_agreement", "settlement_instructions", "regulatory_memo_token"],
-  "Communications": ["key_email_export", "whatsapp_export", "external_tracker"],
+const TASK_TYPE_CONFIG: Record<string, { label: string; icon: typeof Target; color: string }> = {
+  outreach: { label: "Outreach", icon: Target, color: "text-blue-600 bg-blue-50" },
+  interest: { label: "Interest", icon: Users, color: "text-green-600 bg-green-50" },
+  block: { label: "Block", icon: Briefcase, color: "text-purple-600 bg-purple-50" },
+  internal: { label: "Internal", icon: CheckSquare, color: "text-slate-600 bg-slate-50" },
+  edge: { label: "Edge", icon: Lightbulb, color: "text-amber-600 bg-amber-50" },
 };
 
-// ============ NextActionsTab Component ============
+const PRIORITY_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
+  high: { label: "High", color: "text-red-600", dot: "bg-red-500" },
+  medium: { label: "Med", color: "text-amber-600", dot: "bg-amber-500" },
+  low: { label: "Low", color: "text-slate-500", dot: "bg-slate-400" },
+};
 
-interface NextActionsTabProps {
+const EDGE_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
+  information: { label: "Information", color: "text-blue-600 bg-blue-50 border-blue-200" },
+  relationship: { label: "Relationship", color: "text-purple-600 bg-purple-50 border-purple-200" },
+  structural: { label: "Structural", color: "text-green-600 bg-green-50 border-green-200" },
+  timing: { label: "Timing", color: "text-amber-600 bg-amber-50 border-amber-200" },
+};
+
+// ============ ActionsTab Component (Unified Tasks) ============
+
+interface ActionsTabProps {
   tasks: {
     overdue: Task[];
     dueThisWeek: Task[];
@@ -125,12 +160,14 @@ interface NextActionsTabProps {
   onTaskToggle?: (taskId: number, currentlyCompleted: boolean) => void;
   onTaskClick?: (task: Task) => void;
   onAddTask?: () => void;
-  onScrollToTarget?: (targetId: number) => void;
+  onStatusChange?: (taskId: number, status: "open" | "waiting" | "completed") => void;
 }
 
-function NextActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask, onScrollToTarget }: NextActionsTabProps) {
+function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask, onStatusChange }: ActionsTabProps) {
   const [ownerFilter, setOwnerFilter] = useState<number | "all">("all");
+  const [typeFilter, setTypeFilter] = useState<string | "all">("all");
   const [showBacklog, setShowBacklog] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   // Derive unique assignees from all tasks
   const assignees = useMemo(() => {
@@ -143,8 +180,14 @@ function NextActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAdd
   }, [tasks]);
 
   const filterTasks = (taskList: Task[]): Task[] => {
-    if (ownerFilter === "all") return taskList;
-    return taskList.filter((t) => t.assignedTo?.id === ownerFilter);
+    let filtered = taskList;
+    if (ownerFilter !== "all") {
+      filtered = filtered.filter((t) => t.assignedTo?.id === ownerFilter);
+    }
+    if (typeFilter !== "all") {
+      filtered = filtered.filter((t) => t.taskType === typeFilter);
+    }
+    return filtered;
   };
 
   const filteredOverdue = filterTasks(tasks.overdue);
@@ -154,89 +197,111 @@ function NextActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAdd
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "No date";
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffDays = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Tomorrow";
     return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  const PriorityDots = ({ priority }: { priority?: number | null }) => {
-    if (priority == null) return null;
-    const filled = Math.min(Math.max(priority, 0), 2) + 1; // 0->1, 1->2, 2->3
-    return (
-      <span className="inline-flex items-center gap-0.5 ml-1">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className={`w-1.5 h-1.5 rounded-full ${i < filled ? "bg-slate-600" : "bg-slate-200"}`}
-          />
-        ))}
-      </span>
-    );
+  const getPriorityFromNumber = (priority?: number | null): "high" | "medium" | "low" => {
+    if (priority === 0) return "high";
+    if (priority === 1) return "medium";
+    return "low";
   };
 
-  const ContextBadge = ({ task }: { task: Task }) => {
-    if (!task.taskableType || !task.taskableId) return null;
-    const label = task.taskableType === "DealTarget" ? "Target" : task.taskableType === "Document" ? "Doc" : task.taskableType;
-    return (
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          if (task.taskableType === "DealTarget" && task.taskableId) {
-            onScrollToTarget?.(task.taskableId);
-          }
-        }}
-        className="text-[10px] px-1.5 py-0 h-4 rounded bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
-      >
-        {label}
-      </button>
-    );
-  };
+  const TaskRow = ({ task, variant }: { task: Task; variant: "overdue" | "upcoming" | "backlog" | "completed" }) => {
+    const priorityKey = typeof task.priority === "string" ? task.priority : getPriorityFromNumber(task.priority as number);
+    const priorityConfig = PRIORITY_CONFIG[priorityKey] || PRIORITY_CONFIG.low;
+    const typeConfig = TASK_TYPE_CONFIG[task.taskType || "internal"] || TASK_TYPE_CONFIG.internal;
+    const TypeIcon = typeConfig.icon;
+    const status = task.status || (task.completed ? "completed" : "open");
 
-  const TaskRow = ({ task, variant }: { task: Task; variant: "overdue" | "upcoming" | "backlog" }) => (
-    <div
-      className={`flex items-start gap-2 p-2 rounded-lg border cursor-pointer hover:opacity-80 transition-all ${
-        variant === "overdue" ? "bg-red-50 border-red-200" :
-        variant === "upcoming" ? "bg-amber-50 border-amber-200" :
-        "bg-white border-slate-200"
-      }`}
-      onClick={() => onTaskClick?.(task)}
-    >
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onTaskToggle?.(task.id, task.completed);
-        }}
-        className="mt-0.5 w-4 h-4 rounded border border-slate-300 hover:border-slate-400 hover:bg-slate-50 flex items-center justify-center shrink-0 transition-colors"
+    return (
+      <div
+        className={`group flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all hover:shadow-sm ${
+          variant === "overdue" ? "bg-red-50/50 border-red-200 hover:border-red-300" :
+          variant === "upcoming" ? "bg-white border-slate-200 hover:border-slate-300" :
+          variant === "completed" ? "bg-slate-50 border-slate-200 opacity-60" :
+          "bg-white border-slate-200 hover:border-slate-300"
+        }`}
+        onClick={() => onTaskClick?.(task)}
       >
-        {task.completed && <Check className="h-3 w-3 text-green-500" />}
-      </button>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-sm font-medium truncate">{task.subject}</span>
-          <PriorityDots priority={task.priority} />
-        </div>
-        <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground flex-wrap">
-          <span className={variant === "overdue" ? "text-red-600 font-medium" : ""}>
-            {formatDate(task.dueAt)}
-          </span>
-          {task.assignedTo && (
-            <>
-              <span>·</span>
-              <span>@{task.assignedTo.firstName}</span>
-            </>
-          )}
-          <ContextBadge task={task} />
+        {/* Status Toggle */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            if (status === "completed") {
+              onStatusChange?.(task.id, "open");
+            } else if (status === "waiting") {
+              onStatusChange?.(task.id, "completed");
+            } else {
+              onTaskToggle?.(task.id, task.completed);
+            }
+          }}
+          className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+            status === "completed" ? "bg-green-500 border-green-500" :
+            status === "waiting" ? "bg-amber-100 border-amber-400" :
+            "border-slate-300 hover:border-slate-400"
+          }`}
+        >
+          {status === "completed" && <Check className="h-3 w-3 text-white" />}
+          {status === "waiting" && <Pause className="h-2.5 w-2.5 text-amber-600" />}
+        </button>
+
+        <div className="flex-1 min-w-0">
+          {/* Title Row */}
+          <div className="flex items-center gap-2">
+            <span className={`text-sm font-medium ${status === "completed" ? "line-through text-slate-400" : "text-slate-900"}`}>
+              {task.subject}
+            </span>
+          </div>
+
+          {/* Meta Row */}
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            {/* Type Badge */}
+            <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded ${typeConfig.color}`}>
+              <TypeIcon className="h-2.5 w-2.5" />
+              {typeConfig.label}
+            </span>
+
+            {/* Priority */}
+            <span className={`inline-flex items-center gap-1 text-[10px] font-medium ${priorityConfig.color}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${priorityConfig.dot}`} />
+              {priorityConfig.label}
+            </span>
+
+            {/* Due Date */}
+            <span className={`text-[11px] ${variant === "overdue" ? "text-red-600 font-medium" : "text-slate-500"}`}>
+              {formatDate(task.dueAt)}
+            </span>
+
+            {/* Assignee */}
+            {task.assignedTo && (
+              <span className="text-[11px] text-slate-400">
+                @{task.assignedTo.firstName}
+              </span>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  const totalOpen = filteredOverdue.length + filteredDueThisWeek.length + filteredBacklog.length;
 
   return (
     <div className="space-y-4">
-      {/* Owner Filter + Add Task */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 flex-wrap">
+      {/* Filters */}
+      <div className="space-y-2">
+        {/* Owner Filter */}
+        <div className="flex items-center gap-1.5 flex-wrap">
           <button
             onClick={() => setOwnerFilter("all")}
-            className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
+            className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
               ownerFilter === "all" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
@@ -245,20 +310,21 @@ function NextActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAdd
           {currentUserId && assignees.some((a) => a.id === currentUserId) && (
             <button
               onClick={() => setOwnerFilter(currentUserId)}
-              className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
+              className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
                 ownerFilter === currentUserId ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
-              Me
+              Mine
             </button>
           )}
           {assignees
             .filter((a) => a.id !== currentUserId)
+            .slice(0, 3)
             .map((a) => (
               <button
                 key={a.id}
                 onClick={() => setOwnerFilter(a.id)}
-                className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
+                className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
                   ownerFilter === a.id ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
@@ -266,281 +332,133 @@ function NextActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAdd
               </button>
             ))}
         </div>
-        {onAddTask && (
+
+        {/* Type Filter */}
+        <div className="flex items-center gap-1.5 flex-wrap">
           <button
-            onClick={onAddTask}
-            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 shrink-0"
+            onClick={() => setTypeFilter("all")}
+            className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
+              typeFilter === "all" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
           >
-            <Plus className="h-3.5 w-3.5" />
-            Add Task
+            All Types
           </button>
+          {Object.entries(TASK_TYPE_CONFIG).map(([key, config]) => (
+            <button
+              key={key}
+              onClick={() => setTypeFilter(key)}
+              className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
+                typeFilter === key ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {config.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Add Task */}
+      {onAddTask && (
+        <button
+          onClick={onAddTask}
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-slate-500 hover:text-slate-700 border border-dashed border-slate-300 hover:border-slate-400 rounded-lg transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+          Add Task
+        </button>
+      )}
+
+      {/* Task Groups */}
+      <div className="space-y-4">
+        {/* Overdue */}
+        {filteredOverdue.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
+              <span className="text-xs font-semibold text-red-600 uppercase tracking-wide">
+                Overdue · {filteredOverdue.length}
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              {filteredOverdue.map((task) => (
+                <TaskRow key={task.id} task={task} variant="overdue" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Due This Week */}
+        {filteredDueThisWeek.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <CalendarDays className="h-3.5 w-3.5 text-slate-500" />
+              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                Due This Week · {filteredDueThisWeek.length}
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              {filteredDueThisWeek.map((task) => (
+                <TaskRow key={task.id} task={task} variant="upcoming" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Backlog (No Due Date) */}
+        {filteredBacklog.length > 0 && (
+          <div>
+            <button
+              onClick={() => setShowBacklog(!showBacklog)}
+              className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wide hover:text-slate-700"
+            >
+              {showBacklog ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+              <Circle className="h-3 w-3" />
+              No Due Date · {filteredBacklog.length}
+            </button>
+            {showBacklog && (
+              <div className="space-y-1.5 mt-2">
+                {filteredBacklog.map((task) => (
+                  <TaskRow key={task.id} task={task} variant="backlog" />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Completed */}
+        {filteredCompleted.length > 0 && (
+          <div>
+            <button
+              onClick={() => setShowCompleted(!showCompleted)}
+              className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wide hover:text-slate-600"
+            >
+              {showCompleted ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+              <Check className="h-3 w-3" />
+              Completed · {filteredCompleted.length}
+            </button>
+            {showCompleted && (
+              <div className="space-y-1.5 mt-2">
+                {filteredCompleted.map((task) => (
+                  <TaskRow key={task.id} task={task} variant="completed" />
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Overdue */}
-      {filteredOverdue.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-            <span className="text-sm font-medium text-red-600">OVERDUE ({filteredOverdue.length})</span>
-          </div>
-          <div className="space-y-1.5">
-            {filteredOverdue.map((task) => (
-              <TaskRow key={task.id} task={task} variant="overdue" />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Due This Week */}
-      {filteredDueThisWeek.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <CalendarDays className="h-4 w-4 text-amber-500" />
-            <span className="text-sm font-medium text-amber-600">DUE THIS WEEK ({filteredDueThisWeek.length})</span>
-          </div>
-          <div className="space-y-1.5">
-            {filteredDueThisWeek.map((task) => (
-              <TaskRow key={task.id} task={task} variant="upcoming" />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Backlog */}
-      {filteredBacklog.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowBacklog(!showBacklog)}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-          >
-            {showBacklog ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            <CheckSquare className="h-4 w-4 text-slate-400" />
-            <span>Backlog ({filteredBacklog.length})</span>
-          </button>
-          {showBacklog && (
-            <div className="space-y-1.5 mt-2">
-              {filteredBacklog.map((task) => (
-                <TaskRow key={task.id} task={task} variant="backlog" />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Completed */}
-      {filteredCompleted.length > 0 && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Check className="h-4 w-4 text-green-500" />
-          <span>Completed ({filteredCompleted.length})</span>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {filteredOverdue.length === 0 && filteredDueThisWeek.length === 0 && filteredBacklog.length === 0 && filteredCompleted.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-4">No tasks</p>
-      )}
-    </div>
-  );
-}
-
-// ============ FollowUpsTab Component ============
-
-interface FollowUpsTabProps {
-  targets: DealTarget[];
-  currentUserId?: number | null;
-  onScrollToTarget?: (targetId: number) => void;
-  onFollowUpUpdate?: (targetId: number, nextStepAt: string | null) => void;
-}
-
-function FollowUpsTab({ targets, currentUserId, onScrollToTarget, onFollowUpUpdate }: FollowUpsTabProps) {
-  const [editingDateFor, setEditingDateFor] = useState<number | null>(null);
-  const [dateValue, setDateValue] = useState("");
-
-  const now = new Date();
-  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-  const staleTargets = useMemo(() =>
-    targets.filter((t) =>
-      t.status !== "passed" && t.status !== "on_hold" &&
-      (t.isStale || (t.daysSinceContact !== null && t.daysSinceContact > 7))
-    ), [targets]);
-
-  const dueSoonTargets = useMemo(() =>
-    targets.filter((t) => {
-      if (!t.nextStepAt) return false;
-      if (t.status === "passed" || t.status === "on_hold") return false;
-      const stepDate = new Date(t.nextStepAt);
-      return stepDate >= now && stepDate <= sevenDaysFromNow;
-    }), [targets]);
-
-  const uncontactedTargets = useMemo(() =>
-    targets.filter((t) => !t.firstContactedAt && t.status === "not_started"),
-    [targets]);
-
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return null;
-    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  };
-
-  const handleDateSave = async (targetId: number, value: string) => {
-    const nextStepAt = value || null;
-    setEditingDateFor(null);
-    onFollowUpUpdate?.(targetId, nextStepAt);
-
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deal_targets/${targetId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ next_step_at: nextStepAt }),
-      });
-    } catch (err) {
-      console.error("Failed to update follow-up date:", err);
-    }
-  };
-
-  const TargetFollowUpRow = ({ target }: { target: DealTarget }) => {
-    const statusLabels: Record<string, string> = {
-      not_started: "Not started",
-      contacted: "Contacted",
-      engaged: "Engaged",
-      negotiating: "Negotiating",
-      committed: "Committed",
-    };
-    const daysLabel = target.daysSinceContact !== null
-      ? target.daysSinceContact === 0 ? "today" : `${target.daysSinceContact}d ago`
-      : "Never";
-
-    return (
-      <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 bg-white text-sm">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onScrollToTarget?.(target.id)}
-              className="font-medium text-slate-900 hover:text-indigo-600 transition-colors truncate text-left"
-            >
-              {target.targetName}
-            </button>
-            <span className="text-[11px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 shrink-0">
-              {statusLabels[target.status] || target.status}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-            <span>{daysLabel}</span>
-            <span>·</span>
-            <span className="flex items-center gap-1">
-              Follow-up:
-              {editingDateFor === target.id ? (
-                <input
-                  type="date"
-                  autoFocus
-                  value={dateValue}
-                  onChange={(e) => setDateValue(e.target.value)}
-                  onBlur={() => handleDateSave(target.id, dateValue)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleDateSave(target.id, dateValue);
-                    if (e.key === "Escape") setEditingDateFor(null);
-                  }}
-                  className="text-xs border border-slate-200 rounded px-1.5 py-0.5 w-[120px]"
-                />
-              ) : (
-                <button
-                  onClick={() => {
-                    setEditingDateFor(target.id);
-                    setDateValue(target.nextStepAt ? target.nextStepAt.split("T")[0] : "");
-                  }}
-                  className="inline-flex items-center gap-0.5 text-blue-600 hover:text-blue-800"
-                >
-                  {formatDate(target.nextStepAt) || "set"}
-                  <Pencil className="h-2.5 w-2.5" />
-                </button>
-              )}
-            </span>
-            {target.owner && (
-              <>
-                <span>·</span>
-                <span>@{target.owner.firstName}</span>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const allEmpty = staleTargets.length === 0 && dueSoonTargets.length === 0 && uncontactedTargets.length === 0;
-
-  return (
-    <div className="space-y-4">
-      {/* Counter Pills */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${staleTargets.length > 0 ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-400"}`}>
-          {staleTargets.length} Stale
-        </span>
-        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${dueSoonTargets.length > 0 ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-400"}`}>
-          {dueSoonTargets.length} Due Soon
-        </span>
-        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${uncontactedTargets.length > 0 ? "bg-slate-200 text-slate-700" : "bg-slate-100 text-slate-400"}`}>
-          {uncontactedTargets.length} Uncontacted
-        </span>
-      </div>
-
-      {allEmpty && (
+      {/* Empty State */}
+      {totalOpen === 0 && filteredCompleted.length === 0 && (
         <div className="text-center py-8">
           <CheckSquare className="h-8 w-8 mx-auto text-green-300 mb-2" />
-          <p className="text-sm text-muted-foreground">All caught up</p>
-        </div>
-      )}
-
-      {/* Stale */}
-      {staleTargets.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-red-500" />
-            <span className="text-sm font-medium text-red-600">STALE</span>
-          </div>
-          <div className="space-y-1.5">
-            {staleTargets.map((target) => (
-              <TargetFollowUpRow key={target.id} target={target} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Due Soon */}
-      {dueSoonTargets.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <CalendarDays className="h-4 w-4 text-blue-500" />
-            <span className="text-sm font-medium text-blue-600">DUE SOON</span>
-          </div>
-          <div className="space-y-1.5">
-            {dueSoonTargets.map((target) => (
-              <TargetFollowUpRow key={target.id} target={target} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Uncontacted */}
-      {uncontactedTargets.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="w-2 h-2 rounded-full bg-slate-400 ring-2 ring-slate-200" />
-            <span className="text-sm font-medium text-slate-600">UNCONTACTED</span>
-          </div>
-          <div className="space-y-1.5">
-            {uncontactedTargets.map((target) => (
-              <TargetFollowUpRow key={target.id} target={target} />
-            ))}
-          </div>
+          <p className="text-sm text-slate-500">All clear</p>
         </div>
       )}
     </div>
   );
 }
 
-// ============ DiligenceTab Component ============
+// ============ DiligenceTab Component (Documents Only) ============
 
 interface DiligenceTabProps {
   checklist: {
@@ -571,7 +489,6 @@ function DiligenceTab({ checklist, onUpload, onAddDocument }: DiligenceTabProps)
       .slice(0, 3),
     [checklist.items]);
 
-  // Group items by their frontend category mapping
   const groupedByCategory = useMemo(() => {
     const groups: Record<string, DocumentItem[]> = {};
     checklist.items.forEach((item) => {
@@ -588,24 +505,13 @@ function DiligenceTab({ checklist, onUpload, onAddDocument }: DiligenceTabProps)
 
   return (
     <div className="space-y-4">
-      {/* Progress Bar + Add Doc */}
+      {/* Progress */}
       <div>
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{checklist.completionPercent}% Complete</span>
-            <span className="text-xs text-muted-foreground">({checklist.completed}/{checklist.total})</span>
-          </div>
-          {onAddDocument && (
-            <button
-              onClick={onAddDocument}
-              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Add Doc
-            </button>
-          )}
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-sm font-medium text-slate-700">{checklist.completionPercent}% Complete</span>
+          <span className="text-xs text-slate-500">{checklist.completed}/{checklist.total} docs</span>
         </div>
-        <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${
               checklist.completionPercent === 100
@@ -619,20 +525,30 @@ function DiligenceTab({ checklist, onUpload, onAddDocument }: DiligenceTabProps)
         </div>
       </div>
 
+      {/* Upload Button */}
+      {onAddDocument && (
+        <button
+          onClick={onAddDocument}
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-slate-500 hover:text-slate-700 border border-dashed border-slate-300 hover:border-slate-400 rounded-lg transition-colors"
+        >
+          <Upload className="h-4 w-4" />
+          Upload Document
+        </button>
+      )}
+
       {/* Missing Critical */}
       {missingCritical.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-            <span className="text-sm font-medium text-red-600">MISSING CRITICAL ({missingCritical.length})</span>
+            <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
+            <span className="text-xs font-semibold text-red-600 uppercase tracking-wide">
+              Missing Critical · {missingCritical.length}
+            </span>
           </div>
           <div className="space-y-1">
             {missingCritical.map((item) => (
-              <div key={item.kind} className="flex items-center justify-between p-2 rounded-lg bg-red-50 border border-red-100">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-red-400" />
-                  <span className="text-sm text-red-800">{item.label}</span>
-                </div>
+              <div key={item.kind} className="flex items-center justify-between p-2.5 rounded-lg bg-red-50 border border-red-100">
+                <span className="text-sm text-red-800">{item.label}</span>
                 <button
                   onClick={() => onUpload?.(item.kind)}
                   className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 font-medium"
@@ -650,15 +566,15 @@ function DiligenceTab({ checklist, onUpload, onAddDocument }: DiligenceTabProps)
       {recentlyUpdated.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Clock className="h-4 w-4 text-slate-400" />
-            <span className="text-sm font-medium text-muted-foreground">RECENTLY UPDATED</span>
+            <Clock className="h-3.5 w-3.5 text-slate-400" />
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Recent</span>
           </div>
           <div className="space-y-1">
             {recentlyUpdated.map((item) => (
-              <div key={item.kind} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+              <div key={item.kind} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
                 <span className="text-sm text-slate-700">{item.label}</span>
-                <span className="text-xs text-muted-foreground">
-                  uploaded {item.document?.uploadedAt ? formatUploadDate(item.document.uploadedAt) : ""}
+                <span className="text-[11px] text-slate-400">
+                  {item.document?.uploadedAt ? formatUploadDate(item.document.uploadedAt) : ""}
                 </span>
               </div>
             ))}
@@ -669,60 +585,40 @@ function DiligenceTab({ checklist, onUpload, onAddDocument }: DiligenceTabProps)
       {/* Full Checklist */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <FileText className="h-4 w-4 text-slate-400" />
-          <span className="text-sm font-medium text-muted-foreground">FULL CHECKLIST</span>
+          <FileText className="h-3.5 w-3.5 text-slate-400" />
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Checklist</span>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {Object.entries(groupedByCategory).map(([category, items]) => {
             const isExpanded = expandedCategory === category;
             const completedInCategory = items.filter((i) => i.present).length;
 
             return (
-              <div key={category} className="border rounded-lg">
+              <div key={category} className="border border-slate-200 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setExpandedCategory(isExpanded ? null : category)}
                   className="w-full flex items-center justify-between p-2.5 text-left hover:bg-slate-50 transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    {isExpanded ? (
-                      <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
-                    ) : (
-                      <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-                    )}
-                    <span className="text-sm">{category}</span>
+                    {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-slate-400" /> : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />}
+                    <span className="text-sm text-slate-700">{category}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {completedInCategory}/{items.length}
-                  </span>
+                  <span className="text-xs text-slate-400">{completedInCategory}/{items.length}</span>
                 </button>
 
                 {isExpanded && (
-                  <div className="px-2.5 pb-2.5 space-y-1">
+                  <div className="px-2.5 pb-2.5 space-y-1 border-t border-slate-100">
                     {items.map((item) => (
                       <div
                         key={item.kind}
-                        className={`flex items-center gap-2 p-2 rounded text-sm ${
-                          item.present ? "bg-green-50" : "bg-slate-50"
-                        }`}
+                        className={`flex items-center gap-2 p-2 rounded text-sm mt-1 ${item.present ? "bg-green-50" : "bg-slate-50"}`}
                       >
-                        <div
-                          className={`w-4 h-4 rounded flex items-center justify-center shrink-0 ${
-                            item.present
-                              ? "bg-green-500 text-white"
-                              : "border border-slate-300"
-                          }`}
-                        >
+                        <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 ${item.present ? "bg-green-500 text-white" : "border border-slate-300"}`}>
                           {item.present && <Check className="h-3 w-3" />}
                         </div>
-                        <span className="flex-1 truncate">{item.label}</span>
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-                          {item.present ? "Received" : "Missing"}
-                        </Badge>
+                        <span className="flex-1 truncate text-slate-700">{item.label}</span>
                         {!item.present && (
-                          <button
-                            onClick={() => onUpload?.(item.kind)}
-                            className="text-xs text-blue-600 hover:text-blue-800"
-                          >
+                          <button onClick={() => onUpload?.(item.kind)} className="text-xs text-blue-600 hover:text-blue-800">
                             Upload
                           </button>
                         )}
@@ -739,165 +635,40 @@ function DiligenceTab({ checklist, onUpload, onAddDocument }: DiligenceTabProps)
   );
 }
 
-// ============ EdgeTab Component ============
-
-interface EdgeTabProps {
-  advantages: Advantage[];
-  onAddAdvantage?: () => void;
-}
-
-function EdgeTab({ advantages, onAddAdvantage }: EdgeTabProps) {
-  const [showAll, setShowAll] = useState(false);
-
-  const kindLabels: Record<string, string> = {
-    pricing_edge: "Pricing",
-    relationship_edge: "Relation.",
-    timing_edge: "Timing",
-    information_edge: "Info",
-  };
-
-  const timelinessConfig: Record<string, { label: string; color: string; weight: number }> = {
-    fresh: { label: "Fresh", color: "text-green-600", weight: 3 },
-    current: { label: "Current", color: "text-blue-600", weight: 2 },
-    stale: { label: "Stale", color: "text-slate-400", weight: 1 },
-  };
-
-  // Rank by (confidence || 0) * timelinessWeight
-  const ranked = useMemo(() => {
-    return [...advantages].sort((a, b) => {
-      const scoreA = (a.confidence || 0) * (timelinessConfig[a.timeliness || "stale"]?.weight || 1);
-      const scoreB = (b.confidence || 0) * (timelinessConfig[b.timeliness || "stale"]?.weight || 1);
-      return scoreB - scoreA;
-    });
-  }, [advantages]);
-
-  const visible = showAll ? ranked : ranked.slice(0, 5);
-  const hiddenCount = ranked.length - 5;
-
-  if (advantages.length === 0) {
-    return (
-      <div className="text-center py-6">
-        <Shield className="h-8 w-8 mx-auto text-slate-300 mb-2" />
-        <p className="text-sm text-muted-foreground">No edges documented</p>
-        {onAddAdvantage && (
-          <button
-            onClick={onAddAdvantage}
-            className="mt-2 text-sm text-blue-600 hover:text-blue-800"
-          >
-            Add edge
-          </button>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      {/* Add Edge Button */}
-      {onAddAdvantage && (
-        <div className="flex justify-end">
-          <button
-            onClick={onAddAdvantage}
-            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Add Edge
-          </button>
-        </div>
-      )}
-
-      {/* Edge Rows */}
-      <div className="space-y-1.5">
-        {visible.map((advantage) => {
-          const tConfig = timelinessConfig[advantage.timeliness || "stale"] || timelinessConfig.stale;
-          return (
-            <div key={advantage.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-slate-200 bg-white">
-              {/* Type Badge */}
-              <span className="text-[11px] font-medium text-slate-500 w-[60px] shrink-0 truncate">
-                {kindLabels[advantage.kind] || advantage.kind}
-              </span>
-              {/* Title */}
-              <span className="text-sm text-slate-800 flex-1 truncate">{advantage.title}</span>
-              {/* Confidence Dots (5) */}
-              <span className="inline-flex items-center gap-0.5 shrink-0">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <span
-                    key={i}
-                    className={`w-2 h-2 rounded-full ${
-                      i < (advantage.confidence || 0) ? "bg-blue-500" : "bg-slate-200"
-                    }`}
-                  />
-                ))}
-              </span>
-              {/* Timeliness Pill */}
-              <span className={`text-[11px] font-medium shrink-0 ${tConfig.color}`}>
-                {tConfig.label}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* View all */}
-      {hiddenCount > 0 && !showAll && (
-        <button
-          onClick={() => setShowAll(true)}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-slate-600"
-        >
-          <ChevronRight className="h-3.5 w-3.5" />
-          View all ({hiddenCount} more)
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ============ ActivityTab Component ============
-
-export interface Activity {
-  id: number;
-  kind: string;
-  subject: string | null;
-  body?: string | null;
-  occurredAt: string;
-  startsAt?: string | null;
-  endsAt?: string | null;
-  outcome?: string | null;
-  direction?: string | null;
-  isTask?: boolean;
-  taskCompleted?: boolean;
-  taskDueAt?: string | null;
-  performedBy?: {
-    id: number;
-    firstName: string;
-    lastName: string;
-  } | null;
-  assignedTo?: {
-    id: number;
-    firstName: string;
-    lastName: string;
-  } | null;
-}
+// ============ ActivityTab Component (Read-Only Feed) ============
 
 interface ActivityTabProps {
   activities: Activity[];
   onActivityClick?: (activity: Activity) => void;
-  onAddActivity?: () => void;
 }
 
-function ActivityTab({ activities, onActivityClick, onAddActivity }: ActivityTabProps) {
+function ActivityTab({ activities, onActivityClick }: ActivityTabProps) {
   const kindIcons: Record<string, typeof Mail> = {
     email: Mail,
     call: Phone,
     meeting: Video,
+    video_call: Video,
+    in_person_meeting: Users,
     note: FileEdit,
+    task_created: CheckSquare,
+    task_completed: Check,
+    interest_added: Users,
+    block_updated: Briefcase,
+    document_uploaded: Upload,
   };
 
   const kindLabels: Record<string, string> = {
     email: "Email",
     call: "Call",
     meeting: "Meeting",
+    video_call: "Video Call",
+    in_person_meeting: "In-Person",
     note: "Note",
+    task_created: "Task Created",
+    task_completed: "Task Completed",
+    interest_added: "Interest Added",
+    block_updated: "Block Updated",
+    document_uploaded: "Document",
   };
 
   const formatDate = (dateStr: string) => {
@@ -917,19 +688,128 @@ function ActivityTab({ activities, onActivityClick, onAddActivity }: ActivityTab
     }
   };
 
-  const recentActivities = activities.slice(0, 10);
-
   if (activities.length === 0) {
     return (
-      <div className="text-center py-6">
+      <div className="text-center py-8">
         <MessageSquare className="h-8 w-8 mx-auto text-slate-300 mb-2" />
-        <p className="text-sm text-muted-foreground">No activity logged yet</p>
-        {onAddActivity && (
+        <p className="text-sm text-slate-500">No activity yet</p>
+        <p className="text-xs text-slate-400 mt-1">Activity is automatically logged</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1">
+      {/* Read-only indicator */}
+      <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-3">Auto-generated feed</p>
+
+      {/* Activity Timeline */}
+      <div className="relative">
+        {/* Timeline line */}
+        <div className="absolute left-[11px] top-3 bottom-3 w-px bg-slate-200" />
+
+        <div className="space-y-0">
+          {activities.slice(0, 15).map((activity, idx) => {
+            const Icon = kindIcons[activity.kind] || MessageSquare;
+            return (
+              <div
+                key={activity.id}
+                onClick={() => onActivityClick?.(activity)}
+                className="relative flex items-start gap-3 py-2.5 cursor-pointer hover:bg-slate-50 rounded-lg px-1 -mx-1 transition-colors"
+              >
+                {/* Icon */}
+                <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 z-10">
+                  <Icon className="h-3 w-3 text-slate-500" />
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-slate-600">
+                      {kindLabels[activity.kind] || activity.kind}
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      {formatDate(activity.occurredAt)}
+                    </span>
+                  </div>
+                  {activity.subject && (
+                    <p className="text-sm text-slate-700 truncate mt-0.5">{activity.subject}</p>
+                  )}
+                  {activity.performedBy && (
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      by {activity.performedBy.firstName}
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {activities.length > 15 && (
+        <p className="text-xs text-center text-slate-400 pt-2">
+          Showing 15 of {activities.length}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ============ EdgesTab Component (Redesigned) ============
+
+interface EdgesTabProps {
+  edges: Edge[];
+  onAddEdge?: () => void;
+  onEdgeClick?: (edge: Edge) => void;
+  onActOnEdge?: (edge: Edge) => void;
+}
+
+function EdgesTab({ edges, onAddEdge, onEdgeClick, onActOnEdge }: EdgesTabProps) {
+  // Sort by (confidence * timeliness) score descending
+  const sortedEdges = useMemo(() => {
+    return [...edges].sort((a, b) => {
+      const scoreA = (a.confidence || 1) * (a.timeliness || 1);
+      const scoreB = (b.confidence || 1) * (b.timeliness || 1);
+      return scoreB - scoreA;
+    });
+  }, [edges]);
+
+  const ConfidenceDots = ({ value }: { value: number }) => (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div
+          key={i}
+          className={`w-1.5 h-1.5 rounded-full ${i <= value ? "bg-blue-500" : "bg-slate-200"}`}
+        />
+      ))}
+    </div>
+  );
+
+  const TimelinessDots = ({ value }: { value: number }) => (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div
+          key={i}
+          className={`w-1.5 h-1.5 rounded-full ${i <= value ? "bg-green-500" : "bg-slate-200"}`}
+        />
+      ))}
+    </div>
+  );
+
+  if (edges.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <Shield className="h-8 w-8 mx-auto text-slate-300 mb-2" />
+        <p className="text-sm text-slate-500">No edges documented</p>
+        <p className="text-xs text-slate-400 mt-1">Edges are rare, valuable insights</p>
+        {onAddEdge && (
           <button
-            onClick={onAddActivity}
-            className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+            onClick={onAddEdge}
+            className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
           >
-            Log activity
+            <Plus className="h-4 w-4" />
+            Add Edge
           </button>
         )}
       </div>
@@ -937,69 +817,78 @@ function ActivityTab({ activities, onActivityClick, onAddActivity }: ActivityTab
   }
 
   return (
-    <div className="space-y-3">
-      {/* Add Activity Button */}
-      {onAddActivity && (
-        <div className="flex justify-end">
-          <button
-            onClick={onAddActivity}
-            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Log Activity
-          </button>
-        </div>
+    <div className="space-y-4">
+      {/* Add Edge */}
+      {onAddEdge && (
+        <button
+          onClick={onAddEdge}
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-slate-500 hover:text-slate-700 border border-dashed border-slate-300 hover:border-slate-400 rounded-lg transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+          Add Edge
+        </button>
       )}
 
-      {/* Activity List */}
+      {/* Edge List */}
       <div className="space-y-2">
-        {recentActivities.map((activity) => {
-          const Icon = kindIcons[activity.kind] || MessageSquare;
+        {sortedEdges.map((edge) => {
+          const typeConfig = EDGE_TYPE_CONFIG[edge.edgeType] || EDGE_TYPE_CONFIG.information;
+
           return (
             <div
-              key={activity.id}
-              onClick={() => onActivityClick?.(activity)}
-              className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 cursor-pointer transition-colors"
+              key={edge.id}
+              onClick={() => onEdgeClick?.(edge)}
+              className="p-3 rounded-lg border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm cursor-pointer transition-all"
             >
-              <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                <Icon className="h-3.5 w-3.5 text-slate-500" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-slate-500">
-                    {kindLabels[activity.kind] || activity.kind}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDate(activity.occurredAt)}
-                  </span>
-                </div>
-                {activity.subject && (
-                  <p className="text-sm font-medium text-slate-800 truncate mt-0.5">
-                    {activity.subject}
-                  </p>
-                )}
-                {activity.body && (
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
-                    {activity.body}
-                  </p>
-                )}
-                {activity.performedBy && (
-                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                    <span>by {activity.performedBy.firstName}</span>
+              {/* Header */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${typeConfig.color}`}>
+                      {typeConfig.label}
+                    </span>
                   </div>
-                )}
+                  <p className="text-sm font-medium text-slate-800">{edge.title}</p>
+                </div>
+              </div>
+
+              {/* Scores */}
+              <div className="flex items-center gap-4 mt-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-slate-500">Confidence</span>
+                  <ConfidenceDots value={edge.confidence} />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-slate-500">Freshness</span>
+                  <TimelinessDots value={edge.timeliness} />
+                </div>
+              </div>
+
+              {/* Notes Preview */}
+              {edge.notes && (
+                <p className="text-xs text-slate-500 mt-2 line-clamp-2">{edge.notes}</p>
+              )}
+
+              {/* Act on Edge */}
+              <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100">
+                <span className="text-[10px] text-slate-400">
+                  {edge.createdBy ? `by ${edge.createdBy.firstName}` : ""}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onActOnEdge?.(edge);
+                  }}
+                  className="flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  <Zap className="h-3 w-3" />
+                  Act on Edge
+                </button>
               </div>
             </div>
           );
         })}
       </div>
-
-      {/* Show more indicator */}
-      {activities.length > 10 && (
-        <p className="text-xs text-center text-muted-foreground">
-          Showing 10 of {activities.length} activities
-        </p>
-      )}
     </div>
   );
 }
@@ -1014,16 +903,14 @@ interface DealSidebarProps {
     completed: Task[];
   };
   dealId?: number;
-  targets: DealTarget[];
   documentChecklist: {
     total: number;
     completed: number;
     completionPercent: number;
     items: DocumentItem[];
   };
-  advantages: Advantage[];
+  edges: Edge[];
   activities: Activity[];
-  riskFlags: Record<string, { active: boolean; message: string; severity: string }>;
   lpMode: boolean;
   currentUserId?: number | null;
   activeSection?: string;
@@ -1031,22 +918,21 @@ interface DealSidebarProps {
   onTaskToggle?: (taskId: number, currentlyCompleted: boolean) => void;
   onTaskClick?: (task: Task) => void;
   onAddTask?: () => void;
-  onScrollToTarget?: (targetId: number) => void;
-  onFollowUpUpdate?: (targetId: number, nextStepAt: string | null) => void;
+  onTaskStatusChange?: (taskId: number, status: "open" | "waiting" | "completed") => void;
   onDocumentUpload?: (kind: string) => void;
-  onAddAdvantage?: () => void;
+  onAddDocument?: () => void;
+  onAddEdge?: () => void;
+  onEdgeClick?: (edge: Edge) => void;
+  onActOnEdge?: (edge: Edge) => void;
   onActivityClick?: (activity: Activity) => void;
-  onAddActivity?: () => void;
 }
 
 export function DealSidebar({
   tasks,
   dealId,
-  targets,
   documentChecklist,
-  advantages,
+  edges,
   activities,
-  riskFlags,
   lpMode,
   currentUserId,
   activeSection,
@@ -1054,52 +940,59 @@ export function DealSidebar({
   onTaskToggle,
   onTaskClick,
   onAddTask,
-  onScrollToTarget,
-  onFollowUpUpdate,
+  onTaskStatusChange,
   onDocumentUpload,
-  onAddAdvantage,
+  onAddDocument,
+  onAddEdge,
+  onEdgeClick,
+  onActOnEdge,
   onActivityClick,
-  onAddActivity,
 }: DealSidebarProps) {
-  const [internalSection, setInternalSection] = useState<string>("next-actions");
+  const [internalSection, setInternalSection] = useState<string>("actions");
 
   useEffect(() => {
     if (activeSection) setInternalSection(activeSection);
   }, [activeSection]);
-
-  const expandedSection = internalSection;
 
   const handleSectionChange = (section: string) => {
     setInternalSection(section);
     onSectionChange?.(section);
   };
 
+  // Count open tasks
+  const openTaskCount = tasks.overdue.length + tasks.dueThisWeek.length + tasks.backlog.length;
+
   const sections = [
-    { key: "next-actions", label: "Next Actions", icon: CheckSquare },
-    { key: "follow-ups", label: "Follow-ups", icon: Users },
+    { key: "actions", label: "Actions", icon: CheckSquare, count: openTaskCount },
     { key: "diligence", label: "Diligence", icon: FileText },
-    { key: "activity", label: "Activity", icon: MessageSquare },
-    ...(!lpMode ? [{ key: "edge", label: "Edge", icon: Shield }] : []),
+    { key: "activity", label: "Activity", icon: Clock },
+    ...(!lpMode ? [{ key: "edges", label: "Edges", icon: Shield, count: edges.length }] : []),
   ];
 
   return (
     <div className="space-y-4">
       {/* Section Tabs */}
-      <div className="flex border-b overflow-x-auto">
+      <div className="flex border-b border-slate-200 overflow-x-auto">
         {sections.map((section) => {
           const Icon = section.icon;
+          const isActive = internalSection === section.key;
           return (
             <button
               key={section.key}
               onClick={() => handleSectionChange(section.key)}
-              className={`flex items-center gap-1.5 px-3 py-2 text-sm whitespace-nowrap border-b-2 transition-colors ${
-                expandedSection === section.key
+              className={`flex items-center gap-1.5 px-3 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
+                isActive
                   ? "border-slate-900 text-slate-900 font-medium"
-                  : "border-transparent text-muted-foreground hover:text-slate-600"
+                  : "border-transparent text-slate-500 hover:text-slate-700"
               }`}
             >
               <Icon className="h-4 w-4" />
               {section.label}
+              {section.count !== undefined && section.count > 0 && (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-600"}`}>
+                  {section.count}
+                </span>
+              )}
             </button>
           );
         })}
@@ -1107,41 +1000,35 @@ export function DealSidebar({
 
       {/* Section Content */}
       <div className="min-h-[300px]">
-        {expandedSection === "next-actions" && (
-          <NextActionsTab
+        {internalSection === "actions" && (
+          <ActionsTab
             tasks={tasks}
             currentUserId={currentUserId}
             onTaskToggle={onTaskToggle}
             onTaskClick={onTaskClick}
             onAddTask={onAddTask}
-            onScrollToTarget={onScrollToTarget}
+            onStatusChange={onTaskStatusChange}
           />
         )}
-        {expandedSection === "follow-ups" && (
-          <FollowUpsTab
-            targets={targets}
-            currentUserId={currentUserId}
-            onScrollToTarget={onScrollToTarget}
-            onFollowUpUpdate={onFollowUpUpdate}
-          />
-        )}
-        {expandedSection === "diligence" && (
+        {internalSection === "diligence" && (
           <DiligenceTab
             checklist={documentChecklist}
             onUpload={onDocumentUpload}
+            onAddDocument={onAddDocument}
           />
         )}
-        {expandedSection === "activity" && (
+        {internalSection === "activity" && (
           <ActivityTab
             activities={activities}
             onActivityClick={onActivityClick}
-            onAddActivity={onAddActivity}
           />
         )}
-        {expandedSection === "edge" && !lpMode && (
-          <EdgeTab
-            advantages={advantages}
-            onAddAdvantage={onAddAdvantage}
+        {internalSection === "edges" && !lpMode && (
+          <EdgesTab
+            edges={edges}
+            onAddEdge={onAddEdge}
+            onEdgeClick={onEdgeClick}
+            onActOnEdge={onActOnEdge}
           />
         )}
       </div>
