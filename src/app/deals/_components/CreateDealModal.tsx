@@ -20,8 +20,7 @@ interface CreateDealModalProps {
   onClose: () => void;
 }
 
-const STAGES = ["sourcing", "due_diligence", "negotiation", "documentation", "closing"];
-const STATUSES = ["live", "sourcing", "closing", "closed", "dead"];
+const STATUSES = ["sourcing", "live", "closing", "closed", "dead"];
 const KINDS = ["secondary", "primary"];
 const SOURCES = ["inbound", "outbound", "referral", "broker", "network", "conference"];
 
@@ -47,8 +46,7 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
   // Form state
   const [name, setName] = useState("");
   const [company, setCompany] = useState<Company | null>(null);
-  const [stage, setStage] = useState("sourcing");
-  const [status, setStatus] = useState("live");
+  const [status, setStatus] = useState("sourcing");
   const [kind, setKind] = useState("secondary");
   const [ownerId, setOwnerId] = useState<number | null>(null);
   const [priority, setPriority] = useState(2);
@@ -178,7 +176,6 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
       const payload: Record<string, unknown> = {
         name: name.trim(),
         company_id: company.id,
-        stage,
         status,
         kind,
         priority,
@@ -298,22 +295,10 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
               </div>
             </div>
 
-            {/* Section 2: Stage, Status, Kind */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Section 2: Stage, Kind */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Stage</label>
-                <select
-                  value={stage}
-                  onChange={(e) => setStage(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
-                >
-                  {STAGES.map((s) => (
-                    <option key={s} value={s}>{formatLabel(s)}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}

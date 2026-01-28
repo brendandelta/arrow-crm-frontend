@@ -30,7 +30,7 @@ interface Owner {
 
 export interface DealDetailsData {
   priority: number;
-  stage: string | null;
+  status: string;
   confidence: number | null;
   sharePrice: number | null;
   valuation: number | null;
@@ -53,15 +53,15 @@ interface EditableDealDetailsProps {
   onSave: (data: Partial<DealDetailsData>) => Promise<void>;
 }
 
-const STAGES = ["sourcing", "due_diligence", "negotiation", "documentation", "closing"];
+const STATUSES = ["sourcing", "live", "closing", "closed", "dead"];
 const SOURCES = ["inbound", "outbound", "referral", "broker", "network", "conference"];
 
-const STAGE_COLORS: Record<string, string> = {
+const STATUS_COLORS: Record<string, string> = {
   sourcing: "bg-slate-100 text-slate-700",
-  due_diligence: "bg-sky-50 text-sky-700 border border-sky-200",
-  negotiation: "bg-violet-50 text-violet-700 border border-violet-200",
-  documentation: "bg-amber-50 text-amber-700 border border-amber-200",
-  closing: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  live: "bg-green-100 text-green-700 border border-green-200",
+  closing: "bg-blue-100 text-blue-700 border border-blue-200",
+  closed: "bg-purple-100 text-purple-700 border border-purple-200",
+  dead: "bg-red-100 text-red-700 border border-red-200",
 };
 
 function formatLabel(val: string) {
@@ -144,14 +144,14 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
         <div className="flex gap-8">
           {/* Zone A: Deal Controls (left) */}
           <div className="flex-1 min-w-0 space-y-3">
-            {/* Stage */}
+            {/* Stage (Deal Lifecycle) */}
             <FieldRow label="Stage">
               <InlineSelect
-                value={deal.stage || ""}
-                options={STAGES}
+                value={deal.status}
+                options={STATUSES}
                 placeholder="Set stage"
-                onSave={(val) => saveField("stage", val)}
-                displayClass={STAGE_COLORS[deal.stage || ""] || "bg-slate-50 text-slate-600"}
+                onSave={(val) => saveField("status", val)}
+                displayClass={STATUS_COLORS[deal.status] || "bg-slate-50 text-slate-600"}
               />
             </FieldRow>
 

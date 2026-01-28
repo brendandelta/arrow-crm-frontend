@@ -24,7 +24,6 @@ interface DealHeaderProps {
   name: string;
   company: Company | null;
   status: string;
-  stage: string | null;
   kind: string;
   priority: number;
   owner: Owner | null;
@@ -82,11 +81,11 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+
 export function DealHeader({
   name,
   company,
   status,
-  stage,
   kind,
   priority,
   owner,
@@ -181,11 +180,6 @@ export function DealHeader({
             <Badge variant="outline" className="capitalize">
               {kind}
             </Badge>
-            {stage && (
-              <Badge variant="secondary" className="text-xs">
-                {stage}
-              </Badge>
-            )}
           </div>
 
           {company && (

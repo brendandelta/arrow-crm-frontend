@@ -449,7 +449,7 @@ export default function DealDetailPage() {
 
   const handleDealUpdate = async (data: Partial<{
     priority: number;
-    stage: string | null;
+    status: string;
     confidence: number | null;
     sharePrice: number | null;
     valuation: number | null;
@@ -471,7 +471,7 @@ export default function DealDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           priority: data.priority,
-          stage: data.stage,
+          status: data.status,
           confidence: data.confidence,
           share_price_cents: data.sharePrice,
           valuation_cents: data.valuation,
@@ -571,7 +571,6 @@ export default function DealDetailPage() {
         name={deal.name}
         company={deal.company}
         status={deal.status}
-        stage={deal.stage}
         kind={deal.kind}
         priority={deal.priority}
         owner={deal.owner}
@@ -611,7 +610,7 @@ export default function DealDetailPage() {
       <EditableDealDetails
         deal={{
           priority: deal.priority,
-          stage: deal.stage,
+          status: deal.status,
           confidence: deal.confidence,
           sharePrice: deal.sharePrice,
           valuation: deal.valuation,
