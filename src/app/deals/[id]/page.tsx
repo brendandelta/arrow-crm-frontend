@@ -17,6 +17,7 @@ import { BlockSlideOut } from "./_components/BlockSlideOut";
 import { InterestSlideOut } from "./_components/InterestSlideOut";
 import { ActivitySlideOut } from "./_components/ActivitySlideOut";
 import { TaskSlideOut } from "./_components/TaskSlideOut";
+import { EdgeSlideOut } from "./_components/EdgeSlideOut";
 import { OutreachTargetModal } from "./_components/OutreachTargetModal";
 import { EditableDealDetails } from "./_components/EditableDealDetails";
 // Import shared components
@@ -319,6 +320,8 @@ export default function DealDetailPage() {
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddTarget, setShowAddTarget] = useState(false);
   const [selectedTarget, setSelectedTarget] = useState<DealTarget | null>(null);
+  const [selectedEdge, setSelectedEdge] = useState<DealEdge | null>(null);
+  const [showAddEdge, setShowAddEdge] = useState(false);
   const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "targets">("targets");
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [sidebarSection, setSidebarSection] = useState<string | undefined>(undefined);
@@ -752,14 +755,10 @@ export default function DealDetailPage() {
                 onAddDocument={() => {
                   // Could open document upload modal
                 }}
-                onAddEdge={() => {
-                  // Could open add edge modal
-                }}
-                onEdgeClick={(edge) => {
-                  // Could open edge detail
-                }}
+                onAddEdge={() => setShowAddEdge(true)}
+                onEdgeClick={(edge) => setSelectedEdge(edge)}
                 onActOnEdge={(edge) => {
-                  // Creates a task from the edge
+                  // Creates a task from the edge - pre-fill with edge context
                   setShowAddTask(true);
                 }}
                 onActivityClick={(activity) => setSelectedActivity(activity)}
@@ -842,6 +841,27 @@ export default function DealDetailPage() {
           }}
           onSave={handleTaskUpdate}
           onDelete={handleTaskDelete}
+        />
+      )}
+
+      {/* Edge Slide-out */}
+      {(selectedEdge || showAddEdge) && (
+        <EdgeSlideOut
+          edge={selectedEdge}
+          dealId={deal.id}
+          onClose={() => {
+            setSelectedEdge(null);
+            setShowAddEdge(false);
+          }}
+          onSave={(savedEdge) => {
+            refreshDeal();
+            setSelectedEdge(null);
+            setShowAddEdge(false);
+          }}
+          onDelete={(edgeId) => {
+            refreshDeal();
+            setSelectedEdge(null);
+          }}
         />
       )}
 
