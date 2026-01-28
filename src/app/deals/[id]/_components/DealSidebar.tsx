@@ -15,6 +15,11 @@ import {
   Upload,
   CalendarDays,
   Pencil,
+  MessageSquare,
+  Mail,
+  Phone,
+  Video,
+  FileEdit,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -847,6 +852,158 @@ function EdgeTab({ advantages, onAddAdvantage }: EdgeTabProps) {
   );
 }
 
+// ============ ActivityTab Component ============
+
+export interface Activity {
+  id: number;
+  kind: string;
+  subject: string | null;
+  body?: string | null;
+  occurredAt: string;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  outcome?: string | null;
+  direction?: string | null;
+  isTask?: boolean;
+  taskCompleted?: boolean;
+  taskDueAt?: string | null;
+  performedBy?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  } | null;
+  assignedTo?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  } | null;
+}
+
+interface ActivityTabProps {
+  activities: Activity[];
+  onActivityClick?: (activity: Activity) => void;
+  onAddActivity?: () => void;
+}
+
+function ActivityTab({ activities, onActivityClick, onAddActivity }: ActivityTabProps) {
+  const kindIcons: Record<string, typeof Mail> = {
+    email: Mail,
+    call: Phone,
+    meeting: Video,
+    note: FileEdit,
+  };
+
+  const kindLabels: Record<string, string> = {
+    email: "Email",
+    call: "Call",
+    meeting: "Meeting",
+    note: "Note",
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    } else if (diffDays === 1) {
+      return "Yesterday";
+    } else if (diffDays < 7) {
+      return `${diffDays}d ago`;
+    } else {
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+  };
+
+  const recentActivities = activities.slice(0, 10);
+
+  if (activities.length === 0) {
+    return (
+      <div className="text-center py-6">
+        <MessageSquare className="h-8 w-8 mx-auto text-slate-300 mb-2" />
+        <p className="text-sm text-muted-foreground">No activity logged yet</p>
+        {onAddActivity && (
+          <button
+            onClick={onAddActivity}
+            className="mt-2 text-sm text-blue-600 hover:text-blue-800"
+          >
+            Log activity
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Add Activity Button */}
+      {onAddActivity && (
+        <div className="flex justify-end">
+          <button
+            onClick={onAddActivity}
+            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Log Activity
+          </button>
+        </div>
+      )}
+
+      {/* Activity List */}
+      <div className="space-y-2">
+        {recentActivities.map((activity) => {
+          const Icon = kindIcons[activity.kind] || MessageSquare;
+          return (
+            <div
+              key={activity.id}
+              onClick={() => onActivityClick?.(activity)}
+              className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 cursor-pointer transition-colors"
+            >
+              <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                <Icon className="h-3.5 w-3.5 text-slate-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-slate-500">
+                    {kindLabels[activity.kind] || activity.kind}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {formatDate(activity.occurredAt)}
+                  </span>
+                </div>
+                {activity.subject && (
+                  <p className="text-sm font-medium text-slate-800 truncate mt-0.5">
+                    {activity.subject}
+                  </p>
+                )}
+                {activity.body && (
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                    {activity.body}
+                  </p>
+                )}
+                {activity.performedBy && (
+                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                    <span>by {activity.performedBy.firstName}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Show more indicator */}
+      {activities.length > 10 && (
+        <p className="text-xs text-center text-muted-foreground">
+          Showing 10 of {activities.length} activities
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ============ Combined DealSidebar Component ============
 
 interface DealSidebarProps {
@@ -865,6 +1022,7 @@ interface DealSidebarProps {
     items: DocumentItem[];
   };
   advantages: Advantage[];
+  activities: Activity[];
   riskFlags: Record<string, { active: boolean; message: string; severity: string }>;
   lpMode: boolean;
   currentUserId?: number | null;
@@ -877,6 +1035,8 @@ interface DealSidebarProps {
   onFollowUpUpdate?: (targetId: number, nextStepAt: string | null) => void;
   onDocumentUpload?: (kind: string) => void;
   onAddAdvantage?: () => void;
+  onActivityClick?: (activity: Activity) => void;
+  onAddActivity?: () => void;
 }
 
 export function DealSidebar({
@@ -885,6 +1045,7 @@ export function DealSidebar({
   targets,
   documentChecklist,
   advantages,
+  activities,
   riskFlags,
   lpMode,
   currentUserId,
@@ -897,6 +1058,8 @@ export function DealSidebar({
   onFollowUpUpdate,
   onDocumentUpload,
   onAddAdvantage,
+  onActivityClick,
+  onAddActivity,
 }: DealSidebarProps) {
   const [internalSection, setInternalSection] = useState<string>("next-actions");
 
@@ -915,6 +1078,7 @@ export function DealSidebar({
     { key: "next-actions", label: "Next Actions", icon: CheckSquare },
     { key: "follow-ups", label: "Follow-ups", icon: Users },
     { key: "diligence", label: "Diligence", icon: FileText },
+    { key: "activity", label: "Activity", icon: MessageSquare },
     ...(!lpMode ? [{ key: "edge", label: "Edge", icon: Shield }] : []),
   ];
 
@@ -965,6 +1129,13 @@ export function DealSidebar({
           <DiligenceTab
             checklist={documentChecklist}
             onUpload={onDocumentUpload}
+          />
+        )}
+        {expandedSection === "activity" && (
+          <ActivityTab
+            activities={activities}
+            onActivityClick={onActivityClick}
+            onAddActivity={onAddActivity}
           />
         )}
         {expandedSection === "edge" && !lpMode && (

@@ -302,7 +302,7 @@ export default function DealDetailPage() {
   const [showAddTask, setShowAddTask] = useState(false);
   const [showAddTarget, setShowAddTarget] = useState(false);
   const [selectedTarget, setSelectedTarget] = useState<DealTarget | null>(null);
-  const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "activity" | "targets">("targets");
+  const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "targets">("targets");
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [sidebarSection, setSidebarSection] = useState<string | undefined>(undefined);
 
@@ -639,7 +639,6 @@ export default function DealDetailPage() {
               { key: "targets", label: "Outreach Targets", count: deal.targets.length },
               { key: "interests", label: "Interests", count: deal.interests.length },
               { key: "blocks", label: "Blocks", count: deal.blocks.length },
-              { key: "activity", label: "Activity", count: deal.activities.length },
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -690,26 +689,6 @@ export default function DealDetailPage() {
             />
           )}
 
-          {activeTab === "activity" && (
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base">Activity Feed</CardTitle>
-                <button
-                  onClick={() => setShowAddActivity(true)}
-                  className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
-                >
-                  <span className="text-lg leading-none">+</span>
-                  Log Activity
-                </button>
-              </CardHeader>
-              <CardContent>
-                <ActivityFeed
-                  activities={deal.activities}
-                  onActivityClick={(activity) => setSelectedActivity(activity)}
-                />
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Right Column - Sidebar */}
@@ -722,6 +701,7 @@ export default function DealDetailPage() {
                 targets={deal.targets}
                 documentChecklist={deal.documentChecklist}
                 advantages={deal.advantages}
+                activities={deal.activities}
                 riskFlags={deal.riskFlags}
                 lpMode={lpMode}
                 currentUserId={currentUserId}
@@ -738,6 +718,8 @@ export default function DealDetailPage() {
                 onAddAdvantage={() => {
                   // Could open add advantage modal
                 }}
+                onActivityClick={(activity) => setSelectedActivity(activity)}
+                onAddActivity={() => setShowAddActivity(true)}
               />
             </CardContent>
           </Card>
