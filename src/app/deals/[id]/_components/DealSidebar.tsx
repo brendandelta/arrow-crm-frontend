@@ -70,6 +70,16 @@ interface DocumentItem {
   } | null;
 }
 
+export interface EdgePerson {
+  id: number;
+  firstName: string;
+  lastName: string;
+  title?: string | null;
+  organization?: string | null;
+  role?: string | null;
+  context?: string | null;
+}
+
 export interface Edge {
   id: number;
   title: string;
@@ -79,6 +89,7 @@ export interface Edge {
   notes?: string | null;
   relatedPersonId?: number | null;
   relatedOrgId?: number | null;
+  people?: EdgePerson[];
   createdBy?: {
     id: number;
     firstName: string;
@@ -863,6 +874,26 @@ function EdgesTab({ edges, onAddEdge, onEdgeClick, onActOnEdge }: EdgesTabProps)
                   <TimelinessDots value={edge.timeliness} />
                 </div>
               </div>
+
+              {/* Linked People */}
+              {edge.people && edge.people.length > 0 && (
+                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                  <Users className="h-3 w-3 text-slate-400" />
+                  {edge.people.map((person, idx) => (
+                    <span key={person.id} className="inline-flex items-center gap-1">
+                      <span className="text-xs text-slate-600">
+                        {person.firstName} {person.lastName}
+                        {person.role && (
+                          <span className="text-slate-400 ml-0.5">({person.role})</span>
+                        )}
+                      </span>
+                      {idx < edge.people!.length - 1 && (
+                        <span className="text-slate-300">·</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               {/* Notes Preview */}
               {edge.notes && (

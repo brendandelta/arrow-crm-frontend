@@ -8,6 +8,8 @@ import { OrganizationSelector } from "@/components/OrganizationSelector";
 import { PersonSelector } from "@/components/PersonSelector";
 import { RelationshipTypeSelector } from "@/components/RelationshipTypeSelector";
 import { EventModal } from "@/components/EventModal";
+import { SourceSelector } from "@/components/SourceSelector";
+import { SourceBadge } from "@/components/SourceBadge";
 import {
   LinkedInIcon,
   TwitterIcon,
@@ -39,7 +41,11 @@ import {
   DollarSign,
   Camera,
   Trash2,
-  Star
+  Star,
+  Shield,
+  Lightbulb,
+  Layers,
+  Clock
 } from "lucide-react";
 
 // Types for form emails and phones with extended properties
@@ -132,6 +138,33 @@ interface PersonRelationship {
   notes: string | null;
 }
 
+interface PersonEdge {
+  id: number;
+  title: string;
+  edgeType: "information" | "relationship" | "structural" | "timing";
+  confidence: number;
+  confidenceLabel: string;
+  timeliness: number;
+  timelinessLabel: string;
+  notes: string | null;
+  score: number;
+  role: string | null;
+  context: string | null;
+  deal: { id: number; name: string } | null;
+  relatedPerson: { id: number; firstName: string; lastName: string } | null;
+  relatedOrg: { id: number; name: string } | null;
+  otherPeople: Array<{
+    id: number;
+    firstName: string;
+    lastName: string;
+    title: string | null;
+    organization: string | null;
+    role: string | null;
+  }>;
+  createdBy: { id: number; firstName: string; lastName: string } | null;
+  createdAt: string;
+}
+
 interface RelationshipType {
   id: number;
   name: string;
@@ -218,6 +251,7 @@ interface Person {
   relatedBlocks: RelatedBlock[];
   recentActivities: RecentActivity[];
   relationships: PersonRelationship[];
+  edges: PersonEdge[];
   createdAt: string;
   updatedAt: string;
 }
@@ -2068,6 +2102,96 @@ export default function PersonDetailPage() {
         </div>
       )}
 
+      {/* Edges Card - View Mode */}
+      {!editing && person.edges && person.edges.length > 0 && (
+        <div className="bg-white border border-slate-200 rounded-xl">
+          <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-slate-500" />
+              <h2 className="text-sm font-semibold text-slate-900">Edges</h2>
+            </div>
+            <span className="text-xs text-slate-400">{person.edges.length} edge{person.edges.length !== 1 ? "s" : ""}</span>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {person.edges.map((edge) => {
+              const edgeTypeConfig: Record<string, { color: string; icon: typeof Lightbulb }> = {
+                information: { color: "text-blue-600 bg-blue-50", icon: Lightbulb },
+                relationship: { color: "text-purple-600 bg-purple-50", icon: Users },
+                structural: { color: "text-green-600 bg-green-50", icon: Layers },
+                timing: { color: "text-amber-600 bg-amber-50", icon: Clock },
+              };
+              const typeConfig = edgeTypeConfig[edge.edgeType] || edgeTypeConfig.information;
+              const TypeIcon = typeConfig.icon;
+
+              return (
+                <Link
+                  key={edge.id}
+                  href={edge.deal ? `/deals/${edge.deal.id}` : "#"}
+                  className="block px-4 py-3 hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0 ${typeConfig.color.split(" ")[1]}`}>
+                      <TypeIcon className={`h-4 w-4 ${typeConfig.color.split(" ")[0]}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-medium text-slate-900">{edge.title}</span>
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${typeConfig.color}`}>
+                          {edge.edgeType.charAt(0).toUpperCase() + edge.edgeType.slice(1)}
+                        </span>
+                        {edge.role && (
+                          <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                            {edge.role}
+                          </span>
+                        )}
+                      </div>
+                      {edge.deal && (
+                        <div className="text-xs text-slate-500 mb-1">
+                          Deal: {edge.deal.name}
+                        </div>
+                      )}
+                      {/* Scores */}
+                      <div className="flex items-center gap-3 mb-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-slate-400">Confidence</span>
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <div key={i} className={`w-1.5 h-1.5 rounded-full ${i <= edge.confidence ? "bg-blue-500" : "bg-slate-200"}`} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-slate-400">Fresh</span>
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <div key={i} className={`w-1.5 h-1.5 rounded-full ${i <= edge.timeliness ? "bg-green-500" : "bg-slate-200"}`} />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Other People */}
+                      {edge.otherPeople && edge.otherPeople.length > 0 && (
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                          <Users className="h-3 w-3" />
+                          <span>Also linked:</span>
+                          {edge.otherPeople.map((p, idx) => (
+                            <span key={p.id}>
+                              {p.firstName} {p.lastName}
+                              {p.role && ` (${p.role})`}
+                              {idx < edge.otherPeople.length - 1 && ", "}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Tags & Notes Row */}
       <div className="grid grid-cols-2 gap-4">
         {/* Tags Card */}
@@ -2149,13 +2273,9 @@ export default function PersonDetailPage() {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs text-slate-500 mb-1 block">Source</label>
-                  <input
-                    id="source-input"
-                    type="text"
-                    value={formData.source}
-                    onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                    placeholder="Referral, Conference..."
-                    className="w-full px-2 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  <SourceSelector
+                    value={formData.source || null}
+                    onChange={(source) => setFormData({ ...formData, source: source || "" })}
                   />
                 </div>
                 <div>
@@ -2184,7 +2304,9 @@ export default function PersonDetailPage() {
                 {person.source && (
                   <div>
                     <div className="text-xs text-slate-500 mb-0.5">Source</div>
-                    <div className="text-sm text-slate-900">{person.source}</div>
+                    <div className="text-sm text-slate-900">
+                      <SourceBadge source={person.source} />
+                    </div>
                   </div>
                 )}
                 {person.sourceDetail && (

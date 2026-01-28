@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   X,
   Save,
@@ -12,7 +12,20 @@ import {
   Clock,
   Layers,
   FileText,
+  Search,
+  Plus,
+  ChevronDown,
 } from "lucide-react";
+
+interface EdgePerson {
+  id: number;
+  firstName: string;
+  lastName: string;
+  title?: string | null;
+  organization?: string | null;
+  role?: string | null;
+  context?: string | null;
+}
 
 interface Edge {
   id: number;
@@ -23,9 +36,26 @@ interface Edge {
   notes?: string | null;
   relatedPersonId?: number | null;
   relatedOrgId?: number | null;
+  people?: EdgePerson[];
   createdBy?: { id: number; firstName: string; lastName: string } | null;
   createdAt: string;
 }
+
+interface Person {
+  id: number;
+  firstName: string;
+  lastName: string;
+  title?: string | null;
+  org?: string | null;
+}
+
+const PERSON_ROLES = [
+  { value: "connector", label: "Connector" },
+  { value: "target", label: "Target" },
+  { value: "source", label: "Source" },
+  { value: "insider", label: "Insider" },
+  { value: "stakeholder", label: "Stakeholder" },
+] as const;
 
 interface EdgeSlideOutProps {
   edge: Edge | null;
@@ -96,6 +126,22 @@ export function EdgeSlideOut({
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // People selector state
+  const [linkedPeople, setLinkedPeople] = useState<Array<{
+    personId: number;
+    firstName: string;
+    lastName: string;
+    title?: string | null;
+    organization?: string | null;
+    role: string | null;
+    context: string | null;
+  }>>([]);
+  const [personSearch, setPersonSearch] = useState("");
+  const [personResults, setPersonResults] = useState<Person[]>([]);
+  const [searchingPeople, setSearchingPeople] = useState(false);
+  const [showPersonSearch, setShowPersonSearch] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
   const [formData, setFormData] = useState({
     title: edge?.title || "",
     edgeType: edge?.edgeType || "information" as Edge["edgeType"],
@@ -112,8 +158,93 @@ export function EdgeSlideOut({
       timeliness: edge?.timeliness || 3,
       notes: edge?.notes || "",
     });
+    // Initialize linked people from edge
+    if (edge?.people) {
+      setLinkedPeople(
+        edge.people.map((p) => ({
+          personId: p.id,
+          firstName: p.firstName,
+          lastName: p.lastName,
+          title: p.title,
+          organization: p.organization,
+          role: p.role || null,
+          context: p.context || null,
+        }))
+      );
+    } else {
+      setLinkedPeople([]);
+    }
     setShowDeleteConfirm(false);
+    setShowPersonSearch(false);
+    setPersonSearch("");
   }, [edge]);
+
+  // Search people
+  useEffect(() => {
+    const searchPeople = async () => {
+      if (personSearch.length < 2) {
+        setPersonResults([]);
+        return;
+      }
+      setSearchingPeople(true);
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/people?q=${encodeURIComponent(personSearch)}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          // Filter out already linked people
+          const linkedIds = new Set(linkedPeople.map((p) => p.personId));
+          setPersonResults(data.filter((p: Person) => !linkedIds.has(p.id)).slice(0, 8));
+        }
+      } catch (err) {
+        console.error("Failed to search people:", err);
+      }
+      setSearchingPeople(false);
+    };
+
+    const debounce = setTimeout(searchPeople, 300);
+    return () => clearTimeout(debounce);
+  }, [personSearch, linkedPeople]);
+
+  // Close search on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowPersonSearch(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const addPerson = (person: Person) => {
+    setLinkedPeople((prev) => [
+      ...prev,
+      {
+        personId: person.id,
+        firstName: person.firstName,
+        lastName: person.lastName,
+        title: person.title,
+        organization: person.org,
+        role: null,
+        context: null,
+      },
+    ]);
+    setPersonSearch("");
+    setPersonResults([]);
+    setShowPersonSearch(false);
+  };
+
+  const removePerson = (personId: number) => {
+    setLinkedPeople((prev) => prev.filter((p) => p.personId !== personId));
+  };
+
+  const updatePersonRole = (personId: number, role: string | null) => {
+    setLinkedPeople((prev) =>
+      prev.map((p) => (p.personId === personId ? { ...p, role } : p))
+    );
+  };
 
   const handleSave = async () => {
     if (!formData.title.trim()) return;
@@ -126,6 +257,11 @@ export function EdgeSlideOut({
         confidence: formData.confidence,
         timeliness: formData.timeliness,
         notes: formData.notes || null,
+        people: linkedPeople.map((p) => ({
+          person_id: p.personId,
+          role: p.role,
+          context: p.context,
+        })),
       };
 
       const url = isNew
@@ -270,6 +406,116 @@ export function EdgeSlideOut({
                 className={textareaClass}
                 placeholder="Details, source, how to leverage this edge..."
               />
+            </div>
+
+            {/* Linked People */}
+            <div className="py-2">
+              <div className="flex items-center gap-2 mb-2 px-3">
+                <Users className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Linked People</span>
+              </div>
+
+              {/* Person Search */}
+              <div ref={searchRef} className="relative px-3 mb-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={personSearch}
+                    onChange={(e) => {
+                      setPersonSearch(e.target.value);
+                      setShowPersonSearch(true);
+                    }}
+                    onFocus={() => setShowPersonSearch(true)}
+                    placeholder="Search people to link..."
+                    className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50"
+                  />
+                  {searchingPeople && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 animate-spin" />
+                  )}
+                </div>
+
+                {/* Search Results */}
+                {showPersonSearch && personResults.length > 0 && (
+                  <div className="absolute left-3 right-3 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+                    {personResults.map((person) => (
+                      <button
+                        key={person.id}
+                        onClick={() => addPerson(person)}
+                        className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 transition-colors"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">
+                          {person.firstName[0]}{person.lastName[0]}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-900 truncate">
+                            {person.firstName} {person.lastName}
+                          </p>
+                          {(person.title || person.org) && (
+                            <p className="text-xs text-slate-500 truncate">
+                              {person.title}{person.title && person.org && " at "}{person.org}
+                            </p>
+                          )}
+                        </div>
+                        <Plus className="h-4 w-4 text-slate-400" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Linked People List */}
+              {linkedPeople.length > 0 && (
+                <div className="space-y-2 px-3">
+                  {linkedPeople.map((person) => (
+                    <div
+                      key={person.personId}
+                      className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg border border-slate-200"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium text-slate-600 shrink-0">
+                        {person.firstName[0]}{person.lastName[0]}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 truncate">
+                          {person.firstName} {person.lastName}
+                        </p>
+                        {(person.title || person.organization) && (
+                          <p className="text-xs text-slate-500 truncate">
+                            {person.title}{person.title && person.organization && " at "}{person.organization}
+                          </p>
+                        )}
+                      </div>
+                      {/* Role Selector */}
+                      <div className="relative">
+                        <select
+                          value={person.role || ""}
+                          onChange={(e) => updatePersonRole(person.personId, e.target.value || null)}
+                          className="appearance-none text-xs px-2 py-1 pr-6 bg-white border border-slate-200 rounded text-slate-700 cursor-pointer focus:outline-none focus:ring-1 focus:ring-slate-400"
+                        >
+                          <option value="">Role...</option>
+                          {PERSON_ROLES.map((r) => (
+                            <option key={r.value} value={r.value}>{r.label}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
+                      </div>
+                      {/* Remove */}
+                      <button
+                        onClick={() => removePerson(person.personId)}
+                        className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {linkedPeople.length === 0 && (
+                <p className="text-xs text-slate-400 px-3">
+                  Link people to track who knows what in this deal
+                </p>
+              )}
             </div>
 
             {/* Score Preview */}
