@@ -1,32 +1,46 @@
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Plus } from "lucide-react";
+import { Plus, ChevronRight, ChevronDown } from "lucide-react";
 
 interface CategoryNodeData {
   label: string;
   count: number;
   dealId: number;
   categoryType: string;
+  expanded: boolean;
   onAdd: (dealId: number, type: string) => void;
+  onToggle: (dealId: number, categoryType: string) => void;
   [key: string]: unknown;
 }
 
 function CategoryNodeComponent({ data }: NodeProps) {
-  const { label, count, dealId, categoryType, onAdd } = data as CategoryNodeData;
+  const { label, count, dealId, categoryType, expanded, onAdd, onToggle } =
+    data as CategoryNodeData;
 
   return (
     <div
-      className="relative px-3 py-1.5 rounded-lg select-none flex items-center gap-2"
+      className="relative px-3 py-1.5 rounded-lg select-none flex items-center gap-1.5 cursor-pointer transition-colors hover:bg-slate-100"
       style={{
         background: "#f1f5f9",
         border: "1px solid #e2e8f0",
       }}
+      onClick={() => onToggle(dealId, categoryType)}
     >
       <Handle
         type="target"
         position={Position.Left}
         className="!w-1.5 !h-1.5 !bg-slate-300 !border-0"
       />
+
+      {/* Expand/collapse arrow */}
+      {count > 0 ? (
+        expanded ? (
+          <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
+        ) : (
+          <ChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
+        )
+      ) : null}
+
       <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
         {label}
       </span>
@@ -43,7 +57,8 @@ function CategoryNodeComponent({ data }: NodeProps) {
       >
         <Plus className="w-3 h-3" />
       </button>
-      {count > 0 && (
+
+      {(count > 0 && expanded) && (
         <Handle
           type="source"
           position={Position.Right}

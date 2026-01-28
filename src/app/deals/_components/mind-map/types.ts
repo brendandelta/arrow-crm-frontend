@@ -62,3 +62,21 @@ export interface MindMapGroup {
 export interface MindMapResponse {
   groups: MindMapGroup[];
 }
+
+export interface MindMapFilters {
+  bucket: "all" | "arrow" | "liberator";
+  stages: Set<string>;
+  owner: "all" | string;
+  risk: boolean;
+  search: string;
+  filterMode: "dim" | "hide";
+}
+
+export const DEFAULT_MIND_MAP_FILTERS: MindMapFilters = {
+  bucket: "all",
+  stages: new Set<string>(),
+  owner: "all",
+  risk: false,
+  search: "",
+  filterMode: "dim",
+};

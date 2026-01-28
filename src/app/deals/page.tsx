@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, Fragment } from "react";
+import { useEffect, useState, useCallback, useMemo, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { CreateDealModal } from "./_components/CreateDealModal";
 import {
@@ -22,10 +22,11 @@ import { CloseCountdown } from "./_components/CloseCountdown";
 import { TaskSummary } from "./_components/TaskSummary";
 import { OutreachSummary } from "./_components/OutreachSummary";
 import { formatCurrency } from "./_components/utils";
-import { BoardView } from "./_components/BoardView";
-import { PipelineView } from "./_components/PipelineView";
 import { MindMapView } from "./_components/MindMapView";
+import { FlowView } from "./_components/flow/FlowView";
+import { useAuth } from "@/contexts/AuthContext";
 import { DemandProgressBar } from "@/components/deals/DemandProgressBar";
+import { toast } from "sonner";
 import { RiskFlagIndicator } from "@/components/deals/RiskFlagIndicator";
 import { useTableFiltering } from "./[id]/_components/table-filtering/useTableFiltering";
 import { FilterableHeader } from "./[id]/_components/table-filtering/FilterableHeader";
@@ -162,7 +163,7 @@ interface Stats {
   byStatus: Record<string, number>;
 }
 
-type ViewMode = "table" | "board" | "pipeline" | "mindmap";
+type ViewMode = "table" | "flow" | "mindmap";
 
 // --- Close Date buckets ---
 function closeBucket(d: Deal): string {
@@ -317,11 +318,19 @@ const TOTAL_COLS = 12; // expand + 11 data columns
 
 export default function DealsPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<ViewMode>("table");
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window === "undefined") return "table";
+    const stored = localStorage.getItem("arrow_view_deals");
+    // Migrate old board/pipeline to flow
+    if (stored === "board" || stored === "pipeline") return "flow";
+    const valid: ViewMode[] = ["table", "flow", "mindmap"];
+    return valid.includes(stored as ViewMode) ? (stored as ViewMode) : "table";
+  });
   const [expandedDealId, setExpandedDealId] = useState<number | null>(null);
   const [expandedData, setExpandedData] = useState<Record<number, ExpandableRowData>>({});
   const [loadingExpanded, setLoadingExpanded] = useState<number | null>(null);
@@ -382,6 +391,11 @@ export default function DealsPage() {
       });
   }, []);
 
+  // Persist view mode to localStorage
+  useEffect(() => {
+    localStorage.setItem("arrow_view_deals", viewMode);
+  }, [viewMode]);
+
   // Load expanded row data
   const loadExpandedData = async (dealId: number) => {
     if (expandedData[dealId]) return;
@@ -438,6 +452,50 @@ export default function DealsPage() {
     }
     setLoadingExpanded(null);
   };
+
+  const handleStatusChange = useCallback(async (dealId: number, newStatus: string) => {
+    const oldDeals = deals;
+    // Optimistic update
+    setDeals((prev) =>
+      prev.map((d) => (d.id === dealId ? { ...d, status: newStatus } : d))
+    );
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/${dealId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+      if (!res.ok) throw new Error("API error");
+    } catch {
+      // Revert on failure
+      setDeals(oldDeals);
+      toast.error("Failed to update deal status");
+    }
+  }, [deals]);
+
+  const handlePriorityChange = useCallback(async (dealId: number, priority: number) => {
+    const oldDeals = deals;
+    setDeals((prev) =>
+      prev.map((d) => (d.id === dealId ? { ...d, priority } : d))
+    );
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/${dealId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ priority }),
+        }
+      );
+      if (!res.ok) throw new Error("API error");
+    } catch {
+      setDeals(oldDeals);
+      toast.error("Failed to update deal priority");
+    }
+  }, [deals]);
 
   const toggleExpanded = (dealId: number) => {
     if (expandedDealId === dealId) {
@@ -505,8 +563,8 @@ export default function DealsPage() {
         </div>
       </div>
 
-      {/* KPI Strip */}
-      {stats && (
+      {/* KPI Strip — table view only */}
+      {viewMode === "table" && stats && (
         <KPIStrip
           stats={{
             liveCount: stats.liveCount,
@@ -521,37 +579,40 @@ export default function DealsPage() {
         />
       )}
 
-      {/* Search bar */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search deals, companies..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-          />
+      {/* Search bar — table view only */}
+      {viewMode === "table" && (
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search deals, companies..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Content View */}
-      {loading && viewMode !== "mindmap" ? (
+      {viewMode === "mindmap" ? (
+        <MindMapView />
+      ) : viewMode === "flow" ? (
+        <FlowView
+          deals={deals}
+          stats={stats}
+          loading={loading}
+          onStatusChange={handleStatusChange}
+          onPriorityChange={handlePriorityChange}
+          onCreateDeal={() => setShowCreateModal(true)}
+          owners={allOwners}
+          currentUserId={user?.backendUserId}
+        />
+      ) : loading ? (
         <div className="flex items-center justify-center h-64 text-muted-foreground">
           Loading...
         </div>
-      ) : viewMode === "mindmap" ? (
-        <MindMapView />
-      ) : viewMode === "board" ? (
-        <BoardView
-          deals={filteredDeals}
-          onDealClick={(dealId) => router.push(`/deals/${dealId}`)}
-        />
-      ) : viewMode === "pipeline" ? (
-        <PipelineView
-          deals={filteredDeals}
-          onDealClick={(dealId) => router.push(`/deals/${dealId}`)}
-        />
       ) : (
         /* Table View */
         <div className="rounded-md border overflow-hidden">

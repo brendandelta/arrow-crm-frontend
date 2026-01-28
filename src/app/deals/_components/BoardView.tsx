@@ -1,10 +1,22 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, Calendar, Users } from "lucide-react";
 import { PriorityBadge } from "./PriorityBadge";
 import { formatCurrency } from "./utils";
 import { DemandProgressBar } from "@/components/deals/DemandProgressBar";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDraggable,
+  useDroppable,
+  type DragStartEvent,
+  type DragEndEvent,
+} from "@dnd-kit/core";
 
 interface Owner {
   id: number;
@@ -50,6 +62,7 @@ interface Deal {
 interface BoardViewProps {
   deals: Deal[];
   onDealClick: (dealId: number) => void;
+  onStatusChange?: (dealId: number, newStatus: string) => void;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
@@ -154,15 +167,54 @@ function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }) {
   );
 }
 
-function BoardColumn({
+function DraggableDealCard({
+  deal,
+  onDealClick,
+  dragOccurredRef,
+}: {
+  deal: Deal;
+  onDealClick: (dealId: number) => void;
+  dragOccurredRef: React.RefObject<boolean>;
+}) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `deal-${deal.id}`,
+    data: { deal },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      style={{ opacity: isDragging ? 0.4 : 1 }}
+    >
+      <DealCard
+        deal={deal}
+        onClick={() => {
+          if (!dragOccurredRef.current) {
+            onDealClick(deal.id);
+          }
+        }}
+      />
+    </div>
+  );
+}
+
+function DroppableBoardColumn({
   status,
   deals,
   onDealClick,
+  dragOccurredRef,
 }: {
   status: string;
   deals: Deal[];
   onDealClick: (dealId: number) => void;
+  dragOccurredRef: React.RefObject<boolean>;
 }) {
+  const { isOver, setNodeRef } = useDroppable({
+    id: `column-${status}`,
+  });
+
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.sourcing;
   const totalValue = deals.reduce((sum, d) => sum + (d.blocksValue || 0), 0);
 
@@ -184,17 +236,23 @@ function BoardColumn({
       </div>
 
       {/* Cards Container */}
-      <div className="flex-1 bg-slate-50 rounded-b-lg p-2 space-y-2 overflow-y-auto max-h-[calc(100vh-300px)]">
+      <div
+        ref={setNodeRef}
+        className={`flex-1 rounded-b-lg p-2 space-y-2 overflow-y-auto max-h-[calc(100vh-300px)] transition-all ${
+          isOver ? "bg-slate-100 ring-2 ring-inset ring-slate-300" : "bg-slate-50"
+        }`}
+      >
         {deals.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground text-sm">
             No deals
           </div>
         ) : (
           deals.map((deal) => (
-            <DealCard
+            <DraggableDealCard
               key={deal.id}
               deal={deal}
-              onClick={() => onDealClick(deal.id)}
+              onDealClick={onDealClick}
+              dragOccurredRef={dragOccurredRef}
             />
           ))
         )}
@@ -203,23 +261,79 @@ function BoardColumn({
   );
 }
 
-export function BoardView({ deals, onDealClick }: BoardViewProps) {
+export function BoardView({ deals, onDealClick, onStatusChange }: BoardViewProps) {
+  const [activeDeal, setActiveDeal] = useState<Deal | null>(null);
+  const dragOccurredRef = useRef(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    })
+  );
+
   // Group deals by status
   const dealsByStatus = STATUS_ORDER.reduce((acc, status) => {
     acc[status] = deals.filter((d) => d.status === status);
     return acc;
   }, {} as Record<string, Deal[]>);
 
+  function handleDragStart(event: DragStartEvent) {
+    const deal = event.active.data.current?.deal as Deal | undefined;
+    if (deal) {
+      setActiveDeal(deal);
+      dragOccurredRef.current = false;
+    }
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    setActiveDeal(null);
+
+    if (!over) return;
+
+    const dealId = Number(String(active.id).replace("deal-", ""));
+    const newStatus = String(over.id).replace("column-", "");
+    const deal = active.data.current?.deal as Deal | undefined;
+
+    if (deal && newStatus !== deal.status) {
+      dragOccurredRef.current = true;
+      onStatusChange?.(dealId, newStatus);
+    } else {
+      // Dropped in same column — mark as drag occurred to suppress click
+      dragOccurredRef.current = true;
+    }
+
+    // Reset drag flag after a tick so the click handler can read it
+    requestAnimationFrame(() => {
+      dragOccurredRef.current = false;
+    });
+  }
+
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
-      {STATUS_ORDER.map((status) => (
-        <BoardColumn
-          key={status}
-          status={status}
-          deals={dealsByStatus[status] || []}
-          onDealClick={onDealClick}
-        />
-      ))}
-    </div>
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="flex gap-4 overflow-x-auto pb-4">
+        {STATUS_ORDER.map((status) => (
+          <DroppableBoardColumn
+            key={status}
+            status={status}
+            deals={dealsByStatus[status] || []}
+            onDealClick={onDealClick}
+            dragOccurredRef={dragOccurredRef}
+          />
+        ))}
+      </div>
+
+      <DragOverlay>
+        {activeDeal ? (
+          <div className="rotate-2 shadow-xl">
+            <DealCard deal={activeDeal} onClick={() => {}} />
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }

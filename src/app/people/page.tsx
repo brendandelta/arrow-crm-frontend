@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -23,7 +24,6 @@ import {
 } from "lucide-react";
 import { ContactSlideOut } from "./_components/ContactSlideOut";
 import { LinkedInIcon, TwitterIcon, InstagramIcon } from "@/components/icons/SocialIcons";
-import { WarmthBadge } from "@/components/WarmthBadge";
 import { OrgKindBadge } from "@/components/OrgKindBadge";
 import { SourceBadge } from "@/components/SourceBadge";
 import { FilterableColumnHeader } from "./_components/FilterableColumnHeader";
@@ -86,6 +86,64 @@ const WARMTH_OPTIONS = [
   { value: "2", label: "Hot" },
   { value: "3", label: "Champion" },
 ];
+
+// Warmth configuration for inline editing
+const WARMTH_CONFIG = [
+  { label: "Cold", color: "bg-slate-400", hoverBg: "hover:bg-slate-100" },
+  { label: "Warm", color: "bg-yellow-500", hoverBg: "hover:bg-yellow-50" },
+  { label: "Hot", color: "bg-orange-500", hoverBg: "hover:bg-orange-50" },
+  { label: "Champion", color: "bg-red-500", hoverBg: "hover:bg-red-50" },
+];
+
+// Inline warmth selector for quick editing in the table
+function InlineWarmthSelector({
+  warmth,
+  personId,
+  onUpdate,
+}: {
+  warmth: number;
+  personId: number;
+  onUpdate: (personId: number, newWarmth: number) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const config = WARMTH_CONFIG[warmth] || WARMTH_CONFIG[0];
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1" onMouseLeave={() => setEditing(false)}>
+        {WARMTH_CONFIG.map((w, i) => (
+          <button
+            key={i}
+            onClick={(e) => {
+              e.stopPropagation();
+              onUpdate(personId, i);
+              setEditing(false);
+            }}
+            className={`px-2 py-0.5 text-[11px] font-medium rounded-full border transition-all ${
+              i === warmth
+                ? `${w.color} text-white border-transparent`
+                : `bg-white border-slate-200 text-slate-600 ${w.hoverBg}`
+            }`}
+          >
+            {w.label}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setEditing(true);
+      }}
+      className={`px-2 py-0.5 text-[11px] font-medium rounded-full text-white ${config.color} hover:opacity-90 transition-opacity`}
+    >
+      {config.label}
+    </button>
+  );
+}
 
 const ORG_KIND_OPTIONS = [
   { value: "all", label: "All Types" },
@@ -703,6 +761,32 @@ export default function PeoplePage() {
     );
   };
 
+  // Inline warmth update with optimistic UI
+  const updatePersonWarmth = useCallback(async (personId: number, newWarmth: number) => {
+    const oldPerson = people.find(p => p.id === personId);
+    if (!oldPerson) return;
+
+    // Optimistic update
+    setPeople(prev => prev.map(p => p.id === personId ? { ...p, warmth: newWarmth } : p));
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/people/${personId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ warmth: newWarmth }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to update");
+      toast.success(`Updated to ${WARMTH_CONFIG[newWarmth].label}`);
+    } catch {
+      // Rollback on error
+      setPeople(prev => prev.map(p => p.id === personId ? oldPerson : p));
+      toast.error("Failed to update warmth");
+    }
+  }, [people]);
+
   const visibleColumnCount = visibleColumns.size + 1; // +1 for checkbox column
 
   return (
@@ -1297,8 +1381,12 @@ export default function PeoplePage() {
                     </TableCell>
                   )}
                   {visibleColumns.has("warmth") && (
-                    <TableCell>
-                      <WarmthBadge warmth={person.warmth} />
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <InlineWarmthSelector
+                        warmth={person.warmth}
+                        personId={person.id}
+                        onUpdate={updatePersonWarmth}
+                      />
                     </TableCell>
                   )}
                   {visibleColumns.has("tags") && (

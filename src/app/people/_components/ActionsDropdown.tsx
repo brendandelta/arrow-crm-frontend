@@ -9,8 +9,10 @@ import {
   Trash2,
   FileSpreadsheet,
   Phone,
+  Waypoints,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { getAllSources, SOURCE_CATEGORIES, getCategoryConfig } from "@/lib/sources";
 
 export interface ActionsPerson {
   id: number;
@@ -154,6 +156,38 @@ export function ActionsDropdown({ selectedPeople, onClearSelection, onBulkUpdate
     setActiveSubmenu(null);
   };
 
+  const handleBulkSourceChange = async (source: string) => {
+    try {
+      const ids = selectedPeople.map(p => p.id);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/people/bulk_update`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, updates: { source } }),
+      });
+
+      if (response.ok) {
+        onBulkUpdate({ source });
+        addToast({
+          title: "Source updated",
+          description: `Set source to "${source}" for ${selectedPeople.length} contacts`,
+          type: "success",
+          duration: 3000,
+        });
+      } else {
+        throw new Error("Failed to update");
+      }
+    } catch (error) {
+      addToast({
+        title: "Update failed",
+        description: "Could not update source. Please try again.",
+        type: "error",
+        duration: 5000,
+      });
+    }
+    setIsOpen(false);
+    setActiveSubmenu(null);
+  };
+
   const handleBulkDelete = async () => {
     const confirmed = window.confirm(
       `Are you sure you want to delete ${selectedPeople.length} contact${selectedPeople.length > 1 ? "s" : ""}? This action cannot be undone.`
@@ -243,6 +277,12 @@ export function ActionsDropdown({ selectedPeople, onClearSelection, onBulkUpdate
           label: "Change Warmth",
           hasSubmenu: true,
           submenuId: "warmth",
+        },
+        {
+          icon: Waypoints,
+          label: "Set Source",
+          hasSubmenu: true,
+          submenuId: "source",
         },
       ],
     },
@@ -359,6 +399,42 @@ export function ActionsDropdown({ selectedPeople, onClearSelection, onBulkUpdate
                               {option.label}
                             </button>
                           ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Source Submenu */}
+                    {item.submenuId === "source" && activeSubmenu === "source" && (
+                      <div className="px-3 pb-2 max-h-[200px] overflow-y-auto">
+                        <div className="space-y-1">
+                          {SOURCE_CATEGORIES.map((cat) => {
+                            const sources = getAllSources().filter(
+                              (s) => s.category === cat.value
+                            );
+                            if (sources.length === 0) return null;
+                            return (
+                              <div key={cat.value}>
+                                <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider py-1">
+                                  {cat.label}
+                                </div>
+                                {sources.map((src) => {
+                                  const config = getCategoryConfig(src.category);
+                                  return (
+                                    <button
+                                      key={src.name}
+                                      onClick={() => handleBulkSourceChange(src.name)}
+                                      className="w-full flex items-center gap-2 px-2 py-1 text-xs text-slate-600 rounded hover:bg-slate-50 transition-colors text-left"
+                                    >
+                                      <span
+                                        className={`h-1.5 w-1.5 rounded-full shrink-0 ${config.color}`}
+                                      />
+                                      {src.name}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}

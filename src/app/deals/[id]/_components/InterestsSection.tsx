@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, Fragment } from "react";
+import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -10,8 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, AlertCircle, Check, CalendarClock, LayoutGrid, LayoutList } from "lucide-react";
+import { Plus, AlertCircle, LayoutGrid, LayoutList } from "lucide-react";
 import { FunnelVisualization } from "./FunnelVisualization";
+import { FollowUpCell } from "./FollowUpCell";
 import { useTableFiltering } from "./table-filtering/useTableFiltering";
 import { FilterableHeader } from "./table-filtering/FilterableHeader";
 import { ActiveFiltersBar } from "./table-filtering/ActiveFiltersBar";
@@ -207,7 +208,6 @@ export function InterestsSection({
   onInterestsUpdated,
 }: InterestsSectionProps) {
   const [viewMode, setViewMode] = useState<"table" | "card">("card");
-  const [addingFollowUpFor, setAddingFollowUpFor] = useState<number | null>(null);
 
   const {
     filteredData,
@@ -341,8 +341,8 @@ export function InterestsSection({
                 </TableRow>
               ) : (
               filteredData.map((interest) => (
-                <Fragment key={interest.id}>
                 <TableRow
+                  key={interest.id}
                   className={`cursor-pointer hover:bg-slate-50 ${
                     interest.isStale ? "bg-amber-50/50" : ""
                   }`}
@@ -401,41 +401,19 @@ export function InterestsSection({
                       <span className="text-muted-foreground text-sm">Not mapped</span>
                     )}
                   </TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <div className="space-y-1.5">
-                      {interest.nextTask && (
-                        <InterestTaskCheckbox
-                          task={interest.nextTask}
-                          onComplete={() => onInterestsUpdated?.()}
-                        />
-                      )}
-                      <button
-                        onClick={() => setAddingFollowUpFor(addingFollowUpFor === interest.id ? null : interest.id)}
-                        className="flex items-center gap-1 text-[11px] text-indigo-500 hover:text-indigo-700 transition-colors"
-                      >
-                        <Plus className="h-3 w-3" />
-                        Task
-                      </button>
-                    </div>
+                  <TableCell>
+                    <FollowUpCell
+                      task={interest.nextTask}
+                      dealId={dealId}
+                      taskableType="Interest"
+                      taskableId={interest.id}
+                      onUpdated={() => onInterestsUpdated?.()}
+                    />
                   </TableCell>
                   <TableCell>
                     <InterestStatusBadge status={interest.status} />
                   </TableCell>
                 </TableRow>
-                {addingFollowUpFor === interest.id && (
-                  <TableRow>
-                    <TableCell colSpan={7} className="p-0">
-                      <InlineFollowUpForm
-                        dealId={dealId}
-                        taskableType="Interest"
-                        taskableId={interest.id}
-                        onCancel={() => setAddingFollowUpFor(null)}
-                        onSuccess={() => { setAddingFollowUpFor(null); onInterestsUpdated?.(); }}
-                      />
-                    </TableCell>
-                  </TableRow>
-                )}
-                </Fragment>
               ))
               )}
             </TableBody>
@@ -475,20 +453,30 @@ export function InterestsSection({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                {interest.allocatedBlock ? (
-                  <span className="text-xs text-muted-foreground">
-                    Block: {interest.allocatedBlock.seller || "—"} ({formatCurrency(interest.allocatedBlock.priceCents)}/sh)
-                  </span>
-                ) : (
-                  <span className="text-xs text-muted-foreground">Not mapped to block</span>
-                )}
-                {interest.isStale && (
-                  <span className="flex items-center gap-1 text-[11px] text-amber-600">
-                    <AlertCircle className="h-3 w-3" />
-                    Stale
-                  </span>
-                )}
+              <div className="mt-3 pt-3 border-t space-y-2">
+                <div className="flex items-center justify-between">
+                  {interest.allocatedBlock ? (
+                    <span className="text-xs text-muted-foreground">
+                      Block: {interest.allocatedBlock.seller || "—"} ({formatCurrency(interest.allocatedBlock.priceCents)}/sh)
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Not mapped to block</span>
+                  )}
+                  {interest.isStale && (
+                    <span className="flex items-center gap-1 text-[11px] text-amber-600">
+                      <AlertCircle className="h-3 w-3" />
+                      Stale
+                    </span>
+                  )}
+                </div>
+                <FollowUpCell
+                  task={interest.nextTask}
+                  dealId={dealId}
+                  taskableType="Interest"
+                  taskableId={interest.id}
+                  onUpdated={() => onInterestsUpdated?.()}
+                  compact
+                />
               </div>
             </div>
           ))}
@@ -498,169 +486,3 @@ export function InterestsSection({
   );
 }
 
-// ============ InterestTaskCheckbox Component ============
-
-function InterestTaskCheckbox({ task, onComplete }: { task: TaskInfo; onComplete: () => void }) {
-  const [completing, setCompleting] = useState(false);
-  const [completed, setCompleted] = useState(false);
-
-  const handleComplete = async () => {
-    setCompleting(true);
-    setCompleted(true);
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks/${task.id}/complete`, {
-        method: "POST",
-      });
-      onComplete();
-    } catch (err) {
-      console.error("Failed to complete task:", err);
-      setCompleted(false);
-    }
-    setCompleting(false);
-  };
-
-  if (completed) {
-    return (
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-          <Check className="h-2.5 w-2.5 text-white" />
-        </div>
-        <span className="text-[12px] text-slate-400 line-through truncate">{task.subject}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-2 group/task">
-      <button
-        onClick={handleComplete}
-        disabled={completing}
-        className="w-4 h-4 rounded-full border-[1.5px] border-slate-300 group-hover/task:border-emerald-400 flex items-center justify-center shrink-0 transition-all hover:bg-emerald-50 disabled:opacity-50"
-      >
-        <Check className="h-2.5 w-2.5 text-emerald-500 opacity-0 group-hover/task:opacity-60 transition-opacity" />
-      </button>
-      <div className="flex-1 min-w-0">
-        <div className={`text-[13px] truncate ${task.overdue ? "text-rose-600 font-medium" : "text-slate-700"}`}>
-          {task.subject}
-        </div>
-        {task.dueAt && (
-          <div className={`text-[11px] ${task.overdue ? "text-rose-500" : "text-slate-400"}`}>
-            {new Date(task.dueAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ============ Inline Follow-up Form ============
-
-function InlineFollowUpForm({ dealId, taskableType, taskableId, onCancel, onSuccess }: {
-  dealId: number;
-  taskableType: string;
-  taskableId: number;
-  onCancel: () => void;
-  onSuccess: () => void;
-}) {
-  const [subject, setSubject] = useState("");
-  const [dueAt, setDueAt] = useState("");
-  const [priority, setPriority] = useState("normal");
-  const [assignedToId, setAssignedToId] = useState<string>("");
-  const [users, setUsers] = useState<{ id: number; firstName: string; lastName: string }[]>([]);
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users`)
-      .then((res) => res.json())
-      .then((data) => setUsers(data))
-      .catch(() => {});
-  }, []);
-
-  const handleSubmit = async () => {
-    if (!subject.trim()) return;
-    setSubmitting(true);
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/tasks`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          task: {
-            subject: subject.trim(),
-            due_at: dueAt || null,
-            priority: priority === "high" ? 2 : priority === "low" ? 0 : 1,
-            assigned_to_id: assignedToId ? Number(assignedToId) : null,
-            deal_id: dealId,
-            taskable_type: taskableType,
-            taskable_id: taskableId,
-          },
-        }),
-      });
-      onSuccess();
-    } catch (err) {
-      console.error("Failed to create follow-up:", err);
-    }
-    setSubmitting(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && subject.trim()) handleSubmit();
-    if (e.key === "Escape") onCancel();
-  };
-
-  return (
-    <div className="p-3 bg-slate-50/80 border-t border-slate-200 space-y-2">
-      <input
-        type="text"
-        placeholder="What needs to be done?"
-        value={subject}
-        onChange={(e) => setSubject(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="w-full text-[13px] px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 placeholder:text-slate-300"
-        autoFocus
-      />
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-1.5">
-          <CalendarClock className="h-3 w-3 text-slate-300" />
-          <input
-            type="date"
-            value={dueAt}
-            onChange={(e) => setDueAt(e.target.value)}
-            className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
-          />
-        </div>
-        <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value)}
-          className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
-        >
-          <option value="low">Low</option>
-          <option value="normal">Normal</option>
-          <option value="high">High</option>
-        </select>
-        <select
-          value={assignedToId}
-          onChange={(e) => setAssignedToId(e.target.value)}
-          className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
-        >
-          <option value="">Assign to...</option>
-          {users.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.firstName} {u.lastName}
-            </option>
-          ))}
-        </select>
-        <div className="flex-1" />
-        <button
-          onClick={handleSubmit}
-          disabled={!subject.trim() || submitting}
-          className="px-3 py-1.5 text-[12px] font-medium text-white bg-slate-800 rounded-md hover:bg-slate-700 disabled:opacity-40 transition-colors shadow-sm"
-        >
-          {submitting ? "Saving..." : "Add Task"}
-        </button>
-        <button onClick={onCancel} className="px-3 py-1.5 text-[12px] text-slate-400 hover:text-slate-600 transition-colors">
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}

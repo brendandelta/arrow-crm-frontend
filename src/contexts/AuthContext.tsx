@@ -460,7 +460,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Clear all persisted table filter keys
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i);
-      if (key && key.startsWith("arrow_filters_")) {
+      if (key && (key.startsWith("arrow_filters_") || key.startsWith("arrow_view_"))) {
         localStorage.removeItem(key);
       }
     }

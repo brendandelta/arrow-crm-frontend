@@ -12,16 +12,26 @@ interface ChildNodeData {
   nextStep: string;
   nextStepAt: string | null;
   onNavigate: (dealId: number) => void;
-  onEditFollowUp: (itemId: number, itemType: string, currentStep: string, currentDate: string | null) => void;
+  onSelect: (nodeId: string, nodeType: string, data: Record<string, unknown>) => void;
   [key: string]: unknown;
 }
 
-function ChildNodeComponent({ data }: NodeProps) {
-  const { name, nextAction, isOverdue, dealId, itemId, itemType, nextStep, nextStepAt, onNavigate, onEditFollowUp } = data as ChildNodeData;
+function ChildNodeComponent({ id, data }: NodeProps) {
+  const {
+    name,
+    nextAction,
+    isOverdue,
+    dealId,
+    itemType,
+    onNavigate,
+    onSelect,
+  } = data as ChildNodeData;
 
   return (
     <div
-      onClick={() => onEditFollowUp(itemId, itemType, nextStep, nextStepAt)}
+      onClick={() =>
+        onSelect(id, itemType, data as unknown as Record<string, unknown>)
+      }
       className="relative pl-3.5 pr-3 py-2 rounded-lg cursor-pointer select-none transition-all duration-150 hover:-translate-y-0.5"
       style={{
         background: "#f8fafc",
