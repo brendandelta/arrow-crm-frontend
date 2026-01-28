@@ -823,6 +823,475 @@ function TagsEditor({ tags, onSave }: { tags: string[]; onSave: (val: string[]) 
 }
 
 // ====================
+// CONTACT INFO EDITOR
+// ====================
+
+interface ContactInfoEditorProps {
+  emails: Array<{ value: string; label?: string; primary?: boolean }>;
+  phones: Array<{ value: string; label?: string; primary?: boolean; whatsapp?: boolean; telegram?: boolean; text?: boolean; call?: boolean; signal?: boolean }>;
+  onSave: (emails: Array<{ value: string; label: string; primary: boolean }>, phones: Array<{ value: string; label: string; primary: boolean; whatsapp: boolean; telegram: boolean; text: boolean; call: boolean; signal: boolean }>) => Promise<void>;
+  saving: boolean;
+}
+
+function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditorProps) {
+  const [editing, setEditing] = useState(false);
+  const [formEmails, setFormEmails] = useState<Array<{ value: string; label: "work" | "personal"; primary: boolean }>>([]);
+  const [formPhones, setFormPhones] = useState<Array<{ value: string; label: "work" | "personal"; primary: boolean; whatsapp: boolean; telegram: boolean; text: boolean; call: boolean; signal: boolean }>>([]);
+
+  const startEditing = () => {
+    setFormEmails(emails.length > 0
+      ? emails.map(e => ({ value: e.value, label: (e.label === "personal" ? "personal" : "work") as "work" | "personal", primary: e.primary || false }))
+      : [{ value: "", label: "work", primary: true }]
+    );
+    setFormPhones(phones.length > 0
+      ? phones.map(p => ({
+          value: p.value,
+          label: (p.label === "personal" ? "personal" : "work") as "work" | "personal",
+          primary: p.primary || false,
+          whatsapp: p.whatsapp || false,
+          telegram: p.telegram || false,
+          text: p.text !== false,
+          call: p.call !== false,
+          signal: p.signal || false
+        }))
+      : [{ value: "", label: "work", primary: true, whatsapp: false, telegram: false, text: true, call: true, signal: false }]
+    );
+    setEditing(true);
+  };
+
+  const handleSave = async () => {
+    await onSave(
+      formEmails.filter(e => e.value.trim()),
+      formPhones.filter(p => p.value.trim())
+    );
+    setEditing(false);
+  };
+
+  const addEmail = () => setFormEmails([...formEmails, { value: "", label: "work", primary: formEmails.length === 0 }]);
+  const addPhone = () => setFormPhones([...formPhones, { value: "", label: "work", primary: formPhones.length === 0, whatsapp: false, telegram: false, text: true, call: true, signal: false }]);
+  const removeEmail = (idx: number) => setFormEmails(formEmails.filter((_, i) => i !== idx));
+  const removePhone = (idx: number) => setFormPhones(formPhones.filter((_, i) => i !== idx));
+  const setPrimaryEmail = (idx: number) => setFormEmails(formEmails.map((e, i) => ({ ...e, primary: i === idx })));
+  const setPrimaryPhone = (idx: number) => setFormPhones(formPhones.map((p, i) => ({ ...p, primary: i === idx })));
+
+  if (editing) {
+    return (
+      <div className="space-y-4">
+        {/* Emails */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Email Addresses</span>
+            <button onClick={addEmail} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+              <Plus className="h-3 w-3" /> Add
+            </button>
+          </div>
+          <div className="space-y-2">
+            {formEmails.map((email, idx) => (
+              <div key={idx} className="flex items-center gap-2 group">
+                <button
+                  onClick={() => setPrimaryEmail(idx)}
+                  className={`flex-shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                    email.primary ? "border-indigo-500 bg-indigo-500" : "border-slate-300 hover:border-indigo-400"
+                  }`}
+                  title="Set as primary"
+                >
+                  {email.primary && <Check className="h-3 w-3 text-white" />}
+                </button>
+                <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500">
+                  <Mail className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                  <input
+                    type="email"
+                    value={email.value}
+                    onChange={(e) => setFormEmails(formEmails.map((em, i) => i === idx ? { ...em, value: e.target.value } : em))}
+                    placeholder="email@example.com"
+                    className="flex-1 text-sm bg-transparent outline-none"
+                  />
+                  <select
+                    value={email.label}
+                    onChange={(e) => setFormEmails(formEmails.map((em, i) => i === idx ? { ...em, label: e.target.value as "work" | "personal" } : em))}
+                    className="text-xs text-slate-500 bg-transparent outline-none cursor-pointer"
+                  >
+                    <option value="work">Work</option>
+                    <option value="personal">Personal</option>
+                  </select>
+                </div>
+                <button
+                  onClick={() => removeEmail(idx)}
+                  className="p-1.5 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+            {formEmails.length === 0 && (
+              <button onClick={addEmail} className="w-full py-3 text-sm text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
+                + Add email address
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Phones */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Phone Numbers</span>
+            <button onClick={addPhone} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+              <Plus className="h-3 w-3" /> Add
+            </button>
+          </div>
+          <div className="space-y-2">
+            {formPhones.map((phone, idx) => (
+              <div key={idx} className="space-y-2">
+                <div className="flex items-center gap-2 group">
+                  <button
+                    onClick={() => setPrimaryPhone(idx)}
+                    className={`flex-shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      phone.primary ? "border-indigo-500 bg-indigo-500" : "border-slate-300 hover:border-indigo-400"
+                    }`}
+                    title="Set as primary"
+                  >
+                    {phone.primary && <Check className="h-3 w-3 text-white" />}
+                  </button>
+                  <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500">
+                    <Phone className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                    <input
+                      type="tel"
+                      value={phone.value}
+                      onChange={(e) => setFormPhones(formPhones.map((ph, i) => i === idx ? { ...ph, value: e.target.value } : ph))}
+                      placeholder="+1 (555) 123-4567"
+                      className="flex-1 text-sm bg-transparent outline-none"
+                    />
+                    <select
+                      value={phone.label}
+                      onChange={(e) => setFormPhones(formPhones.map((ph, i) => i === idx ? { ...ph, label: e.target.value as "work" | "personal" } : ph))}
+                      className="text-xs text-slate-500 bg-transparent outline-none cursor-pointer"
+                    >
+                      <option value="work">Work</option>
+                      <option value="personal">Personal</option>
+                    </select>
+                  </div>
+                  <button
+                    onClick={() => removePhone(idx)}
+                    className="p-1.5 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+                {/* Messaging toggles */}
+                <div className="ml-7 flex flex-wrap gap-1.5">
+                  {[
+                    { key: "whatsapp", label: "WhatsApp", icon: WhatsAppIcon, color: "text-green-600 bg-green-50 border-green-200" },
+                    { key: "telegram", label: "Telegram", icon: TelegramIcon, color: "text-blue-500 bg-blue-50 border-blue-200" },
+                    { key: "signal", label: "Signal", icon: SignalIcon, color: "text-blue-600 bg-blue-50 border-blue-200" },
+                    { key: "text", label: "SMS", icon: MessageSquare, color: "text-slate-600 bg-slate-50 border-slate-200" },
+                    { key: "call", label: "Call", icon: PhoneCall, color: "text-slate-600 bg-slate-50 border-slate-200" },
+                  ].map(({ key, label, icon: Icon, color }) => (
+                    <button
+                      key={key}
+                      onClick={() => setFormPhones(formPhones.map((ph, i) => i === idx ? { ...ph, [key]: !ph[key as keyof typeof ph] } : ph))}
+                      className={`flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-lg border transition-all ${
+                        phone[key as keyof typeof phone] ? color : "text-slate-400 bg-white border-slate-200 opacity-50"
+                      }`}
+                    >
+                      <Icon className="h-3 w-3" />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {formPhones.length === 0 && (
+              <button onClick={addPhone} className="w-full py-3 text-sm text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
+                + Add phone number
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-2 pt-2">
+          <button onClick={() => setEditing(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-md shadow-indigo-500/25 disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            Save
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // View mode
+  const hasEmails = emails.length > 0;
+  const hasPhones = phones.length > 0;
+
+  return (
+    <div className="space-y-3">
+      {/* Emails */}
+      {hasEmails ? (
+        <div className="space-y-1.5">
+          {emails.map((email, idx) => (
+            <button
+              key={idx}
+              onClick={startEditing}
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-left bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors group"
+            >
+              <div className={`h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 ${email.primary ? "bg-purple-100" : "bg-slate-100"}`}>
+                <Mail className={`h-4 w-4 ${email.primary ? "text-purple-600" : "text-slate-500"}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-slate-900 truncate">{email.value}</div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-slate-500 capitalize">{email.label || "work"}</span>
+                  {email.primary && <span className="text-[10px] text-purple-600 font-medium">• Primary</span>}
+                </div>
+              </div>
+              <Edit3 className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <button onClick={startEditing} className="w-full flex items-center gap-3 px-3 py-3 text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
+          <Mail className="h-4 w-4" />
+          <span className="text-sm">Add email address</span>
+        </button>
+      )}
+
+      {/* Phones */}
+      {hasPhones ? (
+        <div className="space-y-1.5">
+          {phones.map((phone, idx) => (
+            <button
+              key={idx}
+              onClick={startEditing}
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-left bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors group"
+            >
+              <div className={`h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 ${phone.primary ? "bg-blue-100" : "bg-slate-100"}`}>
+                <Phone className={`h-4 w-4 ${phone.primary ? "text-blue-600" : "text-slate-500"}`} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-slate-900 truncate">{phone.value}</div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] text-slate-500 capitalize">{phone.label || "work"}</span>
+                  {phone.primary && <span className="text-[10px] text-blue-600 font-medium">• Primary</span>}
+                  {phone.whatsapp && <span className="text-[10px] text-green-600">• WhatsApp</span>}
+                </div>
+              </div>
+              <Edit3 className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <button onClick={startEditing} className="w-full flex items-center gap-3 px-3 py-3 text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
+          <Phone className="h-4 w-4" />
+          <span className="text-sm">Add phone number</span>
+        </button>
+      )}
+
+      {/* Edit all button if has data */}
+      {(hasEmails || hasPhones) && (
+        <button onClick={startEditing} className="w-full text-center text-xs text-indigo-600 hover:text-indigo-700 font-medium py-2">
+          Edit contact info
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ====================
+// EXPERIENCE EDITOR
+// ====================
+
+interface ExperienceEditorProps {
+  employments: Array<{ id: number; title: string | null; department: string | null; isCurrent: boolean; isPrimary: boolean; startedAt: string | null; endedAt: string | null; organization: { id: number; name: string } }>;
+  organizations: Array<{ id: number; name: string; kind: string }>;
+  onOrganizationCreated: (org: { id: number; name: string; kind: string }) => void;
+  onSave: (employments: Array<{ id: number | null; title: string | null; department: string | null; organizationId: number; isCurrent: boolean; isPrimary: boolean }>) => Promise<void>;
+  saving: boolean;
+}
+
+function ExperienceEditor({ employments, organizations, onOrganizationCreated, onSave, saving }: ExperienceEditorProps) {
+  const [editing, setEditing] = useState(false);
+  const [formEmployments, setFormEmployments] = useState<Array<{ id: number | null; title: string; department: string; organizationId: number | null; organizationName: string; isCurrent: boolean; isPrimary: boolean }>>([]);
+
+  const startEditing = () => {
+    setFormEmployments(employments.length > 0
+      ? employments.map(emp => ({
+          id: emp.id,
+          title: emp.title || "",
+          department: emp.department || "",
+          organizationId: emp.organization.id,
+          organizationName: emp.organization.name,
+          isCurrent: emp.isCurrent,
+          isPrimary: emp.isPrimary
+        }))
+      : [{ id: null, title: "", department: "", organizationId: null, organizationName: "", isCurrent: true, isPrimary: true }]
+    );
+    setEditing(true);
+  };
+
+  const handleSave = async () => {
+    const validEmployments = formEmployments.filter(emp => emp.organizationId);
+    await onSave(validEmployments.map(emp => ({
+      id: emp.id,
+      title: emp.title || null,
+      department: emp.department || null,
+      organizationId: emp.organizationId!,
+      isCurrent: emp.isCurrent,
+      isPrimary: emp.isPrimary
+    })));
+    setEditing(false);
+  };
+
+  const addEmployment = () => setFormEmployments([...formEmployments, { id: null, title: "", department: "", organizationId: null, organizationName: "", isCurrent: true, isPrimary: formEmployments.length === 0 }]);
+  const removeEmployment = (idx: number) => setFormEmployments(formEmployments.filter((_, i) => i !== idx));
+  const setPrimary = (idx: number) => setFormEmployments(formEmployments.map((emp, i) => ({ ...emp, isPrimary: i === idx })));
+
+  if (editing) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Work Experience</span>
+          <button onClick={addEmployment} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+            <Plus className="h-3 w-3" /> Add
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {formEmployments.map((emp, idx) => (
+            <div key={idx} className="relative p-4 bg-white border border-slate-200 rounded-xl space-y-3 group">
+              {/* Primary badge and remove */}
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setPrimary(idx)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full transition-all ${
+                    emp.isPrimary
+                      ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
+                      : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                  }`}
+                >
+                  <Star className="h-3 w-3" />
+                  {emp.isPrimary ? "Primary" : "Set Primary"}
+                </button>
+                <button
+                  onClick={() => removeEmployment(idx)}
+                  className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Organization */}
+              <OrganizationSelector
+                value={emp.organizationId}
+                onChange={(id, org) => setFormEmployments(formEmployments.map((e, i) => i === idx ? { ...e, organizationId: id, organizationName: org?.name || "" } : e))}
+                organizations={organizations}
+                onOrganizationCreated={onOrganizationCreated}
+                placeholder="Select organization..."
+              />
+
+              {/* Title */}
+              <input
+                type="text"
+                value={emp.title}
+                onChange={(evt) => setFormEmployments(formEmployments.map((item, i) => i === idx ? { ...item, title: evt.target.value } : item))}
+                placeholder="Job title (e.g., Managing Director)"
+                className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              />
+
+              {/* Department */}
+              <input
+                type="text"
+                value={emp.department}
+                onChange={(evt) => setFormEmployments(formEmployments.map((item, i) => i === idx ? { ...item, department: evt.target.value } : item))}
+                placeholder="Department (optional)"
+                className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              />
+
+              {/* Current toggle */}
+              <button
+                onClick={() => setFormEmployments(formEmployments.map((item, i) => i === idx ? { ...item, isCurrent: !item.isCurrent } : item))}
+                className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg transition-all ${
+                  emp.isCurrent ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-50 text-slate-500 border border-slate-200"
+                }`}
+              >
+                {emp.isCurrent ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
+                Current position
+              </button>
+            </div>
+          ))}
+
+          {formEmployments.length === 0 && (
+            <button onClick={addEmployment} className="w-full py-4 text-sm text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
+              + Add work experience
+            </button>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-2 pt-2">
+          <button onClick={() => setEditing(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-md shadow-indigo-500/25 disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            Save
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // View mode
+  if (employments.length === 0) {
+    return (
+      <button onClick={startEditing} className="w-full flex items-center gap-3 px-3 py-4 text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
+        <Building2 className="h-5 w-5" />
+        <span className="text-sm">Add work experience</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {employments.map((emp) => (
+        <button
+          key={emp.id}
+          onClick={startEditing}
+          className="w-full flex items-start gap-3 px-3 py-3 text-left bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors group"
+        >
+          <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${emp.isPrimary ? "bg-gradient-to-br from-indigo-500 to-purple-600" : "bg-slate-200"}`}>
+            <Building2 className={`h-5 w-5 ${emp.isPrimary ? "text-white" : "text-slate-500"}`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold text-slate-900">{emp.organization.name}</div>
+            {emp.title && <div className="text-sm text-slate-600">{emp.title}</div>}
+            <div className="flex items-center gap-1.5 mt-1">
+              {emp.isCurrent && <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Current</span>}
+              {emp.isPrimary && <span className="text-[10px] font-medium text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">Primary</span>}
+              {emp.department && <span className="text-[10px] text-slate-500">{emp.department}</span>}
+            </div>
+          </div>
+          <Edit3 className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
+        </button>
+      ))}
+      <button onClick={startEditing} className="w-full text-center text-xs text-indigo-600 hover:text-indigo-700 font-medium py-2">
+        Edit experience
+      </button>
+    </div>
+  );
+}
+
+// ====================
 // HELPER FUNCTIONS
 // ====================
 
@@ -1544,6 +2013,75 @@ export default function PersonDetailPage() {
                   <p className="text-xs text-slate-400 mt-1">Add connections to track your network</p>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Contact Info */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                <Mail className="h-4 w-4 text-white" />
+              </div>
+              <h2 className="text-sm font-semibold text-slate-900">Contact Info</h2>
+            </div>
+            <div className="p-4">
+              <ContactInfoEditor
+                emails={person.emails || []}
+                phones={person.phones || []}
+                onSave={async (emails, phones) => {
+                  setSavingSection("contacts");
+                  try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/people/${person.id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ emails, phones })
+                    });
+                    if (!res.ok) throw new Error("Failed to save");
+                    await fetchPerson();
+                    toast.success("Contact info saved");
+                  } catch {
+                    toast.error("Failed to save contact info");
+                  } finally {
+                    setSavingSection(null);
+                  }
+                }}
+                saving={savingSection === "contacts"}
+              />
+            </div>
+          </div>
+
+          {/* Experience */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                <Building2 className="h-4 w-4 text-white" />
+              </div>
+              <h2 className="text-sm font-semibold text-slate-900">Experience</h2>
+            </div>
+            <div className="p-4">
+              <ExperienceEditor
+                employments={person.employments || []}
+                organizations={organizations}
+                onOrganizationCreated={(newOrg) => setOrganizations([...organizations, newOrg])}
+                onSave={async (employments) => {
+                  setSavingSection("employments");
+                  try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/people/${person.id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ employments })
+                    });
+                    if (!res.ok) throw new Error("Failed to save");
+                    await fetchPerson();
+                    toast.success("Experience saved");
+                  } catch {
+                    toast.error("Failed to save experience");
+                  } finally {
+                    setSavingSection(null);
+                  }
+                }}
+                saving={savingSection === "employments"}
+              />
             </div>
           </div>
 
