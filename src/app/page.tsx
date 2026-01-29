@@ -1,239 +1,221 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { LayoutDashboard, Command } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
-  CircleDollarSign,
-  Building2,
-  Users,
-  Calendar,
-  TrendingUp,
-  ArrowUpRight
-} from "lucide-react";
+  type DashboardData,
+  type DashboardPreferences,
+  type DashboardFilters,
+  fetchDashboardDataFromEndpoints,
+  getDashboardPreferences,
+  DEFAULT_PREFERENCES,
+} from "@/lib/dashboard-api";
+import { TruthBar } from "./dashboard/_components/TruthBar";
+import { AttentionModule } from "./dashboard/_components/AttentionModule";
+import { ActiveDealsModule } from "./dashboard/_components/ActiveDealsModule";
+import { CapitalModule } from "./dashboard/_components/CapitalModule";
+import { RelationshipsModule } from "./dashboard/_components/RelationshipsModule";
+import { EventsModule } from "./dashboard/_components/EventsModule";
+import { AlertsModule } from "./dashboard/_components/AlertsModule";
+import { CommandPalette, useCommandPalette } from "./dashboard/_components/CommandPalette";
+import { DashboardPreferences as DashboardPreferencesPanel } from "./dashboard/_components/DashboardPreferences";
 
-interface DashboardData {
-  stats: {
-    deals: { total: number; live: number; sourcing: number };
-    organizations: { total: number; funds: number; companies: number };
-    people: { total: number; champions: number; hot: number };
-    activities: { total: number; thisWeek: number; scheduled: number };
-    pipeline: { committed: number; closed: number };
-  };
-  liveDeals: Array<{
-    id: number;
-    name: string;
-    company: string | null;
-    committed: number;
-    blocks: number;
-    interests: number;
-  }>;
-  recentActivities: Array<{
-    id: number;
-    kind: string;
-    subject: string | null;
-    deal: string | null;
-    attendees: number;
-    occurredAt: string;
-    startsAt: string | null;
-  }>;
-}
-
-function formatCurrency(cents: number) {
-  const dollars = cents / 100;
-  if (dollars >= 1_000_000_000) {
-    return `$${(dollars / 1_000_000_000).toFixed(1).replace(/\.0$/, "")}B`;
-  }
-  if (dollars >= 1_000_000) {
-    return `$${(dollars / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  }
-  if (dollars >= 1_000) {
-    return `$${(dollars / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  }
-  return `$${dollars.toFixed(0)}`;
-}
-
-function formatDate(dateStr: string | null) {
-  if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric"
-  });
-}
-
-export default function Home() {
-  const router = useRouter();
+export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [preferences, setPreferences] = useState<DashboardPreferences>(DEFAULT_PREFERENCES);
+  const [filters, setFilters] = useState<DashboardFilters>({
+    timeframe: "this_week",
+    scope: "mine",
+  });
 
+  // Command palette state
+  const { open: commandOpen, setOpen: setCommandOpen } = useCommandPalette();
+
+  // Load preferences on mount
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/dashboard`)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch dashboard:", err);
-        setLoading(false);
-      });
+    const savedPrefs = getDashboardPreferences();
+    setPreferences(savedPrefs);
+    setFilters({
+      timeframe: savedPrefs.attentionTimeframe,
+      scope: savedPrefs.attentionScope,
+    });
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <span className="text-muted-foreground">Loading dashboard...</span>
-      </div>
-    );
-  }
+  // Fetch dashboard data
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await fetchDashboardDataFromEndpoints(filters);
+      setData(result);
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
 
-  if (!data) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <span className="text-muted-foreground">Failed to load dashboard</span>
-      </div>
-    );
-  }
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const { stats, liveDeals, recentActivities } = data;
+  // Handle preference changes
+  const handlePreferencesChange = useCallback((newPrefs: DashboardPreferences) => {
+    setPreferences(newPrefs);
+    setFilters({
+      timeframe: newPrefs.attentionTimeframe,
+      scope: newPrefs.attentionScope,
+    });
+  }, []);
+
+  // Handle attention filter changes
+  const handleTimeframeChange = useCallback((timeframe: "today" | "this_week" | "all") => {
+    setFilters((prev) => ({ ...prev, timeframe }));
+  }, []);
+
+  const handleScopeChange = useCallback((scope: "mine" | "team") => {
+    setFilters((prev) => ({ ...prev, scope }));
+  }, []);
+
+  // Handle alert dismiss
+  const handleDismissAlert = useCallback((alertId: string) => {
+    if (!data) return;
+    setData({
+      ...data,
+      alerts: data.alerts.filter((a) => a.id !== alertId),
+    });
+  }, [data]);
+
+  // Module visibility helper
+  const isModuleVisible = useCallback(
+    (moduleId: string) => !preferences.hiddenModules.includes(moduleId),
+    [preferences.hiddenModules]
+  );
 
   return (
-    <div className="space-y-4">
-      {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => router.push("/deals")}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active Deals</CardTitle>
-            <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.deals.total}</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">{stats.deals.live} live</span> · {stats.deals.sourcing} sourcing
-            </p>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50/80">
+      {/* Header with glass morphism */}
+      <div className="sticky top-0 z-30">
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5" />
 
-        <Card className="cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => router.push("/organizations")}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Organizations</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.organizations.total}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.organizations.funds} funds · {stats.organizations.companies} companies
-            </p>
-          </CardContent>
-        </Card>
+        <div className="relative bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              {/* Title section */}
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full" />
+                  <div className="relative h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                    <LayoutDashboard className="h-5 w-5 text-white" />
+                  </div>
+                </div>
+                <div>
+                  <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
+                  <p className="text-sm text-slate-500">
+                    Your command center for Arrow Fund operations
+                  </p>
+                </div>
+              </div>
 
-        <Card className="cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => router.push("/people")}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Contacts</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.people.total}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.people.champions} champions · {stats.people.hot} hot
-            </p>
-          </CardContent>
-        </Card>
+              {/* Actions */}
+              <div className="flex items-center gap-3">
+                {/* Command Palette trigger */}
+                <button
+                  onClick={() => setCommandOpen(true)}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-1.5 rounded-lg",
+                    "bg-slate-100/80 hover:bg-slate-200/80 transition-colors",
+                    "text-sm text-slate-600"
+                  )}
+                >
+                  <Command className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Search</span>
+                  <kbd className="hidden sm:flex h-5 items-center gap-0.5 rounded border bg-white px-1.5 font-mono text-[10px] font-medium text-slate-400">
+                    <span className="text-xs">⌘</span>K
+                  </kbd>
+                </button>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Pipeline</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.pipeline.committed)}</div>
-            <p className="text-xs text-muted-foreground">
-              soft-circled commitments
-            </p>
-          </CardContent>
-        </Card>
+                {/* Preferences */}
+                <DashboardPreferencesPanel
+                  preferences={preferences}
+                  onPreferencesChange={handlePreferencesChange}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Content Grid */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Live Deals */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Live Deals
-              <Badge variant="secondary">{stats.deals.live}</Badge>
-            </CardTitle>
-            <CardDescription>Deals currently in progress</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {liveDeals.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No live deals</p>
-              ) : (
-                liveDeals.map((deal) => (
-                  <div
-                    key={deal.id}
-                    className="flex items-center justify-between cursor-pointer hover:bg-slate-50 -mx-2 px-2 py-1 rounded transition-colors"
-                    onClick={() => router.push(`/deals/${deal.id}`)}
-                  >
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">{deal.name}</p>
-                      <p className="text-xs text-muted-foreground">{deal.company || "—"}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{deal.blocks} blocks</Badge>
-                      <Badge variant="outline">{deal.interests} interests</Badge>
-                      <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Main content */}
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        {/* Truth Bar - always at top */}
+        {isModuleVisible("truth_bar") && (
+          <div className="mb-6">
+            <TruthBar metrics={data?.truthBar || null} loading={loading} />
+          </div>
+        )}
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Recent Activity
-              <Badge variant="secondary">{stats.activities.thisWeek} this week</Badge>
-            </CardTitle>
-            <CardDescription>Your latest interactions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentActivities.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No recent activity</p>
-              ) : (
-                recentActivities.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-center justify-between cursor-pointer hover:bg-slate-50 -mx-2 px-2 py-1 rounded transition-colors"
-                    onClick={() => router.push(`/events`)}
-                  >
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium leading-none">
-                        {activity.subject || activity.kind.replace(/_/g, " ")}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {activity.deal || "Internal"} · {activity.kind.replace(/_/g, " ")}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">
-                        {formatDate(activity.startsAt || activity.occurredAt)}
-                      </span>
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Alerts - show at top if present */}
+        {isModuleVisible("alerts") && !loading && data?.alerts && data.alerts.length > 0 && (
+          <div className="mb-6">
+            <AlertsModule
+              alerts={data.alerts}
+              loading={loading}
+              onDismiss={handleDismissAlert}
+            />
+          </div>
+        )}
+
+        {/* Main grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left column - primary action items */}
+          <div className="space-y-6">
+            {isModuleVisible("attention") && (
+              <AttentionModule
+                items={data?.attentionItems || []}
+                loading={loading}
+                timeframe={filters.timeframe}
+                scope={filters.scope}
+                onTimeframeChange={handleTimeframeChange}
+                onScopeChange={handleScopeChange}
+              />
+            )}
+            {isModuleVisible("active_deals") && (
+              <ActiveDealsModule
+                deals={data?.activeDeals || []}
+                loading={loading}
+              />
+            )}
+          </div>
+
+          {/* Right column - context and upcoming */}
+          <div className="space-y-6">
+            {isModuleVisible("capital") && data?.capitalByEntity && data.capitalByEntity.length > 0 && (
+              <CapitalModule
+                entities={data.capitalByEntity}
+                loading={loading}
+              />
+            )}
+            {isModuleVisible("relationships") && (
+              <RelationshipsModule
+                signals={data?.relationshipSignals || []}
+                loading={loading}
+              />
+            )}
+            {isModuleVisible("events") && (
+              <EventsModule
+                events={data?.upcomingEvents || []}
+                loading={loading}
+              />
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Command Palette */}
+      <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
     </div>
   );
 }
