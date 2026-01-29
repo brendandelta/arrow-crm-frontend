@@ -630,21 +630,23 @@ export default function DealDetailPage() {
       />
 
       {/* Truth Panel */}
-      <TruthPanel
-        bestPrice={deal.truthPanel.bestPrice}
-        biggestConstraint={deal.truthPanel.biggestConstraint}
-        missingDoc={deal.truthPanel.missingDoc}
-        nextDeadline={deal.truthPanel.nextDeadline}
-        blocking={deal.truthPanel.blocking}
-        onBlockClick={(blockId) => {
-          const block = deal.blocks.find((b) => b.id === blockId);
-          if (block) setSelectedBlock(block);
-        }}
-        onMissingDocClick={handleMissingDocClick}
-        onConstraintClick={handleConstraintClick}
-        onDeadlineClick={handleDeadlineClick}
-        onBlockingClick={handleBlockingClick}
-      />
+      {deal.truthPanel && (
+        <TruthPanel
+          bestPrice={deal.truthPanel.bestPrice}
+          biggestConstraint={deal.truthPanel.biggestConstraint}
+          missingDoc={deal.truthPanel.missingDoc}
+          nextDeadline={deal.truthPanel.nextDeadline}
+          blocking={deal.truthPanel.blocking}
+          onBlockClick={(blockId) => {
+            const block = deal.blocks.find((b) => b.id === blockId);
+            if (block) setSelectedBlock(block);
+          }}
+          onMissingDocClick={handleMissingDocClick}
+          onConstraintClick={handleConstraintClick}
+          onDeadlineClick={handleDeadlineClick}
+          onBlockingClick={handleBlockingClick}
+        />
+      )}
 
       {/* Deal Details - Inline Editable */}
       <EditableDealDetails
