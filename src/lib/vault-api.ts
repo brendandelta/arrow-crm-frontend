@@ -131,21 +131,51 @@ export interface AuditLogEntry {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+// Helper to get auth headers from session storage
+function getAuthHeaders(): Record<string, string> {
+  if (typeof window === 'undefined') return {};
+
+  const session = localStorage.getItem('arrow_session');
+  if (!session) return {};
+
+  try {
+    const data = JSON.parse(session);
+    if (data.backendUserId) {
+      return { 'X-User-Id': data.backendUserId.toString() };
+    }
+  } catch {
+    // Invalid session data
+  }
+  return {};
+}
+
+// Helper for authenticated fetch
+async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const authHeaders = getAuthHeaders();
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...authHeaders,
+      ...options.headers,
+    },
+  });
+}
+
 // Vaults
 export async function fetchVaults(): Promise<VaultSummary[]> {
-  const res = await fetch(`${API_BASE}/api/vaults`);
+  const res = await authFetch(`${API_BASE}/api/vaults`);
   if (!res.ok) throw new Error('Failed to fetch vaults');
   return res.json();
 }
 
 export async function fetchVault(id: number): Promise<VaultDetail> {
-  const res = await fetch(`${API_BASE}/api/vaults/${id}`);
+  const res = await authFetch(`${API_BASE}/api/vaults/${id}`);
   if (!res.ok) throw new Error('Failed to fetch vault');
   return res.json();
 }
 
 export async function createVault(data: { name: string; description?: string }): Promise<VaultDetail> {
-  const res = await fetch(`${API_BASE}/api/vaults`, {
+  const res = await authFetch(`${API_BASE}/api/vaults`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -155,7 +185,7 @@ export async function createVault(data: { name: string; description?: string }):
 }
 
 export async function updateVault(id: number, data: Partial<VaultDetail>): Promise<VaultDetail> {
-  const res = await fetch(`${API_BASE}/api/vaults/${id}`, {
+  const res = await authFetch(`${API_BASE}/api/vaults/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -165,14 +195,14 @@ export async function updateVault(id: number, data: Partial<VaultDetail>): Promi
 }
 
 export async function fetchVaultRotation(vaultId: number): Promise<RotationDashboard> {
-  const res = await fetch(`${API_BASE}/api/vaults/${vaultId}/rotation`);
+  const res = await authFetch(`${API_BASE}/api/vaults/${vaultId}/rotation`);
   if (!res.ok) throw new Error('Failed to fetch rotation dashboard');
   return res.json();
 }
 
 // Memberships
 export async function fetchVaultMemberships(vaultId: number): Promise<VaultMembership[]> {
-  const res = await fetch(`${API_BASE}/api/vaults/${vaultId}/memberships`);
+  const res = await authFetch(`${API_BASE}/api/vaults/${vaultId}/memberships`);
   if (!res.ok) throw new Error('Failed to fetch memberships');
   return res.json();
 }
@@ -181,7 +211,7 @@ export async function createVaultMembership(
   vaultId: number,
   data: { userId: number; role: string }
 ): Promise<VaultMembership> {
-  const res = await fetch(`${API_BASE}/api/vaults/${vaultId}/memberships`, {
+  const res = await authFetch(`${API_BASE}/api/vaults/${vaultId}/memberships`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ user_id: data.userId, role: data.role }),
@@ -191,7 +221,7 @@ export async function createVaultMembership(
 }
 
 export async function updateVaultMembership(id: number, role: string): Promise<VaultMembership> {
-  const res = await fetch(`${API_BASE}/api/vault_memberships/${id}`, {
+  const res = await authFetch(`${API_BASE}/api/vault_memberships/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ role }),
@@ -201,7 +231,7 @@ export async function updateVaultMembership(id: number, role: string): Promise<V
 }
 
 export async function deleteVaultMembership(id: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/vault_memberships/${id}`, {
+  const res = await authFetch(`${API_BASE}/api/vault_memberships/${id}`, {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete membership');
@@ -229,13 +259,13 @@ export async function fetchCredentials(
   if (filters.linkableType) params.append('linkable_type', filters.linkableType);
   if (filters.linkableId) params.append('linkable_id', filters.linkableId.toString());
 
-  const res = await fetch(`${API_BASE}/api/vaults/${vaultId}/credentials?${params.toString()}`);
+  const res = await authFetch(`${API_BASE}/api/vaults/${vaultId}/credentials?${params.toString()}`);
   if (!res.ok) throw new Error('Failed to fetch credentials');
   return res.json();
 }
 
 export async function fetchCredential(id: number): Promise<CredentialDetail> {
-  const res = await fetch(`${API_BASE}/api/credentials/${id}`);
+  const res = await authFetch(`${API_BASE}/api/credentials/${id}`);
   if (!res.ok) throw new Error('Failed to fetch credential');
   return res.json();
 }
@@ -258,7 +288,7 @@ export async function createCredential(
   vaultId: number,
   data: CreateCredentialData
 ): Promise<CredentialDetail> {
-  const res = await fetch(`${API_BASE}/api/vaults/${vaultId}/credentials`, {
+  const res = await authFetch(`${API_BASE}/api/vaults/${vaultId}/credentials`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -283,7 +313,7 @@ export async function updateCredential(
   id: number,
   data: Partial<CreateCredentialData>
 ): Promise<CredentialDetail> {
-  const res = await fetch(`${API_BASE}/api/credentials/${id}`, {
+  const res = await authFetch(`${API_BASE}/api/credentials/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -303,7 +333,7 @@ export async function updateCredential(
 }
 
 export async function deleteCredential(id: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/credentials/${id}`, {
+  const res = await authFetch(`${API_BASE}/api/credentials/${id}`, {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete credential');
@@ -314,7 +344,7 @@ export async function revealCredential(
   id: number,
   context?: string
 ): Promise<RevealedCredential> {
-  const res = await fetch(`${API_BASE}/api/credentials/${id}/reveal`, {
+  const res = await authFetch(`${API_BASE}/api/credentials/${id}/reveal`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ context }),
@@ -331,7 +361,7 @@ export async function logCredentialCopy(
   field: string,
   context?: string
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/credentials/${id}/copy`, {
+  const res = await authFetch(`${API_BASE}/api/credentials/${id}/copy`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ field, context }),
@@ -347,7 +377,7 @@ export async function createCredentialField(
   credentialId: number,
   data: { label: string; fieldType: string; value?: string; isSecret?: boolean; sortOrder?: number }
 ): Promise<CredentialField> {
-  const res = await fetch(`${API_BASE}/api/credentials/${credentialId}/fields`, {
+  const res = await authFetch(`${API_BASE}/api/credentials/${credentialId}/fields`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -366,7 +396,7 @@ export async function updateCredentialField(
   id: number,
   data: { label?: string; fieldType?: string; value?: string; isSecret?: boolean; sortOrder?: number }
 ): Promise<CredentialField> {
-  const res = await fetch(`${API_BASE}/api/credential_fields/${id}`, {
+  const res = await authFetch(`${API_BASE}/api/credential_fields/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -382,7 +412,7 @@ export async function updateCredentialField(
 }
 
 export async function deleteCredentialField(id: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/credential_fields/${id}`, {
+  const res = await authFetch(`${API_BASE}/api/credential_fields/${id}`, {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete field');
@@ -395,7 +425,7 @@ export async function createCredentialLink(
   linkableId: number,
   relationship: string = 'general'
 ): Promise<CredentialLink> {
-  const res = await fetch(`${API_BASE}/api/credentials/${credentialId}/links`, {
+  const res = await authFetch(`${API_BASE}/api/credentials/${credentialId}/links`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -409,7 +439,7 @@ export async function createCredentialLink(
 }
 
 export async function deleteCredentialLink(id: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/credential_links/${id}`, {
+  const res = await authFetch(`${API_BASE}/api/credential_links/${id}`, {
     method: 'DELETE',
   });
   if (!res.ok) throw new Error('Failed to delete link');
@@ -432,7 +462,7 @@ export async function fetchAuditLogs(params: {
   if (params.page) searchParams.append('page', params.page.toString());
   if (params.perPage) searchParams.append('per_page', params.perPage.toString());
 
-  const res = await fetch(`${API_BASE}/api/security_audit_logs?${searchParams.toString()}`);
+  const res = await authFetch(`${API_BASE}/api/security_audit_logs?${searchParams.toString()}`);
   if (!res.ok) throw new Error('Failed to fetch audit logs');
   return res.json();
 }
