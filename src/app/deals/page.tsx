@@ -11,7 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, ChevronRight, ChevronDown, Plus } from "lucide-react";
+import { Search, ChevronRight, ChevronDown } from "lucide-react";
+import { PageHeader, PageSearch } from "@/components/PageHeader";
 import { KPIStrip } from "./_components/KPIStrip";
 import { ExpandedRowContent } from "./_components/ExpandableTableRow";
 import { ViewToggle } from "./_components/ViewToggle";
@@ -206,7 +207,7 @@ function buildDealColumns(allOwners: Owner[]): ColumnDef<Deal>[] {
       accessor: (row) => row.status,
       enumOptions: [
         { value: "live", label: "Live", color: "bg-green-100 text-green-800" },
-        { value: "sourcing", label: "Sourcing", color: "bg-slate-100 text-slate-600" },
+        { value: "sourcing", label: "Sourcing", color: "bg-muted text-muted-foreground" },
         { value: "closing", label: "Closing", color: "bg-blue-100 text-blue-800" },
         { value: "closed", label: "Closed", color: "bg-purple-100 text-purple-800" },
         { value: "dead", label: "Dead", color: "bg-red-100 text-red-800" },
@@ -236,8 +237,8 @@ function buildDealColumns(allOwners: Owner[]): ColumnDef<Deal>[] {
         { value: "overdue", label: "Overdue", color: "bg-red-100 text-red-700" },
         { value: "this_week", label: "This week", color: "bg-amber-100 text-amber-700" },
         { value: "this_month", label: "This month", color: "bg-blue-100 text-blue-700" },
-        { value: "later", label: "30d+", color: "bg-slate-100 text-slate-600" },
-        { value: "no_date", label: "No date", color: "bg-slate-50 text-slate-400" },
+        { value: "later", label: "30d+", color: "bg-muted text-muted-foreground" },
+        { value: "no_date", label: "No date", color: "bg-muted text-muted-foreground" },
       ],
       sortLabels: ["Soonest first", "Furthest first"],
     },
@@ -305,9 +306,9 @@ function buildDealColumns(allOwners: Owner[]): ColumnDef<Deal>[] {
         ...allOwners.map((o) => ({
           value: `${o.firstName} ${o.lastName}`,
           label: `${o.firstName} ${o.lastName}`,
-          color: "bg-slate-100 text-slate-700",
+          color: "bg-muted text-foreground",
         })),
-        { value: "__none__", label: "Unassigned", color: "bg-slate-50 text-slate-400" },
+        { value: "__none__", label: "Unassigned", color: "bg-muted text-muted-foreground" },
       ],
       sortLabels: ["A → Z", "Z → A"],
     },
@@ -547,53 +548,48 @@ export default function DealsPage() {
   }, [activeFilters]);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Deals</h1>
-        <div className="flex items-center gap-3">
-          <ViewToggle activeView={viewMode} onViewChange={setViewMode} />
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            New Deal
-          </button>
-        </div>
-      </div>
-
-      {/* KPI Strip — table view only */}
-      {viewMode === "table" && stats && (
-        <KPIStrip
-          stats={{
-            liveCount: stats.liveCount,
-            totalSoftCircled: stats.totalSoftCircled,
-            totalCommitted: stats.totalCommitted,
-            totalWired: stats.totalWired,
-            atRiskCount: stats.atRiskCount,
-            overdueTasksCount: stats.overdueTasksCount,
-          }}
-          onFilterClick={handleKPIFilterClick}
-          activeFilter={liveKPIActive ? "live" : undefined}
-        />
-      )}
-
-      {/* Search bar — table view only */}
-      {viewMode === "table" && (
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search deals, companies..."
+      <PageHeader
+        subtitle={
+          stats && (
+            <span className="flex items-center gap-2">
+              <span>{stats.liveCount} live</span>
+              <span className="text-muted-foreground/50">·</span>
+              <span>{stats.atRiskCount || 0} at risk</span>
+            </span>
+          )
+        }
+        actions={<ViewToggle activeView={viewMode} onViewChange={setViewMode} />}
+        primaryActionLabel="New Deal"
+        onPrimaryAction={() => setShowCreateModal(true)}
+        search={
+          viewMode === "table" ? (
+            <PageSearch
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
+              onChange={setSearchQuery}
+              placeholder="Search deals, companies..."
             />
-          </div>
-        </div>
-      )}
+          ) : undefined
+        }
+      />
+
+      <div className="px-8 py-6 space-y-4">
+        {/* KPI Strip — table view only */}
+        {viewMode === "table" && stats && (
+          <KPIStrip
+            stats={{
+              liveCount: stats.liveCount,
+              totalSoftCircled: stats.totalSoftCircled,
+              totalCommitted: stats.totalCommitted,
+              totalWired: stats.totalWired,
+              atRiskCount: stats.atRiskCount,
+              overdueTasksCount: stats.overdueTasksCount,
+            }}
+            onFilterClick={handleKPIFilterClick}
+            activeFilter={liveKPIActive ? "live" : undefined}
+          />
+        )}
 
       {/* Content View */}
       {viewMode === "mindmap" ? (
@@ -644,7 +640,7 @@ export default function DealsPage() {
               {filteredDeals.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={TOTAL_COLS} className="text-center py-8">
-                    <div className="text-sm text-slate-400">
+                    <div className="text-sm text-muted-foreground">
                       {hasActiveFilters || searchQuery
                         ? "No deals match your filters"
                         : "No deals found"}
@@ -666,7 +662,7 @@ export default function DealsPage() {
                 filteredDeals.map((deal) => (
                   <Fragment key={deal.id}>
                     <TableRow
-                      className={`cursor-pointer hover:bg-slate-50 ${getPriorityConfig(deal.priority).row}`}
+                      className={`cursor-pointer hover:bg-muted ${getPriorityConfig(deal.priority).row}`}
                       onClick={() => router.push(`/deals/${deal.id}`)}
                     >
                       <TableCell className="p-2">
@@ -675,12 +671,12 @@ export default function DealsPage() {
                             e.stopPropagation();
                             toggleExpanded(deal.id);
                           }}
-                          className="p-1 hover:bg-slate-100 rounded"
+                          className="p-1 hover:bg-muted rounded"
                         >
                           {expandedDealId === deal.id ? (
-                            <ChevronDown className="h-4 w-4 text-slate-400" />
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
                           ) : (
-                            <ChevronRight className="h-4 w-4 text-slate-400" />
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
                           )}
                         </button>
                       </TableCell>
@@ -787,6 +783,7 @@ export default function DealsPage() {
       {showCreateModal && (
         <CreateDealModal onClose={() => setShowCreateModal(false)} />
       )}
+      </div>
     </div>
   );
 }

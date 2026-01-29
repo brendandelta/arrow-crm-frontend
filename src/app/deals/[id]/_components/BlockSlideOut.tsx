@@ -127,9 +127,9 @@ function parseCurrency(value: string): number | null {
   return Math.round(num * 100);
 }
 
-const inputClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text";
-const selectClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-pointer appearance-none";
-const textareaClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text resize-none min-h-[80px]";
+const inputClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-muted hover:border-border focus:bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text";
+const selectClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-muted hover:border-border focus:bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-pointer appearance-none";
+const textareaClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-muted hover:border-border focus:bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text resize-none min-h-[80px]";
 
 function PersonSearchInput({ onSelect, excludeIds, placeholder }: {
   onSelect: (person: PersonSearchResult) => void;
@@ -226,36 +226,36 @@ function PersonSearchInput({ onSelect, excludeIds, placeholder }: {
   return (
     <div ref={ref} className="relative">
       <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
         <input
           type="text"
           value={query}
           onChange={(e) => search(e.target.value)}
           onFocus={() => query.length >= 2 && setOpen(true)}
-          className="w-full pl-8 pr-3 py-2 text-sm rounded-md border border-slate-200 bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50"
+          className="w-full pl-8 pr-3 py-2 text-sm rounded-md border border-border bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50"
           placeholder={placeholder || "Search people..."}
         />
-        {loading && <Loader2 className="absolute right-2.5 top-2.5 h-3.5 w-3.5 animate-spin text-slate-400" />}
+        {loading && <Loader2 className="absolute right-2.5 top-2.5 h-3.5 w-3.5 animate-spin text-muted-foreground" />}
       </div>
       {open && (
-        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-64 overflow-y-auto">
+        <div className="absolute z-20 mt-1 w-full bg-card border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
           {results.map((person) => (
             <button
               key={person.id}
               onClick={() => { onSelect(person); setQuery(""); setOpen(false); setResults([]); }}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center justify-between"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center justify-between"
             >
               <div>
                 <span className="font-medium">{person.firstName} {person.lastName}</span>
-                {person.title && <span className="text-slate-400 ml-1.5">· {person.title}</span>}
+                {person.title && <span className="text-muted-foreground ml-1.5">· {person.title}</span>}
               </div>
-              {person.organization && <span className="text-xs text-slate-400">{person.organization}</span>}
+              {person.organization && <span className="text-xs text-muted-foreground">{person.organization}</span>}
             </button>
           ))}
           {!creating && (
             <button
               onClick={() => { const parsed = parseQueryName(); setCreating(true); setNewPerson({ firstName: parsed.firstName, lastName: parsed.lastName, email: "" }); }}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 text-blue-600 border-t"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 text-blue-600 border-t"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Create new contact{query.length >= 2 ? `: "${query}"` : ""}</span>
@@ -268,7 +268,7 @@ function PersonSearchInput({ onSelect, excludeIds, placeholder }: {
                   type="text"
                   value={newPerson.firstName}
                   onChange={(e) => setNewPerson({ ...newPerson, firstName: e.target.value })}
-                  className="flex-1 px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
+                  className="flex-1 px-2.5 py-1.5 text-sm rounded border border-border focus:border-border focus:outline-none"
                   placeholder="First name"
                   autoFocus
                 />
@@ -276,7 +276,7 @@ function PersonSearchInput({ onSelect, excludeIds, placeholder }: {
                   type="text"
                   value={newPerson.lastName}
                   onChange={(e) => setNewPerson({ ...newPerson, lastName: e.target.value })}
-                  className="flex-1 px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
+                  className="flex-1 px-2.5 py-1.5 text-sm rounded border border-border focus:border-border focus:outline-none"
                   placeholder="Last name"
                 />
               </div>
@@ -284,20 +284,20 @@ function PersonSearchInput({ onSelect, excludeIds, placeholder }: {
                 type="email"
                 value={newPerson.email}
                 onChange={(e) => setNewPerson({ ...newPerson, email: e.target.value })}
-                className="w-full px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
+                className="w-full px-2.5 py-1.5 text-sm rounded border border-border focus:border-border focus:outline-none"
                 placeholder="Email (optional)"
               />
               <div className="flex gap-2">
                 <button
                   onClick={handleCreate}
                   disabled={saving || !newPerson.firstName.trim() || !newPerson.lastName.trim()}
-                  className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded disabled:opacity-50"
+                  className="flex-1 px-3 py-1.5 text-xs font-medium text-background bg-foreground hover:bg-foreground/90 rounded disabled:opacity-50"
                 >
                   {saving ? "Creating..." : "Create"}
                 </button>
                 <button
                   onClick={() => setCreating(false)}
-                  className="px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-100 rounded"
+                  className="px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted rounded"
                 >
                   Cancel
                 </button>
@@ -380,16 +380,16 @@ function OrgSearchInput({ value, onSelect, onClear }: {
 
   if (value) {
     return (
-      <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg group">
+      <div className="flex items-center justify-between p-2.5 bg-muted rounded-lg group">
         <div className="flex items-center gap-2">
-          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+          <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-sm font-medium">{value.name}</span>
         </div>
         <button
           onClick={onClear}
-          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 rounded transition-opacity"
+          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded transition-opacity"
         >
-          <X className="h-3 w-3 text-slate-400" />
+          <X className="h-3 w-3 text-muted-foreground" />
         </button>
       </div>
     );
@@ -398,33 +398,33 @@ function OrgSearchInput({ value, onSelect, onClear }: {
   return (
     <div ref={ref} className="relative">
       <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
         <input
           type="text"
           value={query}
           onChange={(e) => search(e.target.value)}
           onFocus={() => query.length >= 2 && setOpen(true)}
-          className="w-full pl-8 pr-3 py-2 text-sm rounded-md border border-slate-200 bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50"
+          className="w-full pl-8 pr-3 py-2 text-sm rounded-md border border-border bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50"
           placeholder="Search organizations..."
         />
-        {loading && <Loader2 className="absolute right-2.5 top-2.5 h-3.5 w-3.5 animate-spin text-slate-400" />}
+        {loading && <Loader2 className="absolute right-2.5 top-2.5 h-3.5 w-3.5 animate-spin text-muted-foreground" />}
       </div>
       {open && (
-        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-64 overflow-y-auto">
+        <div className="absolute z-20 mt-1 w-full bg-card border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
           {results.map((org) => (
             <button
               key={org.id}
               onClick={() => { onSelect({ id: org.id, name: org.name }); setQuery(""); setOpen(false); setResults([]); }}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center justify-between"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center justify-between"
             >
               <span className="font-medium">{org.name}</span>
-              {org.kind && <span className="text-xs text-slate-400">{org.kind}</span>}
+              {org.kind && <span className="text-xs text-muted-foreground">{org.kind}</span>}
             </button>
           ))}
           {!creating && (
             <button
               onClick={() => { setCreating(true); setNewOrg({ name: query, kind: "company" }); }}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 text-blue-600 border-t"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 text-blue-600 border-t"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Create new organization{query.length >= 2 ? `: "${query}"` : ""}</span>
@@ -436,14 +436,14 @@ function OrgSearchInput({ value, onSelect, onClear }: {
                 type="text"
                 value={newOrg.name}
                 onChange={(e) => setNewOrg({ ...newOrg, name: e.target.value })}
-                className="w-full px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
+                className="w-full px-2.5 py-1.5 text-sm rounded border border-border focus:border-border focus:outline-none"
                 placeholder="Organization name"
                 autoFocus
               />
               <select
                 value={newOrg.kind}
                 onChange={(e) => setNewOrg({ ...newOrg, kind: e.target.value })}
-                className="w-full px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
+                className="w-full px-2.5 py-1.5 text-sm rounded border border-border focus:border-border focus:outline-none"
               >
                 {ORG_KINDS.map((k) => (
                   <option key={k} value={k}>{k.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}</option>
@@ -453,13 +453,13 @@ function OrgSearchInput({ value, onSelect, onClear }: {
                 <button
                   onClick={handleCreate}
                   disabled={saving || !newOrg.name.trim()}
-                  className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded disabled:opacity-50"
+                  className="flex-1 px-3 py-1.5 text-xs font-medium text-background bg-foreground hover:bg-foreground/90 rounded disabled:opacity-50"
                 >
                   {saving ? "Creating..." : "Create"}
                 </button>
                 <button
                   onClick={() => setCreating(false)}
-                  className="px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-100 rounded"
+                  className="px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted rounded"
                 >
                   Cancel
                 </button>
@@ -585,7 +585,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
 
   const getHeatColor = (heat: number) => {
     const colors: Record<number, string> = {
-      0: "bg-slate-100 text-slate-600 border-slate-200",
+      0: "bg-muted text-muted-foreground border-border",
       1: "bg-yellow-100 text-yellow-700 border-yellow-200",
       2: "bg-orange-100 text-orange-700 border-orange-200",
       3: "bg-red-100 text-red-700 border-red-200",
@@ -596,9 +596,9 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative w-full max-w-xl bg-white shadow-xl flex flex-col">
+      <div className="relative w-full max-w-xl bg-card shadow-xl flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-card border-b px-6 py-4 flex items-center justify-between z-10">
           <div>
             <h2 className="text-lg font-semibold">
               {isNew ? "New Block" : "Block"}
@@ -609,7 +609,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
               </p>
             )}
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded">
+          <button onClick={onClose} className="p-2 hover:bg-muted rounded">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -620,8 +620,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Status */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-2 px-3">
-                <Layers className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Status</span>
+                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</span>
               </div>
               <div className="flex gap-2 px-3">
                 {BLOCK_STATUSES.map((s) => (
@@ -633,8 +633,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
                         ? s === "available" ? "bg-green-50 border-green-200 text-green-700"
                           : s === "reserved" ? "bg-yellow-50 border-yellow-200 text-yellow-700"
                           : s === "sold" ? "bg-purple-50 border-purple-200 text-purple-700"
-                          : "bg-slate-100 border-slate-200 text-slate-600"
-                        : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"
+                          : "bg-muted border-border text-muted-foreground"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted"
                     }`}
                   >
                     {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -646,8 +646,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Heat */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-2 px-3">
-                <Flame className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Heat</span>
+                <Flame className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Heat</span>
               </div>
               <div className="flex gap-1.5 px-3">
                 {HEAT_LEVELS.map((h) => (
@@ -657,7 +657,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
                     className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
                       formData.heat === h.value
                         ? getHeatColor(h.value)
-                        : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted"
                     }`}
                   >
                     {h.label}
@@ -673,7 +673,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
                 className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
                   formData.verified
                     ? "bg-green-50 border-green-200 text-green-700"
-                    : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+                    : "bg-card border-border text-muted-foreground hover:bg-muted"
                 }`}
               >
                 <CheckCircle2 className="h-3.5 w-3.5" />
@@ -684,8 +684,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Seller Organization */}
             <div className="py-3 border-t mt-2">
               <div className="flex items-center gap-2 mb-2 px-3">
-                <Building2 className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Seller Organization</span>
+                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Seller Organization</span>
               </div>
               <div className="px-3">
                 <OrgSearchInput
@@ -700,26 +700,26 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             <div className="py-3 border-t">
               <div className="flex items-center justify-between mb-2 px-3">
                 <div className="flex items-center gap-2">
-                  <Users className="h-3.5 w-3.5 text-slate-400" />
-                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                  <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Seller Contacts {sellerContacts.length > 0 && `(${sellerContacts.length})`}
                   </span>
                 </div>
               </div>
               <div className="px-3 space-y-2">
                 {sellerContacts.map((contact, idx) => (
-                  <div key={contact.personId} className="p-2.5 bg-slate-50 rounded-lg group">
+                  <div key={contact.personId} className="p-2.5 bg-muted rounded-lg group">
                     <div className="flex items-center justify-between">
                       <div className="text-sm font-medium">{contact.firstName} {contact.lastName}</div>
                       <button
                         onClick={() => setSellerContacts(sellerContacts.filter((_, i) => i !== idx))}
-                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 rounded transition-opacity"
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded transition-opacity"
                       >
-                        <X className="h-3 w-3 text-slate-400" />
+                        <X className="h-3 w-3 text-muted-foreground" />
                       </button>
                     </div>
                     {(contact.email || contact.phone) && (
-                      <div className="text-xs text-slate-400 mt-0.5">
+                      <div className="text-xs text-muted-foreground mt-0.5">
                         {contact.email}{contact.email && contact.phone ? " · " : ""}{contact.phone}
                       </div>
                     )}
@@ -731,7 +731,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
                         updated[idx] = { ...updated[idx], notes: e.target.value };
                         setSellerContacts(updated);
                       }}
-                      className="mt-1.5 w-full px-2 py-1 text-xs rounded border border-transparent bg-transparent hover:bg-white hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none transition-all"
+                      className="mt-1.5 w-full px-2 py-1 text-xs rounded border border-transparent bg-transparent hover:bg-card hover:border-border focus:bg-card focus:border-border focus:outline-none transition-all"
                       placeholder="Add note..."
                     />
                   </div>
@@ -757,26 +757,26 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             <div className="py-3 border-t">
               <div className="flex items-center justify-between mb-2 px-3">
                 <div className="flex items-center gap-2">
-                  <UserPlus className="h-3.5 w-3.5 text-slate-400" />
-                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                  <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Broker / Source Contacts {brokerContacts.length > 0 && `(${brokerContacts.length})`}
                   </span>
                 </div>
               </div>
               <div className="px-3 space-y-2">
                 {brokerContacts.map((contact, idx) => (
-                  <div key={contact.personId} className="p-2.5 bg-slate-50 rounded-lg group">
+                  <div key={contact.personId} className="p-2.5 bg-muted rounded-lg group">
                     <div className="flex items-center justify-between">
                       <div className="text-sm font-medium">{contact.firstName} {contact.lastName}</div>
                       <button
                         onClick={() => setBrokerContacts(brokerContacts.filter((_, i) => i !== idx))}
-                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 rounded transition-opacity"
+                        className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded transition-opacity"
                       >
-                        <X className="h-3 w-3 text-slate-400" />
+                        <X className="h-3 w-3 text-muted-foreground" />
                       </button>
                     </div>
                     {(contact.email || contact.phone) && (
-                      <div className="text-xs text-slate-400 mt-0.5">
+                      <div className="text-xs text-muted-foreground mt-0.5">
                         {contact.email}{contact.email && contact.phone ? " · " : ""}{contact.phone}
                       </div>
                     )}
@@ -788,7 +788,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
                         updated[idx] = { ...updated[idx], notes: e.target.value };
                         setBrokerContacts(updated);
                       }}
-                      className="mt-1.5 w-full px-2 py-1 text-xs rounded border border-transparent bg-transparent hover:bg-white hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none transition-all"
+                      className="mt-1.5 w-full px-2 py-1 text-xs rounded border border-transparent bg-transparent hover:bg-card hover:border-border focus:bg-card focus:border-border focus:outline-none transition-all"
                       placeholder="Add note..."
                     />
                   </div>
@@ -813,8 +813,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Share Class */}
             <div className="py-2 border-t">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <Layers className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Share Class</span>
+                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Share Class</span>
               </div>
               <select
                 value={formData.shareClass}
@@ -831,8 +831,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Shares */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <Hash className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Shares</span>
+                <Hash className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Shares</span>
               </div>
               <input
                 type="text"
@@ -846,8 +846,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Price per Share */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <DollarSign className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Price / Share</span>
+                <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Price / Share</span>
               </div>
               <input
                 type="text"
@@ -861,14 +861,14 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Total Value */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <DollarSign className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Total Value</span>
+                <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Value</span>
               </div>
               <input
                 type="text"
                 value={formData.totalCents}
                 onChange={(e) => setFormData({ ...formData, totalCents: e.target.value })}
-                className={`${inputClass} text-slate-500`}
+                className={`${inputClass} text-muted-foreground`}
                 placeholder="Auto-calculated"
               />
             </div>
@@ -876,8 +876,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Min Size */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <DollarSign className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Minimum Size</span>
+                <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Minimum Size</span>
               </div>
               <input
                 type="text"
@@ -891,8 +891,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Discount */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <Percent className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Discount</span>
+                <Percent className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Discount</span>
               </div>
               <input
                 type="text"
@@ -906,8 +906,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Implied Valuation */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <TrendingUp className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Implied Valuation</span>
+                <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Implied Valuation</span>
               </div>
               <input
                 type="text"
@@ -921,8 +921,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Terms */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <FileText className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Terms</span>
+                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Terms</span>
               </div>
               <textarea
                 value={formData.terms}
@@ -935,8 +935,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Expires At */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Expires</span>
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Expires</span>
               </div>
               <input
                 type="date"
@@ -949,8 +949,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Source */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <Building2 className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Source</span>
+                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Source</span>
               </div>
               <select
                 value={formData.source}
@@ -969,8 +969,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Source Detail */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <Building2 className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Source Detail</span>
+                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Source Detail</span>
               </div>
               <input
                 type="text"
@@ -984,8 +984,8 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {/* Internal Notes */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <FileText className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Internal Notes</span>
+                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Internal Notes</span>
               </div>
               <textarea
                 value={formData.internalNotes}
@@ -999,7 +999,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
             {block?.mappedInterests && block.mappedInterests.length > 0 && (
               <div className="py-4 mt-2 border-t">
                 <div className="flex items-center gap-2 mb-3 px-3">
-                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Mapped Interests ({block.mappedInterests.length})
                   </span>
                 </div>
@@ -1007,11 +1007,11 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
                   {block.mappedInterests.map((interest) => (
                     <div
                       key={interest.id}
-                      className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
                     >
                       <span className="text-sm font-medium">{interest.investor || "—"}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-slate-600">
+                        <span className="text-sm text-muted-foreground">
                           ${((interest.committedCents || 0) / 100).toLocaleString()}
                         </span>
                         <Badge variant="secondary" className="text-xs">
@@ -1027,7 +1027,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex items-center justify-between">
+        <div className="sticky bottom-0 bg-card border-t px-6 py-4 flex items-center justify-between">
           {!isNew && onDelete && (
             <>
               {!showDeleteConfirm ? (
@@ -1050,7 +1050,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded"
+                    className="px-3 py-1 text-sm text-muted-foreground hover:bg-muted rounded"
                   >
                     No
                   </button>
@@ -1063,7 +1063,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md disabled:opacity-50 transition-colors"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 {isNew ? "Create" : "Save"}

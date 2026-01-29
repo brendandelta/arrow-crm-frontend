@@ -49,13 +49,13 @@ export function PhoneCell({ phone }: PhoneCellProps) {
     <div className="flex items-center gap-2">
       <button
         onClick={handleCopy}
-        className="flex items-center gap-1.5 text-sm text-slate-700 hover:text-slate-900 transition-colors group"
+        className="flex items-center gap-1.5 text-sm text-foreground hover:text-foreground transition-colors group"
         title="Click to copy"
       >
         {copied ? (
           <Check className="h-3.5 w-3.5 text-green-600" />
         ) : (
-          <Copy className="h-3.5 w-3.5 text-slate-400 group-hover:text-slate-600" />
+          <Copy className="h-3.5 w-3.5 text-muted-foreground group-hover:text-muted-foreground" />
         )}
         <span className={copied ? "text-green-600" : ""}>{phone}</span>
       </button>

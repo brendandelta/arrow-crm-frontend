@@ -89,7 +89,7 @@ function MeetingKindBadge({ kind }: { kind: string | null }) {
 
   const { label, className } = config[kind] || {
     label: kind,
-    className: "bg-slate-100 text-slate-700"
+    className: "bg-muted text-foreground"
   };
 
   return (
@@ -176,21 +176,21 @@ export default function MeetingsPage() {
     <div className="flex-1 p-6 overflow-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900">Meetings</h1>
-        <p className="text-sm text-slate-500 mt-1">View and manage all your meetings</p>
+        <h1 className="text-2xl font-semibold text-foreground">Meetings</h1>
+        <p className="text-sm text-muted-foreground mt-1">View and manage all your meetings</p>
       </div>
 
       {/* Filters */}
       <div className="flex items-center gap-3 mb-6">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search meetings..."
-            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
 
@@ -201,14 +201,14 @@ export default function MeetingsPage() {
               setShowKindDropdown(!showKindDropdown);
               setShowTimeDropdown(false);
             }}
-            className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50"
+            className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg text-sm text-foreground hover:bg-muted"
           >
             <Filter className="h-4 w-4" />
             {KIND_OPTIONS.find(o => o.value === kindFilter)?.label}
             <ChevronDown className="h-4 w-4" />
           </button>
           {showKindDropdown && (
-            <div className="absolute top-full left-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-10">
+            <div className="absolute top-full left-0 mt-1 w-40 bg-card border border-border rounded-lg shadow-lg z-10">
               {KIND_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -216,8 +216,8 @@ export default function MeetingsPage() {
                     setKindFilter(option.value);
                     setShowKindDropdown(false);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 first:rounded-t-lg last:rounded-b-lg ${
-                    kindFilter === option.value ? "bg-blue-50 text-blue-700" : "text-slate-700"
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-muted first:rounded-t-lg last:rounded-b-lg ${
+                    kindFilter === option.value ? "bg-blue-50 text-blue-700" : "text-foreground"
                   }`}
                 >
                   {option.label}
@@ -234,14 +234,14 @@ export default function MeetingsPage() {
               setShowTimeDropdown(!showTimeDropdown);
               setShowKindDropdown(false);
             }}
-            className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50"
+            className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg text-sm text-foreground hover:bg-muted"
           >
             <Clock className="h-4 w-4" />
             {TIME_OPTIONS.find(o => o.value === timeFilter)?.label}
             <ChevronDown className="h-4 w-4" />
           </button>
           {showTimeDropdown && (
-            <div className="absolute top-full left-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-10">
+            <div className="absolute top-full left-0 mt-1 w-40 bg-card border border-border rounded-lg shadow-lg z-10">
               {TIME_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -249,8 +249,8 @@ export default function MeetingsPage() {
                     setTimeFilter(option.value);
                     setShowTimeDropdown(false);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 first:rounded-t-lg last:rounded-b-lg ${
-                    timeFilter === option.value ? "bg-blue-50 text-blue-700" : "text-slate-700"
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-muted first:rounded-t-lg last:rounded-b-lg ${
+                    timeFilter === option.value ? "bg-blue-50 text-blue-700" : "text-foreground"
                   }`}
                 >
                   {option.label}
@@ -264,14 +264,14 @@ export default function MeetingsPage() {
       {/* Meetings List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
+          <div className="h-8 w-8 border-4 border-border border-t-blue-600 rounded-full animate-spin" />
         </div>
       ) : filteredMeetings.length === 0 ? (
-        <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
-          <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500">No meetings found</p>
+        <div className="text-center py-12 bg-card border border-border rounded-xl">
+          <Calendar className="h-12 w-12 text-muted-foreground/60 mx-auto mb-3" />
+          <p className="text-muted-foreground">No meetings found</p>
           {searchQuery && (
-            <p className="text-sm text-slate-400 mt-1">Try adjusting your search or filters</p>
+            <p className="text-sm text-muted-foreground mt-1">Try adjusting your search or filters</p>
           )}
         </div>
       ) : (
@@ -289,7 +289,7 @@ export default function MeetingsPage() {
 
             return (
               <div key={dateStr}>
-                <h2 className={`text-sm font-medium mb-3 ${isToday ? "text-blue-600" : "text-slate-500"}`}>
+                <h2 className={`text-sm font-medium mb-3 ${isToday ? "text-blue-600" : "text-muted-foreground"}`}>
                   {dateLabel}
                 </h2>
                 <div className="space-y-2">
@@ -299,20 +299,20 @@ export default function MeetingsPage() {
                       <button
                         key={meeting.id}
                         onClick={() => setSelectedMeetingId(meeting.id)}
-                        className={`w-full flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-slate-300 hover:shadow-sm transition-all text-left ${
+                        className={`w-full flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:border-border hover:shadow-sm transition-all text-left ${
                           past ? "opacity-60" : ""
                         }`}
                       >
                         {/* Time */}
                         <div className="w-20 flex-shrink-0">
-                          <div className="text-sm font-medium text-slate-900">
+                          <div className="text-sm font-medium text-foreground">
                             {new Date(meeting.startsAt).toLocaleTimeString("en-US", {
                               hour: "numeric",
                               minute: "2-digit"
                             })}
                           </div>
                           {meeting.endsAt && (
-                            <div className="text-xs text-slate-400">
+                            <div className="text-xs text-muted-foreground">
                               {formatDuration(meeting.startsAt, meeting.endsAt)}
                             </div>
                           )}
@@ -329,7 +329,7 @@ export default function MeetingsPage() {
                               ? "bg-purple-100 text-purple-600"
                               : meeting.kind === "email"
                               ? "bg-amber-100 text-amber-600"
-                              : "bg-slate-100 text-slate-600"
+                              : "bg-muted text-muted-foreground"
                           }`}
                         >
                           <MeetingKindIcon kind={meeting.kind} />
@@ -338,26 +338,26 @@ export default function MeetingsPage() {
                         {/* Content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-slate-900 truncate">
+                            <span className="text-sm font-medium text-foreground truncate">
                               {meeting.title}
                             </span>
                             <MeetingKindBadge kind={meeting.kind} />
                           </div>
                           <div className="flex items-center gap-3 mt-1">
                             {meeting.organizationName && (
-                              <span className="flex items-center gap-1 text-xs text-slate-500">
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Building2 className="h-3 w-3" />
                                 {meeting.organizationName}
                               </span>
                             )}
                             {meeting.dealName && (
-                              <span className="flex items-center gap-1 text-xs text-slate-500">
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <Briefcase className="h-3 w-3" />
                                 {meeting.dealName}
                               </span>
                             )}
                             {meeting.location && (
-                              <span className="flex items-center gap-1 text-xs text-slate-500">
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                 <MapPin className="h-3 w-3" />
                                 {meeting.location}
                               </span>
@@ -367,7 +367,7 @@ export default function MeetingsPage() {
 
                         {/* Attendees */}
                         {meeting.attendeeCount > 0 && (
-                          <div className="flex items-center gap-1 text-xs text-slate-500">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Users className="h-4 w-4" />
                             {meeting.attendeeCount}
                           </div>

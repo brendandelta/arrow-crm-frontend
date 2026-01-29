@@ -107,12 +107,12 @@ function TaskRow({
   const priorityColors: Record<number, string> = {
     3: "bg-red-100 text-red-700",
     2: "bg-amber-100 text-amber-700",
-    1: "bg-slate-100 text-slate-600",
+    1: "bg-muted text-muted-foreground",
   };
 
   return (
     <div
-      className={`group flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 border-b border-slate-100 last:border-b-0 cursor-pointer transition-all ${
+      className={`group flex items-center gap-3 px-4 py-2.5 hover:bg-muted border-b border-border last:border-b-0 cursor-pointer transition-all ${
         task.completed ? "opacity-60" : ""
       }`}
       onClick={() => onClick(task)}
@@ -127,7 +127,7 @@ function TaskRow({
         className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
           task.completed
             ? "bg-green-500 border-green-500 text-white scale-100"
-            : "border-slate-300 hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
+            : "border-border hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
         } ${isToggling ? "opacity-50" : ""}`}
       >
         {isToggling ? (
@@ -150,7 +150,7 @@ function TaskRow({
       </div>
 
       {task.assignedTo && (
-        <span className="text-xs text-muted-foreground bg-slate-100 px-2 py-0.5 rounded-full">
+        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
           {task.assignedTo.firstName}
         </span>
       )}
@@ -276,7 +276,7 @@ function InlineTaskForm({
         <button
           type="button"
           onClick={onCancel}
-          className="p-1 text-slate-400 hover:text-slate-600"
+          className="p-1 text-muted-foreground hover:text-muted-foreground"
         >
           <X className="h-4 w-4" />
         </button>
@@ -286,7 +286,7 @@ function InlineTaskForm({
       {showOptions && subject.trim() && (
         <div className="flex items-center gap-3 mt-2 ml-7">
           <div className="flex items-center gap-1.5">
-            <Calendar className="h-3.5 w-3.5 text-slate-400" />
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
             <input
               type="date"
               value={dueAt}
@@ -295,7 +295,7 @@ function InlineTaskForm({
             />
           </div>
           <div className="flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5 text-slate-400" />
+            <User className="h-3.5 w-3.5 text-muted-foreground" />
             <select
               value={assignedToId}
               onChange={(e) => setAssignedToId(e.target.value)}
@@ -339,24 +339,24 @@ function ProjectGroupCard({
     open: "bg-blue-100 text-blue-700",
     active: "bg-green-100 text-green-700",
     paused: "bg-amber-100 text-amber-700",
-    complete: "bg-slate-100 text-slate-600",
+    complete: "bg-muted text-muted-foreground",
   };
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
+    <div className="border rounded-lg overflow-hidden bg-card shadow-sm">
       {/* Header */}
       <div
         className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
-          group.overdueCount > 0 ? "bg-red-50 hover:bg-red-100" : "bg-slate-50 hover:bg-slate-100"
+          group.overdueCount > 0 ? "bg-red-50 hover:bg-red-100" : "bg-muted hover:bg-muted"
         }`}
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-3">
           <div className="transition-transform duration-200">
             {expanded ? (
-              <ChevronDown className="h-4 w-4 text-slate-500" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
             ) : (
-              <ChevronRight className="h-4 w-4 text-slate-500" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
             )}
           </div>
           <FolderKanban className="h-4 w-4 text-purple-500" />
@@ -391,10 +391,10 @@ function ProjectGroupCard({
               setExpanded(true);
               setShowInlineForm(true);
             }}
-            className="p-1.5 hover:bg-white rounded transition-colors"
+            className="p-1.5 hover:bg-card rounded transition-colors"
             title="Add task"
           >
-            <Plus className="h-4 w-4 text-slate-500 hover:text-slate-700" />
+            <Plus className="h-4 w-4 text-muted-foreground hover:text-foreground" />
           </button>
 
           {group.project && (
@@ -403,10 +403,10 @@ function ProjectGroupCard({
                 e.stopPropagation();
                 onNavigateToProject(group.project!.id);
               }}
-              className="p-1.5 hover:bg-white rounded transition-colors"
+              className="p-1.5 hover:bg-card rounded transition-colors"
               title="View project"
             >
-              <ExternalLink className="h-3.5 w-3.5 text-slate-400 hover:text-slate-600" />
+              <ExternalLink className="h-3.5 w-3.5 text-muted-foreground hover:text-muted-foreground" />
             </button>
           )}
         </div>
@@ -453,7 +453,7 @@ function ProjectGroupCard({
           ) : group.tasks.length > 0 ? (
             <button
               onClick={() => setShowInlineForm(true)}
-              className="w-full px-4 py-2 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-50 border-t border-slate-100 flex items-center gap-2 transition-colors"
+              className="w-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted border-t border-border flex items-center gap-2 transition-colors"
             >
               <Plus className="h-4 w-4" />
               Add task
@@ -582,7 +582,7 @@ export default function TasksByProjectPage() {
             setSelectedTask(null);
             setSlideOutOpen(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors"
         >
           <Plus className="h-4 w-4" />
           New Task

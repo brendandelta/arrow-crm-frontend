@@ -16,7 +16,6 @@ import {
   Phone,
   Video,
   Users,
-  Search,
   Columns3,
   ChevronDown,
   Filter,
@@ -26,10 +25,10 @@ import {
   Clock,
   MessageSquare,
   Mail,
-  Plus,
   ExternalLink,
   MoreHorizontal,
 } from "lucide-react";
+import { PageHeader, PageSearch } from "@/components/PageHeader";
 import NewEventModal from "@/components/NewEventModal";
 
 // Activity/Event interface matching the backend API
@@ -227,13 +226,13 @@ function EventKindBadge({ kind }: { kind: string }) {
     sms: { label: "SMS", className: "bg-cyan-100 text-cyan-700" },
     linkedin_message: { label: "LinkedIn", className: "bg-sky-100 text-sky-700" },
     linkedin_connection: { label: "LinkedIn", className: "bg-sky-100 text-sky-700" },
-    note: { label: "Note", className: "bg-slate-100 text-slate-700" },
+    note: { label: "Note", className: "bg-muted text-foreground" },
     task: { label: "Task", className: "bg-orange-100 text-orange-700" },
   };
 
   const { label, className } = config[kind] || {
     label: kind.replace(/_/g, " "),
-    className: "bg-slate-100 text-slate-700",
+    className: "bg-muted text-foreground",
   };
 
   return (
@@ -245,12 +244,12 @@ function EventKindBadge({ kind }: { kind: string }) {
 }
 
 function OutcomeBadge({ outcome }: { outcome: string | null }) {
-  if (!outcome) return <span className="text-slate-400">-</span>;
+  if (!outcome) return <span className="text-muted-foreground">-</span>;
 
   const config: Record<string, { label: string; className: string }> = {
     connected: { label: "Connected", className: "bg-green-100 text-green-700" },
     voicemail: { label: "Voicemail", className: "bg-yellow-100 text-yellow-700" },
-    no_answer: { label: "No Answer", className: "bg-slate-100 text-slate-600" },
+    no_answer: { label: "No Answer", className: "bg-muted text-muted-foreground" },
     left_message: { label: "Left Message", className: "bg-blue-100 text-blue-700" },
     replied: { label: "Replied", className: "bg-green-100 text-green-700" },
     bounced: { label: "Bounced", className: "bg-red-100 text-red-700" },
@@ -263,7 +262,7 @@ function OutcomeBadge({ outcome }: { outcome: string | null }) {
 
   const { label, className } = config[outcome] || {
     label: outcome.replace(/_/g, " "),
-    className: "bg-slate-100 text-slate-600",
+    className: "bg-muted text-muted-foreground",
   };
 
   return (
@@ -454,49 +453,40 @@ export default function EventsPage() {
   }).length;
 
   return (
-    <div className="flex-1 p-6 overflow-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Events</h1>
-          <p className="text-sm text-slate-500 mt-1">
+    <div className="flex flex-col flex-1 overflow-auto">
+      <PageHeader
+        subtitle={
+          <span>
             {filteredActivities.length} events
-            {upcomingCount > 0 && ` \u00b7 ${upcomingCount} upcoming`}
-            {todayCount > 0 && ` \u00b7 ${todayCount} today`}
-          </p>
-        </div>
-        <button
-          onClick={() => setShowNewEventModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          New Event
-        </button>
-      </div>
-
-      {/* Filters Bar */}
-      <div className="flex items-center gap-3 mb-4">
-        {/* Search */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
+            {upcomingCount > 0 && <span className="text-muted-foreground/60"> · </span>}
+            {upcomingCount > 0 && <span>{upcomingCount} upcoming</span>}
+            {todayCount > 0 && <span className="text-muted-foreground/60"> · </span>}
+            {todayCount > 0 && <span>{todayCount} today</span>}
+          </span>
+        }
+        primaryActionLabel="New Event"
+        onPrimaryAction={() => setShowNewEventModal(true)}
+        search={
+          <PageSearch
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={setSearchQuery}
             placeholder="Search events..."
-            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
-        </div>
+        }
+      />
 
-        {/* Kind Filter */}
+      <div className="px-8 py-6 overflow-auto">
+        {/* Filters Bar */}
+        <div className="flex items-center gap-3 mb-4">
+          {/* Kind Filter */}
         <div className="relative">
           <button
             onClick={() => {
               closeAllDropdowns();
               setShowKindDropdown(!showKindDropdown);
             }}
-            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 ${
-              kindFilter !== "all" ? "border-blue-300 bg-blue-50 text-blue-700" : "border-slate-200 text-slate-700"
+            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm hover:bg-muted ${
+              kindFilter !== "all" ? "border-blue-300 bg-blue-50 text-blue-700" : "border-border text-foreground"
             }`}
           >
             <Filter className="h-4 w-4" />
@@ -504,7 +494,7 @@ export default function EventsPage() {
             <ChevronDown className="h-4 w-4" />
           </button>
           {showKindDropdown && (
-            <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
+            <div className="absolute top-full left-0 mt-1 w-48 bg-card border border-border rounded-lg shadow-lg z-20">
               {KIND_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -512,8 +502,8 @@ export default function EventsPage() {
                     setKindFilter(option.value);
                     setShowKindDropdown(false);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 first:rounded-t-lg last:rounded-b-lg ${
-                    kindFilter === option.value ? "bg-blue-50 text-blue-700" : "text-slate-700"
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-muted first:rounded-t-lg last:rounded-b-lg ${
+                    kindFilter === option.value ? "bg-blue-50 text-blue-700" : "text-foreground"
                   }`}
                 >
                   {option.label}
@@ -530,8 +520,8 @@ export default function EventsPage() {
               closeAllDropdowns();
               setShowTimeDropdown(!showTimeDropdown);
             }}
-            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 ${
-              timeFilter !== "all" ? "border-blue-300 bg-blue-50 text-blue-700" : "border-slate-200 text-slate-700"
+            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm hover:bg-muted ${
+              timeFilter !== "all" ? "border-blue-300 bg-blue-50 text-blue-700" : "border-border text-foreground"
             }`}
           >
             <Clock className="h-4 w-4" />
@@ -539,7 +529,7 @@ export default function EventsPage() {
             <ChevronDown className="h-4 w-4" />
           </button>
           {showTimeDropdown && (
-            <div className="absolute top-full left-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
+            <div className="absolute top-full left-0 mt-1 w-40 bg-card border border-border rounded-lg shadow-lg z-20">
               {TIME_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -547,8 +537,8 @@ export default function EventsPage() {
                     setTimeFilter(option.value);
                     setShowTimeDropdown(false);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 first:rounded-t-lg last:rounded-b-lg ${
-                    timeFilter === option.value ? "bg-blue-50 text-blue-700" : "text-slate-700"
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-muted first:rounded-t-lg last:rounded-b-lg ${
+                    timeFilter === option.value ? "bg-blue-50 text-blue-700" : "text-foreground"
                   }`}
                 >
                   {option.label}
@@ -565,15 +555,15 @@ export default function EventsPage() {
               closeAllDropdowns();
               setShowOutcomeDropdown(!showOutcomeDropdown);
             }}
-            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm hover:bg-slate-50 ${
-              outcomeFilter !== "all" ? "border-blue-300 bg-blue-50 text-blue-700" : "border-slate-200 text-slate-700"
+            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm hover:bg-muted ${
+              outcomeFilter !== "all" ? "border-blue-300 bg-blue-50 text-blue-700" : "border-border text-foreground"
             }`}
           >
             {OUTCOME_OPTIONS.find(o => o.value === outcomeFilter)?.label}
             <ChevronDown className="h-4 w-4" />
           </button>
           {showOutcomeDropdown && (
-            <div className="absolute top-full left-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
+            <div className="absolute top-full left-0 mt-1 w-40 bg-card border border-border rounded-lg shadow-lg z-20">
               {OUTCOME_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -581,8 +571,8 @@ export default function EventsPage() {
                     setOutcomeFilter(option.value);
                     setShowOutcomeDropdown(false);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 first:rounded-t-lg last:rounded-b-lg ${
-                    outcomeFilter === option.value ? "bg-blue-50 text-blue-700" : "text-slate-700"
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-muted first:rounded-t-lg last:rounded-b-lg ${
+                    outcomeFilter === option.value ? "bg-blue-50 text-blue-700" : "text-foreground"
                   }`}
                 >
                   {option.label}
@@ -596,17 +586,17 @@ export default function EventsPage() {
         <div className="relative ml-auto" ref={columnDropdownRef}>
           <button
             onClick={() => setShowColumnDropdown(!showColumnDropdown)}
-            className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50"
+            className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg text-sm text-foreground hover:bg-muted"
           >
             <Columns3 className="h-4 w-4" />
             Columns
           </button>
           {showColumnDropdown && (
-            <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-20 py-1">
+            <div className="absolute top-full right-0 mt-1 w-48 bg-card border border-border rounded-lg shadow-lg z-20 py-1">
               {ALL_COLUMNS.map((column) => (
                 <label
                   key={column.id}
-                  className={`flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer ${
+                  className={`flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted cursor-pointer ${
                     column.required ? "opacity-50 cursor-not-allowed" : ""
                   }`}
                 >
@@ -626,7 +616,7 @@ export default function EventsPage() {
       {/* Clear Filters */}
       {activeFiltersCount > 0 && (
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-slate-500">{activeFiltersCount} filter(s) active</span>
+          <span className="text-sm text-muted-foreground">{activeFiltersCount} filter(s) active</span>
           <button
             onClick={() => {
               setKindFilter("all");
@@ -643,21 +633,21 @@ export default function EventsPage() {
       {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
+          <div className="h-8 w-8 border-4 border-border border-t-blue-600 rounded-full animate-spin" />
         </div>
       ) : filteredActivities.length === 0 ? (
-        <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
-          <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500">No events found</p>
+        <div className="text-center py-12 bg-card border border-border rounded-xl">
+          <Calendar className="h-12 w-12 text-muted-foreground/60 mx-auto mb-3" />
+          <p className="text-muted-foreground">No events found</p>
           {(searchQuery || activeFiltersCount > 0) && (
-            <p className="text-sm text-slate-400 mt-1">Try adjusting your search or filters</p>
+            <p className="text-sm text-muted-foreground mt-1">Try adjusting your search or filters</p>
           )}
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-50">
+              <TableRow className="bg-muted">
                 <TableHead className="w-12">
                   <Checkbox
                     checked={allSelected}
@@ -666,7 +656,7 @@ export default function EventsPage() {
                   />
                 </TableHead>
                 {ALL_COLUMNS.filter(col => visibleColumns.has(col.id)).map((column) => (
-                  <TableHead key={column.id} className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                  <TableHead key={column.id} className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     {column.label}
                   </TableHead>
                 ))}
@@ -677,7 +667,7 @@ export default function EventsPage() {
               {filteredActivities.map((activity) => (
                 <TableRow
                   key={activity.id}
-                  className={`hover:bg-slate-50 cursor-pointer ${
+                  className={`hover:bg-muted cursor-pointer ${
                     selectedIds.has(activity.id) ? "bg-blue-50" : ""
                   }`}
                 >
@@ -689,8 +679,8 @@ export default function EventsPage() {
                   </TableCell>
 
                   {visibleColumns.has("subject") && (
-                    <TableCell className="font-medium text-slate-900">
-                      {activity.subject || <span className="text-slate-400 italic">No subject</span>}
+                    <TableCell className="font-medium text-foreground">
+                      {activity.subject || <span className="text-muted-foreground italic">No subject</span>}
                     </TableCell>
                   )}
 
@@ -701,13 +691,13 @@ export default function EventsPage() {
                   )}
 
                   {visibleColumns.has("dateTime") && (
-                    <TableCell className="text-sm text-slate-600">
+                    <TableCell className="text-sm text-muted-foreground">
                       {formatDateTime(activity.startsAt || activity.occurredAt)}
                     </TableCell>
                   )}
 
                   {visibleColumns.has("duration") && (
-                    <TableCell className="text-sm text-slate-500">
+                    <TableCell className="text-sm text-muted-foreground">
                       {formatDuration(activity.durationMinutes, activity.startsAt, activity.endsAt) || "-"}
                     </TableCell>
                   )}
@@ -715,12 +705,12 @@ export default function EventsPage() {
                   {visibleColumns.has("deal") && (
                     <TableCell>
                       {activity.dealName ? (
-                        <span className="flex items-center gap-1 text-sm text-slate-600">
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Briefcase className="h-3 w-3" />
                           {activity.dealName}
                         </span>
                       ) : (
-                        <span className="text-slate-400">-</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
                   )}
@@ -728,7 +718,7 @@ export default function EventsPage() {
                   {visibleColumns.has("location") && (
                     <TableCell>
                       {activity.location ? (
-                        <span className="flex items-center gap-1 text-sm text-slate-600">
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
                           <MapPin className="h-3 w-3" />
                           {activity.location}
                         </span>
@@ -744,7 +734,7 @@ export default function EventsPage() {
                           Join
                         </a>
                       ) : (
-                        <span className="text-slate-400">-</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
                   )}
@@ -752,12 +742,12 @@ export default function EventsPage() {
                   {visibleColumns.has("attendees") && (
                     <TableCell>
                       {activity.attendeeCount > 0 ? (
-                        <span className="flex items-center gap-1 text-sm text-slate-600">
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Users className="h-3 w-3" />
                           {activity.attendeeCount}
                         </span>
                       ) : (
-                        <span className="text-slate-400">-</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
                   )}
@@ -769,17 +759,17 @@ export default function EventsPage() {
                   )}
 
                   {visibleColumns.has("performedBy") && (
-                    <TableCell className="text-sm text-slate-600">
+                    <TableCell className="text-sm text-muted-foreground">
                       {activity.performedBy
                         ? `${activity.performedBy.firstName} ${activity.performedBy.lastName}`
-                        : <span className="text-slate-400">-</span>
+                        : <span className="text-muted-foreground">-</span>
                       }
                     </TableCell>
                   )}
 
                   <TableCell onClick={(e) => e.stopPropagation()}>
-                    <button className="p-1 hover:bg-slate-100 rounded">
-                      <MoreHorizontal className="h-4 w-4 text-slate-400" />
+                    <button className="p-1 hover:bg-muted rounded">
+                      <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                     </button>
                   </TableCell>
                 </TableRow>
@@ -791,13 +781,13 @@ export default function EventsPage() {
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-4">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background px-4 py-3 rounded-lg shadow-lg flex items-center gap-4">
           <span className="text-sm">{selectedIds.size} selected</span>
-          <div className="h-4 w-px bg-slate-700" />
-          <button className="text-sm hover:text-slate-300">Delete</button>
+          <div className="h-4 w-px bg-muted-foreground" />
+          <button className="text-sm hover:text-muted-foreground/60">Delete</button>
           <button
             onClick={() => setSelectedIds(new Set())}
-            className="text-sm text-slate-400 hover:text-white"
+            className="text-sm text-muted-foreground hover:text-white"
           >
             Cancel
           </button>
@@ -811,6 +801,7 @@ export default function EventsPage() {
           onSuccess={() => setRefreshKey((k) => k + 1)}
         />
       )}
+      </div>
     </div>
   );
 }

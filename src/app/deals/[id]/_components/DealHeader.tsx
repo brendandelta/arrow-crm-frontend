@@ -69,7 +69,7 @@ function formatDate(dateStr: string | null) {
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     live: "bg-green-100 text-green-800",
-    sourcing: "bg-slate-100 text-slate-600",
+    sourcing: "bg-muted text-muted-foreground",
     closing: "bg-blue-100 text-blue-800",
     closed: "bg-purple-100 text-purple-800",
     dead: "bg-red-100 text-red-800",
@@ -160,7 +160,7 @@ export function DealHeader({
             className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border transition-colors ${
               lpMode
                 ? "bg-purple-100 border-purple-300 text-purple-700"
-                : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                : "bg-card border-border text-muted-foreground hover:border-border"
             }`}
           >
             {lpMode ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
@@ -205,7 +205,7 @@ export function DealHeader({
         <div className="text-right space-y-1">
           {owner && (
             <div className="flex items-center gap-2 justify-end">
-              <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium">
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
                 {owner.firstName.charAt(0)}
                 {owner.lastName.charAt(0)}
               </div>
@@ -242,19 +242,19 @@ export function DealHeader({
       </div>
 
       {/* Metrics Bar */}
-      <div className="flex items-center gap-6 py-3 px-4 bg-slate-50 rounded-lg">
+      <div className="flex items-center gap-6 py-3 px-4 bg-muted rounded-lg">
         <MetricItem label="Soft Circled" value={formatCurrency(softCircled)} color="text-blue-600" />
-        <div className="w-px h-8 bg-slate-200" />
+        <div className="w-px h-8 bg-border" />
         <MetricItem
           label="Committed"
           value={formatCurrency(totalCommitted)}
           color="text-purple-600"
         />
-        <div className="w-px h-8 bg-slate-200" />
+        <div className="w-px h-8 bg-border" />
         <MetricItem label="Wired" value={formatCurrency(wired)} color="text-emerald-600" />
-        <div className="w-px h-8 bg-slate-200" />
+        <div className="w-px h-8 bg-border" />
         <MetricItem label="Inventory" value={formatCurrency(inventory)} />
-        <div className="w-px h-8 bg-slate-200" />
+        <div className="w-px h-8 bg-border" />
         <MetricItem
           label="Coverage"
           value={coverageRatio !== null ? `${coverageRatio}%` : "—"}

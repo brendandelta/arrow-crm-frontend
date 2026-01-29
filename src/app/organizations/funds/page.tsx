@@ -30,7 +30,7 @@ interface Organization {
 function WarmthIndicator({ warmth }: { warmth: number }) {
   const labels = ["Cold", "Warm", "Hot", "Champion"];
   const colors = [
-    "bg-slate-200",
+    "bg-muted",
     "bg-yellow-400",
     "bg-orange-500",
     "bg-green-500",
@@ -41,7 +41,7 @@ function WarmthIndicator({ warmth }: { warmth: number }) {
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className={`h-1.5 w-3 rounded-full ${i <= warmth ? colors[warmth] : "bg-slate-100"}`}
+            className={`h-1.5 w-3 rounded-full ${i <= warmth ? colors[warmth] : "bg-muted"}`}
           />
         ))}
       </div>
@@ -97,7 +97,7 @@ export default function FundsPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/organizations")}
-            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>

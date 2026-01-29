@@ -101,7 +101,7 @@ export function KPIStrip({ stats, onFilterClick, activeFilter }: KPIStripProps) 
               flex items-center gap-3 p-3 rounded-lg border transition-all
               ${isActive
                 ? `${kpi.bgColor} ${kpi.borderColor} ring-2 ring-offset-1 ring-${kpi.color.replace('text-', '')}`
-                : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                : 'bg-card border-border hover:border-border hover:bg-muted'
               }
             `}
           >
@@ -129,24 +129,24 @@ export function KPIStripCompact({ stats }: { stats: KPIStripProps["stats"] }) {
         <span className="text-green-600 font-medium">{stats.liveCount}</span>
         <span className="text-muted-foreground">live</span>
       </div>
-      <span className="text-slate-300">|</span>
+      <span className="text-muted-foreground/60">|</span>
       <div className="flex items-center gap-1.5">
         <span className="font-medium">{formatCurrency(stats.totalSoftCircled)}</span>
         <span className="text-muted-foreground">soft circled</span>
       </div>
-      <span className="text-slate-300">|</span>
+      <span className="text-muted-foreground/60">|</span>
       <div className="flex items-center gap-1.5">
         <span className="font-medium">{formatCurrency(stats.totalCommitted)}</span>
         <span className="text-muted-foreground">committed</span>
       </div>
-      <span className="text-slate-300">|</span>
+      <span className="text-muted-foreground/60">|</span>
       <div className="flex items-center gap-1.5">
         <span className="text-emerald-600 font-medium">{formatCurrency(stats.totalWired)}</span>
         <span className="text-muted-foreground">wired</span>
       </div>
       {stats.atRiskCount > 0 && (
         <>
-          <span className="text-slate-300">|</span>
+          <span className="text-muted-foreground/60">|</span>
           <div className="flex items-center gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
             <span className="text-red-600 font-medium">{stats.atRiskCount}</span>

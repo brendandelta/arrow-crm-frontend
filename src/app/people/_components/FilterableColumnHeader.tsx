@@ -149,7 +149,7 @@ export function FilterableColumnHeader({
     // No input needed for empty checks
     if (operator === "is_empty" || operator === "is_not_empty") {
       return (
-        <div className="py-2 px-3 bg-slate-50 rounded-lg text-sm text-slate-500 text-center">
+        <div className="py-2 px-3 bg-muted rounded-lg text-sm text-muted-foreground text-center">
           No additional input needed
         </div>
       );
@@ -164,17 +164,17 @@ export function FilterableColumnHeader({
         <div className="space-y-2">
           {valuesList.length > 5 && (
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search values..."
-                className="w-full pl-9 pr-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                className="w-full pl-9 pr-3 py-2.5 text-sm bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
             </div>
           )}
-          <div className="max-h-44 overflow-y-auto border border-slate-200 rounded-lg bg-white">
+          <div className="max-h-44 overflow-y-auto border border-border rounded-lg bg-card">
             {(columnType === "warmth" ? WARMTH_OPTIONS_FILTER : displayValues).map((item, index) => {
               const val = typeof item === "string" ? item : item.value;
               const lbl = typeof item === "string" ? item : item.label;
@@ -184,13 +184,13 @@ export function FilterableColumnHeader({
                   key={val}
                   onClick={() => toggleValue(val)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left transition-colors ${
-                    isChecked ? "bg-blue-50" : "hover:bg-slate-50"
-                  } ${index !== 0 ? "border-t border-slate-100" : ""}`}
+                    isChecked ? "bg-blue-50" : "hover:bg-muted"
+                  } ${index !== 0 ? "border-t border-border" : ""}`}
                 >
                   <div className={`flex items-center justify-center w-4 h-4 rounded border-2 transition-colors ${
                     isChecked
                       ? "bg-blue-600 border-blue-600"
-                      : "border-slate-300 bg-white"
+                      : "border-border bg-card"
                   }`}>
                     {isChecked && (
                       <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
@@ -198,7 +198,7 @@ export function FilterableColumnHeader({
                       </svg>
                     )}
                   </div>
-                  <span className={`truncate ${isChecked ? "font-medium text-blue-900" : "text-slate-700"}`}>
+                  <span className={`truncate ${isChecked ? "font-medium text-blue-900" : "text-foreground"}`}>
                     {lbl}
                   </span>
                 </button>
@@ -215,7 +215,7 @@ export function FilterableColumnHeader({
                 </span>
               ))}
               {draftSelectedValues.size > 3 && (
-                <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-slate-500 bg-slate-100 rounded-md">
+                <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-muted-foreground bg-muted rounded-md">
                   +{draftSelectedValues.size - 3} more
                 </span>
               )}
@@ -232,7 +232,7 @@ export function FilterableColumnHeader({
           <select
             value={draftValue}
             onChange={(e) => setDraftValue(e.target.value)}
-            className="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer hover:border-slate-300 transition-colors"
+            className="w-full px-3 py-2.5 text-sm bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer hover:border-border transition-colors"
           >
             <option value="">Select time period...</option>
             {DATE_RELATIVE_OPTIONS.map((opt) => (
@@ -241,7 +241,7 @@ export function FilterableColumnHeader({
               </option>
             ))}
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         </div>
       );
     }
@@ -255,14 +255,14 @@ export function FilterableColumnHeader({
               type="date"
               value={draftValue}
               onChange={(e) => setDraftValue(e.target.value)}
-              className="flex-1 px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className="flex-1 px-3 py-2.5 text-sm bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
-            <span className="text-slate-400 text-sm font-medium">to</span>
+            <span className="text-muted-foreground text-sm font-medium">to</span>
             <input
               type="date"
               value={draftSecondValue}
               onChange={(e) => setDraftSecondValue(e.target.value)}
-              className="flex-1 px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className="flex-1 px-3 py-2.5 text-sm bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             />
           </div>
         );
@@ -272,7 +272,7 @@ export function FilterableColumnHeader({
           type="date"
           value={draftValue}
           onChange={(e) => setDraftValue(e.target.value)}
-          className="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          className="w-full px-3 py-2.5 text-sm bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         />
       );
     }
@@ -286,15 +286,15 @@ export function FilterableColumnHeader({
             value={draftValue}
             onChange={(e) => setDraftValue(e.target.value)}
             placeholder="Min"
-            className="flex-1 px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className="flex-1 px-3 py-2.5 text-sm bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
-          <span className="text-slate-400 text-sm font-medium">to</span>
+          <span className="text-muted-foreground text-sm font-medium">to</span>
           <input
             type="number"
             value={draftSecondValue}
             onChange={(e) => setDraftSecondValue(e.target.value)}
             placeholder="Max"
-            className="flex-1 px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            className="flex-1 px-3 py-2.5 text-sm bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
           />
         </div>
       );
@@ -308,7 +308,7 @@ export function FilterableColumnHeader({
           value={draftValue}
           onChange={(e) => setDraftValue(e.target.value)}
           placeholder="Enter a number..."
-          className="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          className="w-full px-3 py-2.5 text-sm bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         />
       );
     }
@@ -320,7 +320,7 @@ export function FilterableColumnHeader({
         value={draftValue}
         onChange={(e) => setDraftValue(e.target.value)}
         placeholder="Type to filter..."
-        className="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        className="w-full px-3 py-2.5 text-sm bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
         autoFocus
       />
     );
@@ -331,7 +331,7 @@ export function FilterableColumnHeader({
       <button
         onClick={handleOpenDropdown}
         className={`flex items-center gap-1.5 text-left font-medium text-xs uppercase tracking-wide transition-colors group ${
-          hasActiveFilter || isSorted ? "text-blue-600" : "text-slate-500 hover:text-slate-700"
+          hasActiveFilter || isSorted ? "text-blue-600" : "text-muted-foreground hover:text-foreground"
         }`}
       >
         <span>{label}</span>
@@ -340,7 +340,7 @@ export function FilterableColumnHeader({
           <Filter className="h-3 w-3" />
         )}
         <ChevronDown
-          className={`h-3 w-3 text-slate-400 group-hover:text-slate-600 transition-transform ${
+          className={`h-3 w-3 text-muted-foreground group-hover:text-muted-foreground transition-transform ${
             isOpen ? "rotate-180" : ""
           }`}
         />
@@ -348,7 +348,7 @@ export function FilterableColumnHeader({
 
       {isOpen && (
         <div
-          className="fixed z-[9999] w-72 bg-white rounded-xl border border-slate-200 overflow-hidden"
+          className="fixed z-[9999] w-72 bg-card rounded-xl border border-border overflow-hidden"
           style={{
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)',
             top: dropdownRef.current ? dropdownRef.current.getBoundingClientRect().bottom + 8 : 0,
@@ -356,8 +356,8 @@ export function FilterableColumnHeader({
           }}
         >
           {/* Sort Section */}
-          <div className="p-3 bg-slate-50 border-b border-slate-200">
-            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
+          <div className="p-3 bg-muted border-b border-border">
+            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
               Sort by {label}
             </div>
             <div className="flex gap-2">
@@ -366,7 +366,7 @@ export function FilterableColumnHeader({
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                   sortDirection === "asc"
                     ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                    : "bg-card text-foreground border border-border hover:border-border hover:bg-muted"
                 }`}
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -379,7 +379,7 @@ export function FilterableColumnHeader({
                 className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all ${
                   sortDirection === "desc"
                     ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                    : "bg-card text-foreground border border-border hover:border-border hover:bg-muted"
                 }`}
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -392,7 +392,7 @@ export function FilterableColumnHeader({
 
           {/* Filter Section */}
           <div className="p-3 space-y-3">
-            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
               Filter {label}
             </div>
 
@@ -406,7 +406,7 @@ export function FilterableColumnHeader({
                   setDraftSecondValue("");
                   setDraftSelectedValues(new Set());
                 }}
-                className="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer hover:border-slate-300 transition-colors"
+                className="w-full px-3 py-2.5 text-sm bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none cursor-pointer hover:border-border transition-colors"
               >
                 {operators.map((op) => (
                   <option key={op.value} value={op.value}>
@@ -414,7 +414,7 @@ export function FilterableColumnHeader({
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             </div>
 
             {/* Filter Value Input */}
@@ -423,7 +423,7 @@ export function FilterableColumnHeader({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-2 pt-2 border-t border-border">
               <button
                 onClick={applyFilter}
                 className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
@@ -433,7 +433,7 @@ export function FilterableColumnHeader({
               {hasActiveFilter && (
                 <button
                   onClick={clearFilter}
-                  className="px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                  className="px-4 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-muted hover:bg-muted rounded-lg transition-colors"
                 >
                   Clear
                 </button>

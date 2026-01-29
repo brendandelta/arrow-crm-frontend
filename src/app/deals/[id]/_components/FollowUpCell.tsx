@@ -82,7 +82,7 @@ export function FollowUpCell({
         <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center shrink-0 shadow-sm shadow-emerald-200">
           <Check className="h-2.5 w-2.5 text-white" />
         </div>
-        <span className="text-[12px] text-slate-400 line-through truncate">
+        <span className="text-[12px] text-muted-foreground line-through truncate">
           {task.subject}
         </span>
       </div>
@@ -105,7 +105,7 @@ export function FollowUpCell({
           className={`w-4 h-4 rounded-full border-[1.5px] flex items-center justify-center shrink-0 transition-all disabled:opacity-50 ${
             task.overdue
               ? "border-rose-300 hover:border-rose-400 hover:bg-rose-50"
-              : "border-slate-300 hover:border-emerald-400 hover:bg-emerald-50"
+              : "border-border hover:border-emerald-400 hover:bg-emerald-50"
           }`}
         >
           <Check
@@ -119,7 +119,7 @@ export function FollowUpCell({
         <div className="flex-1 min-w-0">
           <div
             className={`text-[12px] leading-tight truncate ${
-              task.overdue ? "text-rose-600 font-medium" : "text-slate-700"
+              task.overdue ? "text-rose-600 font-medium" : "text-foreground"
             }`}
           >
             {task.subject}
@@ -127,7 +127,7 @@ export function FollowUpCell({
           {dueLabel && (
             <div
               className={`text-[10px] leading-tight mt-0.5 ${
-                task.overdue ? "text-rose-500 font-medium" : "text-slate-400"
+                task.overdue ? "text-rose-500 font-medium" : "text-muted-foreground"
               }`}
             >
               {dueLabel}
@@ -140,7 +140,7 @@ export function FollowUpCell({
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <button
-                className="p-0.5 rounded text-slate-300 opacity-0 group-hover/followup:opacity-100 hover:text-indigo-500 hover:bg-indigo-50 transition-all"
+                className="p-0.5 rounded text-muted-foreground/60 opacity-0 group-hover/followup:opacity-100 hover:text-indigo-500 hover:bg-indigo-50 transition-all"
                 title="Add task"
               >
                 <Plus className="h-3 w-3" />
@@ -175,16 +175,16 @@ export function FollowUpCell({
         <PopoverTrigger asChild>
           {compact ? (
             <button
-              className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-indigo-500 transition-colors"
+              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-indigo-500 transition-colors"
             >
               <Plus className="h-3 w-3" />
               Follow-up
             </button>
           ) : (
             <button
-              className="group/add flex items-center gap-1.5 text-[12px] text-slate-400 hover:text-indigo-600 transition-colors py-0.5"
+              className="group/add flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-indigo-600 transition-colors py-0.5"
             >
-              <div className="w-4 h-4 rounded-full border-[1.5px] border-dashed border-slate-300 group-hover/add:border-indigo-400 flex items-center justify-center transition-colors">
+              <div className="w-4 h-4 rounded-full border-[1.5px] border-dashed border-border group-hover/add:border-indigo-400 flex items-center justify-center transition-colors">
                 <Plus className="h-2.5 w-2.5" />
               </div>
               <span>Add task</span>
@@ -289,7 +289,7 @@ function QuickTaskForm({
   return (
     <div className="p-3 space-y-3">
       {/* Header */}
-      <div className="text-[12px] font-semibold text-slate-700">
+      <div className="text-[12px] font-semibold text-foreground">
         New follow-up
       </div>
 
@@ -300,15 +300,15 @@ function QuickTaskForm({
         onChange={(e) => setSubject(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="What needs to happen?"
-        className="w-full text-[13px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 focus:bg-white placeholder:text-slate-300 transition-all"
+        className="w-full text-[13px] px-3 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 focus:bg-card placeholder:text-muted-foreground/60 transition-all"
         autoFocus
       />
 
       {/* Due date quick picks */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
-          <CalendarClock className="h-3 w-3 text-slate-400" />
-          <span className="text-[11px] text-slate-400">Due</span>
+          <CalendarClock className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[11px] text-muted-foreground">Due</span>
         </div>
         <div className="flex items-center gap-1.5">
           {[
@@ -328,7 +328,7 @@ function QuickTaskForm({
                 className={`text-[11px] px-2 py-1 rounded-md font-medium transition-colors ${
                   isActive
                     ? "bg-indigo-500 text-white"
-                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                    : "bg-muted text-muted-foreground hover:bg-muted"
                 }`}
               >
                 {opt.label}
@@ -339,7 +339,7 @@ function QuickTaskForm({
             type="date"
             value={dueAt}
             onChange={(e) => setDueAt(e.target.value)}
-            className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-1.5 py-1 text-slate-600 ml-auto w-[110px]"
+            className="text-[11px] bg-muted border border-border rounded-md px-1.5 py-1 text-muted-foreground ml-auto w-[110px]"
           />
         </div>
       </div>
@@ -348,7 +348,7 @@ function QuickTaskForm({
       {!showMore ? (
         <button
           onClick={() => setShowMore(true)}
-          className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600 transition-colors"
+          className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-muted-foreground transition-colors"
         >
           <ChevronDown className="h-3 w-3" />
           Priority & assign
@@ -358,7 +358,7 @@ function QuickTaskForm({
           <select
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
-            className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2 py-1.5 text-slate-600"
+            className="text-[11px] bg-muted border border-border rounded-md px-2 py-1.5 text-muted-foreground"
           >
             <option value="low">Low priority</option>
             <option value="normal">Normal</option>
@@ -367,7 +367,7 @@ function QuickTaskForm({
           <select
             value={assignedToId}
             onChange={(e) => setAssignedToId(e.target.value)}
-            className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2 py-1.5 text-slate-600 flex-1"
+            className="text-[11px] bg-muted border border-border rounded-md px-2 py-1.5 text-muted-foreground flex-1"
           >
             <option value="">Assign to...</option>
             {users.map((u) => (
@@ -384,13 +384,13 @@ function QuickTaskForm({
         <button
           onClick={handleSubmit}
           disabled={!subject.trim() || submitting}
-          className="flex-1 px-3 py-1.5 text-[12px] font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 disabled:opacity-40 transition-colors shadow-sm"
+          className="flex-1 px-3 py-1.5 text-[12px] font-medium text-background bg-foreground rounded-lg hover:bg-foreground/90 disabled:opacity-40 transition-colors shadow-sm"
         >
           {submitting ? "Saving..." : "Add task"}
         </button>
         <button
           onClick={onCancel}
-          className="px-3 py-1.5 text-[12px] text-slate-400 hover:text-slate-600 transition-colors"
+          className="px-3 py-1.5 text-[12px] text-muted-foreground hover:text-muted-foreground transition-colors"
         >
           Cancel
         </button>

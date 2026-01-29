@@ -50,13 +50,13 @@ export function EnumFilter({ options, selected, counts, onChange }: EnumFilterPr
     <div className="space-y-1.5">
       {showSearch && (
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search..."
-            className="w-full text-[12px] pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder:text-slate-300"
+            className="w-full text-[12px] pl-8 pr-3 py-1.5 bg-card border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder:text-muted-foreground/60"
             onPointerDown={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           />
@@ -78,7 +78,7 @@ export function EnumFilter({ options, selected, counts, onChange }: EnumFilterPr
           return (
             <label
               key={option.value}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors hover:bg-slate-50 ${
+              className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors hover:bg-muted ${
                 isChecked ? "bg-blue-50/50" : ""
               }`}
               onPointerDown={(e) => e.stopPropagation()}
@@ -87,14 +87,14 @@ export function EnumFilter({ options, selected, counts, onChange }: EnumFilterPr
                 type="checkbox"
                 checked={isChecked}
                 onChange={() => toggle(option.value)}
-                className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20"
+                className="h-3.5 w-3.5 rounded border-border text-blue-600 focus:ring-blue-500/20"
               />
               <Badge
-                className={`text-[11px] ${option.color || "bg-slate-100 text-slate-600"}`}
+                className={`text-[11px] ${option.color || "bg-muted text-muted-foreground"}`}
               >
                 {option.label}
               </Badge>
-              <span className="ml-auto text-[11px] text-slate-400 tabular-nums">
+              <span className="ml-auto text-[11px] text-muted-foreground tabular-nums">
                 {count}
               </span>
             </label>

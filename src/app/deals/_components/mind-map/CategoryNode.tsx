@@ -19,7 +19,7 @@ function CategoryNodeComponent({ data }: NodeProps) {
 
   return (
     <div
-      className="relative px-3 py-1.5 rounded-lg select-none flex items-center gap-1.5 cursor-pointer transition-colors hover:bg-slate-100"
+      className="relative px-3 py-1.5 rounded-lg select-none flex items-center gap-1.5 cursor-pointer transition-colors hover:bg-muted"
       style={{
         background: "#f1f5f9",
         border: "1px solid #e2e8f0",
@@ -29,22 +29,22 @@ function CategoryNodeComponent({ data }: NodeProps) {
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-1.5 !h-1.5 !bg-slate-300 !border-0"
+        className="!w-1.5 !h-1.5 !bg-muted-foreground/30 !border-0"
       />
 
       {/* Expand/collapse arrow */}
       {count > 0 ? (
         expanded ? (
-          <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
+          <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
         ) : (
-          <ChevronRight className="w-3 h-3 text-slate-400 shrink-0" />
+          <ChevronRight className="w-3 h-3 text-muted-foreground shrink-0" />
         )
       ) : null}
 
-      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+      <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
         {label}
       </span>
-      <span className="text-[10px] font-medium text-slate-400 bg-white px-1.5 py-0.5 rounded-full">
+      <span className="text-[10px] font-medium text-muted-foreground bg-card px-1.5 py-0.5 rounded-full">
         {count}
       </span>
       <button
@@ -62,7 +62,7 @@ function CategoryNodeComponent({ data }: NodeProps) {
         <Handle
           type="source"
           position={Position.Right}
-          className="!w-1.5 !h-1.5 !bg-slate-300 !border-0"
+          className="!w-1.5 !h-1.5 !bg-muted-foreground/30 !border-0"
         />
       )}
     </div>

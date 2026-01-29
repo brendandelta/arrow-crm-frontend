@@ -27,6 +27,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { TasksSlideOut } from "./_components/TasksSlideOut";
 import { useAuth } from "@/contexts/AuthContext";
+import { PageHeader, PageSearch } from "@/components/PageHeader";
 
 interface Owner {
   id: number;
@@ -149,7 +150,7 @@ const SORT_BY_OPTIONS: { id: SortBy; label: string }[] = [
 const PRIORITY_OPTIONS = [
   { value: 3, label: "High", dotColor: "bg-red-500" },
   { value: 2, label: "Medium", dotColor: "bg-amber-500" },
-  { value: 1, label: "Low", dotColor: "bg-slate-400" },
+  { value: 1, label: "Low", dotColor: "bg-muted-foreground" },
 ];
 
 const STATUS_OPTIONS = [
@@ -229,7 +230,7 @@ function SubtaskRow({
   };
 
   return (
-    <div className="group flex items-center gap-2 pl-12 pr-4 py-2 hover:bg-slate-100 border-b border-slate-100 last:border-b-0">
+    <div className="group flex items-center gap-2 pl-12 pr-4 py-2 hover:bg-muted border-b border-border last:border-b-0">
       {/* Subtask checkbox */}
       <button
         onClick={onToggle}
@@ -237,7 +238,7 @@ function SubtaskRow({
         className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 ${
           subtask.completed
             ? "bg-green-500 border-green-500 text-white"
-            : "border-slate-300 hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
+            : "border-border hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
         } ${isToggling ? "opacity-50" : ""}`}
       >
         {isToggling ? (
@@ -264,7 +265,7 @@ function SubtaskRow({
               setEditingSubject(false);
             }
           }}
-          className="flex-1 text-sm bg-white border border-blue-400 rounded px-2 py-0.5 outline-none focus:ring-2 focus:ring-blue-200"
+          className="flex-1 text-sm bg-card border border-blue-400 rounded px-2 py-0.5 outline-none focus:ring-2 focus:ring-blue-200"
         />
       ) : (
         <span
@@ -285,7 +286,7 @@ function SubtaskRow({
         value={subtask.assignedTo?.id || ""}
         onChange={(e) => onAssigneeChange(e.target.value ? parseInt(e.target.value) : null)}
         onClick={(e) => e.stopPropagation()}
-        className="text-xs bg-transparent border-0 text-slate-500 hover:text-slate-700 cursor-pointer focus:ring-0 py-0 pr-6 pl-1 hover:bg-slate-200 rounded"
+        className="text-xs bg-transparent border-0 text-muted-foreground hover:text-foreground cursor-pointer focus:ring-0 py-0 pr-6 pl-1 hover:bg-muted rounded"
       >
         <option value="">Unassigned</option>
         {users.map((user) => (
@@ -311,7 +312,7 @@ function SubtaskRow({
             setEditingDate(!editingDate);
           }}
           className={`text-xs w-16 text-right hover:bg-blue-50 px-1 rounded transition-colors ${
-            subtask.overdue ? "text-red-600" : subtask.dueAt ? "text-muted-foreground" : "text-slate-400"
+            subtask.overdue ? "text-red-600" : subtask.dueAt ? "text-muted-foreground" : "text-muted-foreground"
           }`}
         >
           {subtask.dueAt ? formatDate(subtask.dueAt) : (
@@ -322,7 +323,7 @@ function SubtaskRow({
         </button>
         {editingDate && (
           <div
-            className="fixed z-50 bg-white border rounded-lg shadow-lg p-2"
+            className="fixed z-50 bg-card border rounded-lg shadow-lg p-2"
             style={{ top: datePosition.top, left: datePosition.left }}
           >
             <input
@@ -333,7 +334,7 @@ function SubtaskRow({
                 setEditingDate(false);
               }}
               onBlur={() => setTimeout(() => setEditingDate(false), 150)}
-              className="text-xs border border-slate-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200"
+              className="text-xs border border-border rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200"
               autoFocus
             />
             <div className="flex gap-1 mt-1.5">
@@ -342,7 +343,7 @@ function SubtaskRow({
                   onDateChange(new Date().toISOString().split("T")[0]);
                   setEditingDate(false);
                 }}
-                className="px-1.5 py-0.5 text-xs bg-slate-100 hover:bg-slate-200 rounded"
+                className="px-1.5 py-0.5 text-xs bg-muted hover:bg-muted rounded"
               >
                 Today
               </button>
@@ -353,7 +354,7 @@ function SubtaskRow({
                   onDateChange(tomorrow.toISOString().split("T")[0]);
                   setEditingDate(false);
                 }}
-                className="px-1.5 py-0.5 text-xs bg-slate-100 hover:bg-slate-200 rounded"
+                className="px-1.5 py-0.5 text-xs bg-muted hover:bg-muted rounded"
               >
                 Tmrw
               </button>
@@ -376,7 +377,7 @@ function SubtaskRow({
       {/* Open detail */}
       <button
         onClick={onClick}
-        className="p-0.5 text-slate-400 hover:text-slate-600 opacity-0 group-hover:opacity-100"
+        className="p-0.5 text-muted-foreground hover:text-muted-foreground opacity-0 group-hover:opacity-100"
       >
         <ChevronRight className="h-3 w-3" />
       </button>
@@ -437,13 +438,13 @@ function TaskRow({
   const priorityColors: Record<number, string> = {
     3: "bg-red-100 text-red-700 hover:bg-red-200",
     2: "bg-amber-100 text-amber-700 hover:bg-amber-200",
-    1: "bg-slate-100 text-slate-600 hover:bg-slate-200",
+    1: "bg-muted text-muted-foreground hover:bg-muted",
   };
 
   const priorityOptions = [
     { value: 3, label: "High", color: "text-red-600" },
     { value: 2, label: "Medium", color: "text-amber-600" },
-    { value: 1, label: "Low", color: "text-slate-500" },
+    { value: 1, label: "Low", color: "text-muted-foreground" },
   ];
 
   const statusOptions = [
@@ -454,7 +455,7 @@ function TaskRow({
   ];
 
   const getStatusColor = (status: string) => {
-    return statusOptions.find(s => s.value === status)?.color || "bg-slate-100 text-slate-600";
+    return statusOptions.find(s => s.value === status)?.color || "bg-muted text-muted-foreground";
   };
 
   const getStatusLabel = (status: string) => {
@@ -732,17 +733,17 @@ function TaskRow({
   const completedSubtaskCount = localSubtasks.filter((st) => st.completed).length;
 
   return (
-    <div className="border-b border-slate-100 last:border-b-0">
+    <div className="border-b border-border last:border-b-0">
       {/* Main Task Row */}
-      <div className="group flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50">
+      <div className="group flex items-center gap-2 px-4 py-2.5 hover:bg-muted">
         {/* Expand Arrow - always show for master tasks to allow adding subtasks */}
         {!task.isSubtask ? (
           <button
             onClick={() => setExpanded(!expanded)}
             className={`flex-shrink-0 w-5 h-5 flex items-center justify-center transition-colors ${
               task.subtaskCount > 0
-                ? "text-slate-400 hover:text-slate-600"
-                : "text-slate-300 hover:text-slate-500"
+                ? "text-muted-foreground hover:text-muted-foreground"
+                : "text-muted-foreground/60 hover:text-muted-foreground"
             }`}
             title={task.subtaskCount > 0 ? (expanded ? "Collapse subtasks" : "Expand subtasks") : "Add subtask"}
           >
@@ -762,7 +763,7 @@ function TaskRow({
           className={`flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
             task.completed
               ? "bg-green-500 border-green-500 text-white"
-              : "border-slate-300 hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
+              : "border-border hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
           }`}
         >
           {task.completed ? (
@@ -788,7 +789,7 @@ function TaskRow({
                   setEditingSubject(false);
                 }
               }}
-              className="w-full font-medium text-sm bg-white border border-blue-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full font-medium text-sm bg-card border border-blue-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200"
             />
           ) : (
             <div
@@ -807,7 +808,7 @@ function TaskRow({
                   {task.subject}
                 </span>
                 {task.subtaskCount > 0 && (
-                  <span className="text-xs text-muted-foreground bg-slate-100 px-1.5 py-0.5 rounded">
+                  <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                     {completedSubtaskCount}/{task.subtaskCount}
                   </span>
                 )}
@@ -843,8 +844,8 @@ function TaskRow({
             onClick={handleAssigneeButtonClick}
             className={`flex items-center gap-1 px-2 py-1 text-xs rounded-full transition-colors ${
               task.assignedTo
-                ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                ? "bg-muted text-foreground hover:bg-muted"
+                : "text-muted-foreground hover:bg-muted hover:text-muted-foreground"
             }`}
           >
             {task.assignedTo ? (
@@ -861,7 +862,7 @@ function TaskRow({
           </button>
           {showAssigneeDropdown && (
             <div
-              className="fixed w-48 bg-white border rounded-lg shadow-lg z-50 py-1 max-h-64 overflow-y-auto"
+              className="fixed w-48 bg-card border rounded-lg shadow-lg z-50 py-1 max-h-64 overflow-y-auto"
               style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
             >
               <button
@@ -869,7 +870,7 @@ function TaskRow({
                   onAssigneeChange(task.id, null);
                   setShowAssigneeDropdown(false);
                 }}
-                className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 text-slate-500"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-muted text-muted-foreground"
               >
                 Unassigned
               </button>
@@ -880,8 +881,8 @@ function TaskRow({
                     onAssigneeChange(task.id, user.id);
                     setShowAssigneeDropdown(false);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 ${
-                    task.assignedTo?.id === user.id ? "bg-slate-100 font-medium" : ""
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-muted ${
+                    task.assignedTo?.id === user.id ? "bg-muted font-medium" : ""
                   }`}
                 >
                   {user.firstName} {user.lastName}
@@ -904,19 +905,19 @@ function TaskRow({
           </button>
           {showPriorityDropdown && (
             <div
-              className="fixed w-32 bg-white border rounded-lg shadow-lg z-50 py-1"
+              className="fixed w-32 bg-card border rounded-lg shadow-lg z-50 py-1"
               style={{ top: priorityPosition.top, left: priorityPosition.left }}
             >
               {priorityOptions.map((option) => (
                 <button
                   key={option.value}
                   onClick={() => handlePriorityChange(option.value)}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
-                    task.priority === option.value ? "bg-slate-100 font-medium" : ""
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 ${
+                    task.priority === option.value ? "bg-muted font-medium" : ""
                   }`}
                 >
                   <span className={`w-2 h-2 rounded-full ${
-                    option.value === 3 ? "bg-red-500" : option.value === 2 ? "bg-amber-500" : "bg-slate-400"
+                    option.value === 3 ? "bg-red-500" : option.value === 2 ? "bg-amber-500" : "bg-muted-foreground"
                   }`} />
                   <span className={option.color}>{option.label}</span>
                 </button>
@@ -936,15 +937,15 @@ function TaskRow({
           </button>
           {showStatusDropdown && (
             <div
-              className="fixed w-36 bg-white border rounded-lg shadow-lg z-50 py-1"
+              className="fixed w-36 bg-card border rounded-lg shadow-lg z-50 py-1"
               style={{ top: statusPosition.top, left: statusPosition.left }}
             >
               {statusOptions.map((option) => (
                 <button
                   key={option.value}
                   onClick={() => handleStatusChange(option.value)}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
-                    task.status === option.value ? "bg-slate-100 font-medium" : ""
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 ${
+                    task.status === option.value ? "bg-muted font-medium" : ""
                   }`}
                 >
                   <span className={`px-1.5 py-0.5 rounded text-xs ${option.color}`}>
@@ -963,8 +964,8 @@ function TaskRow({
             onClick={handleDescriptionButtonClick}
             className={`p-1 rounded transition-colors ${
               task.body
-                ? "text-slate-500 hover:bg-slate-100"
-                : "text-slate-300 hover:text-slate-500 hover:bg-slate-100 opacity-0 group-hover:opacity-100"
+                ? "text-muted-foreground hover:bg-muted"
+                : "text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted opacity-0 group-hover:opacity-100"
             }`}
             title={task.body || "Add description"}
           >
@@ -972,7 +973,7 @@ function TaskRow({
           </button>
           {editingDescription && (
             <div
-              className="fixed z-50 bg-white border rounded-lg shadow-lg p-3 w-80"
+              className="fixed z-50 bg-card border rounded-lg shadow-lg p-3 w-80"
               style={{ top: descriptionPosition.top, left: descriptionPosition.left }}
             >
               <textarea
@@ -989,23 +990,23 @@ function TaskRow({
                   }
                 }}
                 placeholder="Add a description..."
-                className="w-full text-sm border border-slate-300 rounded px-3 py-2 outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 min-h-[80px] resize-none"
+                className="w-full text-sm border border-border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 min-h-[80px] resize-none"
               />
               <div className="flex justify-between items-center mt-2">
-                <span className="text-xs text-slate-400">⌘+Enter to save</span>
+                <span className="text-xs text-muted-foreground">⌘+Enter to save</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
                       setEditedDescription(task.body || "");
                       setEditingDescription(false);
                     }}
-                    className="px-2 py-1 text-xs text-slate-600 hover:bg-slate-100 rounded"
+                    className="px-2 py-1 text-xs text-muted-foreground hover:bg-muted rounded"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleDescriptionSave}
-                    className="px-2 py-1 text-xs font-medium text-white bg-slate-700 hover:bg-slate-800 rounded"
+                    className="px-2 py-1 text-xs font-medium text-background bg-muted-foreground hover:bg-foreground/90 rounded"
                   >
                     Save
                   </button>
@@ -1037,7 +1038,7 @@ function TaskRow({
                 ? "text-amber-600 font-medium"
                 : task.dueAt
                 ? "text-muted-foreground"
-                : "text-slate-400 hover:text-slate-600"
+                : "text-muted-foreground hover:text-muted-foreground"
             }`}
           >
             {task.dueAt ? formatDate(task.dueAt) : (
@@ -1049,7 +1050,7 @@ function TaskRow({
           </button>
           {editingDate && (
             <div
-              className="fixed z-50 bg-white border rounded-lg shadow-lg p-3"
+              className="fixed z-50 bg-card border rounded-lg shadow-lg p-3"
               style={{ top: datePosition.top, left: datePosition.left }}
             >
               <input
@@ -1061,7 +1062,7 @@ function TaskRow({
                   handleDateSave(e.target.value);
                 }}
                 onBlur={() => setTimeout(() => setEditingDate(false), 150)}
-                className="text-sm border border-slate-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                className="text-sm border border-border rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
                 autoFocus
               />
               <div className="flex gap-1 mt-2">
@@ -1071,7 +1072,7 @@ function TaskRow({
                     setEditedDate(today);
                     handleDateSave(today);
                   }}
-                  className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded"
+                  className="px-2 py-1 text-xs bg-muted hover:bg-muted rounded"
                 >
                   Today
                 </button>
@@ -1083,7 +1084,7 @@ function TaskRow({
                     setEditedDate(date);
                     handleDateSave(date);
                   }}
-                  className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded"
+                  className="px-2 py-1 text-xs bg-muted hover:bg-muted rounded"
                 >
                   Tomorrow
                 </button>
@@ -1095,7 +1096,7 @@ function TaskRow({
                     setEditedDate(date);
                     handleDateSave(date);
                   }}
-                  className="px-2 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded"
+                  className="px-2 py-1 text-xs bg-muted hover:bg-muted rounded"
                 >
                   Next week
                 </button>
@@ -1117,7 +1118,7 @@ function TaskRow({
         {/* Open detail button */}
         <button
           onClick={() => onClick(task)}
-          className="p-1 text-slate-400 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="p-1 text-muted-foreground hover:text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
           title="Open details"
         >
           <ChevronRight className="h-4 w-4" />
@@ -1126,7 +1127,7 @@ function TaskRow({
 
       {/* Expanded Subtasks */}
       {expanded && (
-        <div className="bg-slate-50 border-t border-slate-100">
+        <div className="bg-muted border-t border-border">
           {localSubtasks.map((subtask) => (
             <SubtaskRow
               key={subtask.id}
@@ -1143,9 +1144,9 @@ function TaskRow({
 
           {/* Add subtask form */}
           {addingSubtask ? (
-            <div className="flex items-center gap-2 pl-12 pr-4 py-2 bg-white border-t border-slate-200">
-              <div className="w-4 h-4 rounded border-2 border-slate-300 flex items-center justify-center">
-                <Plus className="h-2.5 w-2.5 text-slate-400" />
+            <div className="flex items-center gap-2 pl-12 pr-4 py-2 bg-card border-t border-border">
+              <div className="w-4 h-4 rounded border-2 border-border flex items-center justify-center">
+                <Plus className="h-2.5 w-2.5 text-muted-foreground" />
               </div>
               <input
                 type="text"
@@ -1167,7 +1168,7 @@ function TaskRow({
                 <button
                   onClick={handleAddSubtask}
                   disabled={savingSubtask}
-                  className="px-2 py-1 text-xs font-medium text-white bg-slate-700 hover:bg-slate-800 rounded disabled:opacity-50"
+                  className="px-2 py-1 text-xs font-medium text-background bg-muted-foreground hover:bg-foreground/90 rounded disabled:opacity-50"
                 >
                   {savingSubtask ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
                 </button>
@@ -1177,7 +1178,7 @@ function TaskRow({
                   setAddingSubtask(false);
                   setNewSubtaskSubject("");
                 }}
-                className="text-xs text-slate-500 hover:text-slate-700"
+                className="text-xs text-muted-foreground hover:text-foreground"
               >
                 Cancel
               </button>
@@ -1188,7 +1189,7 @@ function TaskRow({
                 e.stopPropagation();
                 setAddingSubtask(true);
               }}
-              className="w-full flex items-center gap-2 pl-12 pr-4 py-2 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              className="w-full flex items-center gap-2 pl-12 pr-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               <Plus className="h-4 w-4" />
               Add subtask
@@ -1226,13 +1227,13 @@ function TaskGroup({
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   const bgColors = {
-    default: "bg-slate-50",
+    default: "bg-muted",
     danger: "bg-red-50",
     warning: "bg-amber-50",
   };
 
   const textColors = {
-    default: "text-slate-700",
+    default: "text-foreground",
     danger: "text-red-700",
     warning: "text-amber-700",
   };
@@ -1313,14 +1314,14 @@ function FilterChip({
         onClick={onClick}
         className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border transition-all ${
           active
-            ? "bg-slate-100 border-slate-300 text-slate-900 font-medium"
-            : "border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+            ? "bg-muted border-border text-foreground font-medium"
+            : "border-border text-muted-foreground hover:border-border hover:bg-muted"
         }`}
       >
         <span>{label}</span>
         {active && onClear ? (
           <X
-            className="h-3 w-3 text-slate-400 hover:text-slate-600"
+            className="h-3 w-3 text-muted-foreground hover:text-muted-foreground"
             onClick={(e) => {
               e.stopPropagation();
               onClear();
@@ -1333,7 +1334,7 @@ function FilterChip({
       {open && children && (
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 py-1 min-w-[180px]"
+          className="absolute top-full left-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 py-1 min-w-[180px]"
         >
           {children}
         </div>
@@ -1700,7 +1701,31 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-8rem)]">
+    <div className="flex flex-col h-full">
+      <PageHeader
+        subtitle={
+          stats && (
+            <span className="flex items-center gap-2">
+              <span>{stats.total} total</span>
+              <span className="text-muted-foreground/60">·</span>
+              <span className="text-amber-600">{stats.overdue} overdue</span>
+              <span className="text-muted-foreground/60">·</span>
+              <span className="text-blue-600">{stats.dueToday} due today</span>
+            </span>
+          )
+        }
+        primaryActionLabel="New Task"
+        onPrimaryAction={handleCreateTask}
+        search={
+          <PageSearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search tasks..."
+          />
+        }
+      />
+
+      <div className="flex gap-6 flex-1 px-8 py-6 overflow-hidden">
       {/* Left Sidebar */}
       <div className="w-48 flex-shrink-0 space-y-5">
         {/* Views */}
@@ -1724,8 +1749,8 @@ export default function TasksPage() {
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
                   currentView === view.id && attachmentFilter === "all"
-                    ? "bg-slate-900 text-white"
-                    : "hover:bg-slate-100"
+                    ? "bg-foreground text-background"
+                    : "hover:bg-muted"
                 }`}
               >
                 <div className="flex items-center gap-2">
@@ -1736,7 +1761,7 @@ export default function TasksPage() {
                   <span
                     className={`text-xs ${
                       currentView === view.id && attachmentFilter === "all"
-                        ? "text-slate-300"
+                        ? "text-muted-foreground/60"
                         : "text-muted-foreground"
                     }`}
                   >
@@ -1750,7 +1775,7 @@ export default function TasksPage() {
 
         {/* Type Views */}
         <div>
-          <div className="h-px bg-slate-200 mb-3" />
+          <div className="h-px bg-muted mb-3" />
           <div className="space-y-1">
             {ATTACHMENT_FILTERS.filter(f => f.id !== "all").map((filter) => {
               const Icon = filter.icon;
@@ -1767,8 +1792,8 @@ export default function TasksPage() {
                   }}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
                     attachmentFilter === filter.id
-                      ? "bg-slate-900 text-white"
-                      : "hover:bg-slate-100"
+                      ? "bg-foreground text-background"
+                      : "hover:bg-muted"
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -1779,7 +1804,7 @@ export default function TasksPage() {
                     <span
                       className={`text-xs ${
                         attachmentFilter === filter.id
-                          ? "text-slate-300"
+                          ? "text-muted-foreground/60"
                           : "text-muted-foreground"
                       }`}
                     >
@@ -1795,35 +1820,13 @@ export default function TasksPage() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-semibold">Tasks</h1>
-            <p className="text-sm text-muted-foreground">
-              {attachmentFilter !== "all"
-                ? ATTACHMENT_FILTERS.find((f) => f.id === attachmentFilter)?.label
-                : VIEWS.find((v) => v.id === currentView)?.label}
-            </p>
-          </div>
-          <button
-            onClick={handleCreateTask}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
-          >
-            <Plus className="h-4 w-4" />
-            New Task
-          </button>
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search tasks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-          />
+        {/* Current View Indicator */}
+        <div className="mb-3">
+          <p className="text-sm text-muted-foreground">
+            {attachmentFilter !== "all"
+              ? ATTACHMENT_FILTERS.find((f) => f.id === attachmentFilter)?.label
+              : VIEWS.find((v) => v.id === currentView)?.label}
+          </p>
         </div>
 
         {/* Filter Bar */}
@@ -1845,11 +1848,11 @@ export default function TasksPage() {
                     setAttachmentFilter(filter.id);
                     setOpenFilter(null);
                   }}
-                  className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
-                    attachmentFilter === filter.id ? "bg-slate-100 font-medium" : ""
+                  className={`w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 ${
+                    attachmentFilter === filter.id ? "bg-muted font-medium" : ""
                   }`}
                 >
-                  <Icon className="h-3.5 w-3.5 text-slate-500" />
+                  <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                   {filter.label}
                 </button>
               );
@@ -1880,17 +1883,17 @@ export default function TasksPage() {
                       : [...prev, u.id]
                   );
                 }}
-                className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
-                  assigneeFilter.includes(u.id) ? "bg-slate-100" : ""
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 ${
+                  assigneeFilter.includes(u.id) ? "bg-muted" : ""
                 }`}
               >
                 <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-medium ${
-                  assigneeFilter.includes(u.id) ? "bg-slate-700 text-white" : "bg-slate-200 text-slate-600"
+                  assigneeFilter.includes(u.id) ? "bg-muted-foreground text-background" : "bg-muted text-muted-foreground"
                 }`}>
                   {u.firstName[0]}
                 </span>
                 <span>{u.firstName} {u.lastName}</span>
-                {assigneeFilter.includes(u.id) && <Check className="h-3 w-3 ml-auto text-slate-600" />}
+                {assigneeFilter.includes(u.id) && <Check className="h-3 w-3 ml-auto text-muted-foreground" />}
               </button>
             ))}
           </FilterChip>
@@ -1917,13 +1920,13 @@ export default function TasksPage() {
                       : [...prev, option.value]
                   );
                 }}
-                className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
-                  priorityFilter.includes(option.value) ? "bg-slate-100" : ""
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 ${
+                  priorityFilter.includes(option.value) ? "bg-muted" : ""
                 }`}
               >
                 <span className={`w-2.5 h-2.5 rounded-full ${option.dotColor}`} />
                 <span>{option.label}</span>
-                {priorityFilter.includes(option.value) && <Check className="h-3 w-3 ml-auto text-slate-600" />}
+                {priorityFilter.includes(option.value) && <Check className="h-3 w-3 ml-auto text-muted-foreground" />}
               </button>
             ))}
           </FilterChip>
@@ -1950,18 +1953,18 @@ export default function TasksPage() {
                       : [...prev, option.value]
                   );
                 }}
-                className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
-                  statusFilter.includes(option.value) ? "bg-slate-100" : ""
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 ${
+                  statusFilter.includes(option.value) ? "bg-muted" : ""
                 }`}
               >
                 <span className={`px-1.5 py-0.5 rounded text-xs ${option.color}`}>{option.label}</span>
-                {statusFilter.includes(option.value) && <Check className="h-3 w-3 ml-auto text-slate-600" />}
+                {statusFilter.includes(option.value) && <Check className="h-3 w-3 ml-auto text-muted-foreground" />}
               </button>
             ))}
           </FilterChip>
 
           {/* Separator */}
-          <div className="w-px h-6 bg-slate-200 mx-1" />
+          <div className="w-px h-6 bg-muted mx-1" />
 
           {/* Group By */}
           <FilterChip
@@ -1977,13 +1980,13 @@ export default function TasksPage() {
                   setGroupBy(option.id);
                   setOpenFilter(null);
                 }}
-                className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
-                  groupBy === option.id ? "bg-slate-100 font-medium" : ""
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 ${
+                  groupBy === option.id ? "bg-muted font-medium" : ""
                 }`}
               >
-                <Layers className="h-3.5 w-3.5 text-slate-400" />
+                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
                 {option.label}
-                {groupBy === option.id && <Check className="h-3 w-3 ml-auto text-slate-600" />}
+                {groupBy === option.id && <Check className="h-3 w-3 ml-auto text-muted-foreground" />}
               </button>
             ))}
           </FilterChip>
@@ -2002,13 +2005,13 @@ export default function TasksPage() {
                   setSortBy(option.id);
                   setOpenFilter(null);
                 }}
-                className={`w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 ${
-                  sortBy === option.id ? "bg-slate-100 font-medium" : ""
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 ${
+                  sortBy === option.id ? "bg-muted font-medium" : ""
                 }`}
               >
-                <ArrowUpDown className="h-3.5 w-3.5 text-slate-400" />
+                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
                 {option.label}
-                {sortBy === option.id && <Check className="h-3 w-3 ml-auto text-slate-600" />}
+                {sortBy === option.id && <Check className="h-3 w-3 ml-auto text-muted-foreground" />}
               </button>
             ))}
           </FilterChip>
@@ -2017,7 +2020,7 @@ export default function TasksPage() {
           {hasActiveFilters && (
             <button
               onClick={clearAllFilters}
-              className="text-xs text-slate-500 hover:text-slate-700 ml-1"
+              className="text-xs text-muted-foreground hover:text-foreground ml-1"
             >
               Clear all
             </button>
@@ -2036,7 +2039,7 @@ export default function TasksPage() {
               <p className="text-sm">No tasks found</p>
               <button
                 onClick={handleCreateTask}
-                className="mt-2 text-sm text-slate-600 hover:text-slate-900 underline"
+                className="mt-2 text-sm text-muted-foreground hover:text-foreground underline"
               >
                 Create your first task
               </button>
@@ -2075,6 +2078,7 @@ export default function TasksPage() {
           onDelete={handleTaskDelete}
         />
       )}
+      </div>
     </div>
   );
 }

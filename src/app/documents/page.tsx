@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { PanelLeftClose, PanelLeft } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import { DocumentsHeader } from "./_components/DocumentsHeader";
 import { DocumentsFiltersRail } from "./_components/DocumentsFiltersRail";
 import { DocumentsList } from "./_components/DocumentsList";
@@ -321,8 +322,25 @@ export default function DocumentsPage() {
 
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col">
-      {/* Header */}
-      <div className="px-6 pt-4">
+      {/* Page Header with Identity */}
+      <PageHeader
+        subtitle={
+          <span className="flex items-center gap-2">
+            <span>{totalCount} documents</span>
+            {filteredCount !== totalCount && (
+              <>
+                <span className="text-muted-foreground/60">·</span>
+                <span className="text-sky-600">{filteredCount} showing</span>
+              </>
+            )}
+          </span>
+        }
+        primaryActionLabel="Upload"
+        onPrimaryAction={() => setShowUploadDialog(true)}
+      />
+
+      {/* Search Bar */}
+      <div className="px-6 pb-4 border-b border-border/60">
         <DocumentsHeader
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -347,7 +365,7 @@ export default function DocumentsPage() {
         />
 
         {/* Documents List */}
-        <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200/60">
+        <div className="flex-1 flex flex-col min-w-0 border-r border-border/60">
           <DocumentsList
             documents={documents}
             loading={loading}

@@ -16,14 +16,13 @@ import {
   Building2,
   Users,
   ExternalLink,
-  Search,
   ChevronDown,
   ChevronUp,
   X,
   Filter,
-  Plus,
   Briefcase,
 } from "lucide-react";
+import { PageHeader, PageSearch } from "@/components/PageHeader";
 
 interface Organization {
   id: number;
@@ -45,7 +44,7 @@ const KIND_CONFIG: Record<string, { label: string; bg: string; text: string }> =
   fund: { label: "Fund", bg: "bg-blue-100", text: "text-blue-700" },
   company: { label: "Company", bg: "bg-purple-100", text: "text-purple-700" },
   spv: { label: "SPV", bg: "bg-amber-100", text: "text-amber-700" },
-  broker: { label: "Broker", bg: "bg-slate-100", text: "text-slate-600" },
+  broker: { label: "Broker", bg: "bg-muted", text: "text-muted-foreground" },
   law_firm: { label: "Law Firm", bg: "bg-emerald-100", text: "text-emerald-700" },
   bank: { label: "Bank", bg: "bg-cyan-100", text: "text-cyan-700" },
   service_provider: { label: "Service", bg: "bg-rose-100", text: "text-rose-700" },
@@ -53,7 +52,7 @@ const KIND_CONFIG: Record<string, { label: string; bg: string; text: string }> =
 };
 
 const WARMTH_CONFIG = [
-  { label: "Cold", color: "bg-slate-400", hoverBg: "hover:bg-slate-100" },
+  { label: "Cold", color: "bg-muted-foreground", hoverBg: "hover:bg-muted" },
   { label: "Warm", color: "bg-yellow-500", hoverBg: "hover:bg-yellow-50" },
   { label: "Hot", color: "bg-orange-500", hoverBg: "hover:bg-orange-50" },
   { label: "Champion", color: "bg-green-500", hoverBg: "hover:bg-green-50" },
@@ -101,7 +100,7 @@ function InlineWarmthSelector({
             className={`px-2 py-0.5 text-[11px] font-medium rounded-full border transition-all ${
               i === warmth
                 ? `${w.color} text-white border-transparent`
-                : `bg-white border-slate-200 text-slate-600 ${w.hoverBg}`
+                : `bg-card border-border text-muted-foreground ${w.hoverBg}`
             }`}
           >
             {w.label}
@@ -124,12 +123,12 @@ function InlineWarmthSelector({
           <div
             key={i}
             className={`h-1.5 w-3 rounded-full transition-all ${
-              i <= warmth ? WARMTH_CONFIG[warmth].color : "bg-slate-200"
+              i <= warmth ? WARMTH_CONFIG[warmth].color : "bg-muted"
             }`}
           />
         ))}
       </div>
-      <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">
+      <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
         {WARMTH_CONFIG[warmth].label}
       </span>
     </button>
@@ -153,7 +152,7 @@ function SortableHeader({
   return (
     <button
       onClick={() => onSort(field)}
-      className="flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
+      className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
     >
       {label}
       {isActive && (
@@ -335,65 +334,46 @@ export default function OrganizationsPage() {
   const hasActiveFilters = kindFilter !== "all" || warmthFilter !== "all" || search.length > 0;
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold text-slate-900">Organizations</h1>
-          <div className="flex items-center gap-3 text-sm text-slate-500">
+    <div className="flex flex-col">
+      <PageHeader
+        subtitle={
+          <span className="flex items-center gap-2">
             <span>{stats.total} total</span>
-            <span className="text-slate-300">·</span>
+            <span className="text-muted-foreground/60">·</span>
             <span className="text-blue-600">{stats.funds} funds</span>
-            <span className="text-slate-300">·</span>
+            <span className="text-muted-foreground/60">·</span>
             <span className="text-purple-600">{stats.companies} companies</span>
-            <span className="text-slate-300">·</span>
+            <span className="text-muted-foreground/60">·</span>
             <span className="text-orange-600">{stats.hot} hot+</span>
-          </div>
-        </div>
-        <button
-          onClick={() => router.push("/organizations/new")}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Add Organization
-        </button>
-      </div>
-
-      {/* Search & Filters */}
-      <div className="flex items-center gap-3">
-        {/* Search */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
+          </span>
+        }
+        primaryActionLabel="Add Organization"
+        onPrimaryAction={() => router.push("/organizations/new")}
+        search={
+          <PageSearch
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={setSearch}
             placeholder="Search organizations..."
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/20"
           />
-          {search && (
-            <button
-              onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        }
+      />
 
-        {/* Filter Toggle */}
+      <div className="px-8 py-6 space-y-4">
+        {/* Filters */}
+        <div className="flex items-center gap-3">
+          {/* Filter Toggle */}
         <button
           onClick={() => setShowFilters(!showFilters)}
           className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border transition-colors ${
             showFilters || hasActiveFilters
-              ? "bg-slate-900 text-white border-slate-900"
-              : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+              ? "bg-foreground text-background border-foreground"
+              : "bg-card text-muted-foreground border-border hover:border-border"
           }`}
         >
           <Filter className="h-4 w-4" />
           Filters
           {hasActiveFilters && (
-            <span className="ml-1 px-1.5 py-0.5 text-[10px] font-medium bg-white/20 rounded">
+            <span className="ml-1 px-1.5 py-0.5 text-[10px] font-medium bg-card/20 rounded">
               {[kindFilter !== "all", warmthFilter !== "all", search.length > 0].filter(Boolean).length}
             </span>
           )}
@@ -402,14 +382,14 @@ export default function OrganizationsPage() {
 
       {/* Filter Bar */}
       {showFilters && (
-        <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+        <div className="flex items-center gap-4 p-3 bg-muted rounded-lg border border-border">
           {/* Kind Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Type</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Type</span>
             <select
               value={kindFilter}
               onChange={(e) => setKindFilter(e.target.value)}
-              className="text-sm px-2 py-1 rounded border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/20"
+              className="text-sm px-2 py-1 rounded border border-border bg-card focus:outline-none focus:ring-2 focus:ring-slate-400/20"
             >
               <option value="all">All Types</option>
               {availableKinds.map((kind) => (
@@ -422,11 +402,11 @@ export default function OrganizationsPage() {
 
           {/* Warmth Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Warmth</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Warmth</span>
             <select
               value={warmthFilter}
               onChange={(e) => setWarmthFilter(e.target.value)}
-              className="text-sm px-2 py-1 rounded border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/20"
+              className="text-sm px-2 py-1 rounded border border-border bg-card focus:outline-none focus:ring-2 focus:ring-slate-400/20"
             >
               <option value="all">All Warmth</option>
               {WARMTH_CONFIG.map((w, i) => (
@@ -445,7 +425,7 @@ export default function OrganizationsPage() {
                 setKindFilter("all");
                 setWarmthFilter("all");
               }}
-              className="text-xs text-slate-500 hover:text-slate-700 underline ml-auto"
+              className="text-xs text-muted-foreground hover:text-foreground underline ml-auto"
             >
               Clear all
             </button>
@@ -455,16 +435,16 @@ export default function OrganizationsPage() {
 
       {/* Results Count */}
       {hasActiveFilters && (
-        <div className="text-sm text-slate-500">
+        <div className="text-sm text-muted-foreground">
           Showing {filteredOrgs.length} of {organizations.length} organizations
         </div>
       )}
 
       {/* Table */}
-      <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
+      <div className="rounded-lg border border-border overflow-hidden bg-card">
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50/50">
+            <TableRow className="bg-muted/50">
               <TableHead className="w-[280px]">
                 <SortableHeader label="Organization" field="name" currentSort={sort} onSort={handleSort} />
               </TableHead>
@@ -490,9 +470,9 @@ export default function OrganizationsPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-12 text-slate-400">
+                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                   <div className="flex items-center justify-center gap-2">
-                    <div className="h-4 w-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                    <div className="h-4 w-4 border-2 border-border border-t-slate-600 rounded-full animate-spin" />
                     Loading...
                   </div>
                 </TableCell>
@@ -500,8 +480,8 @@ export default function OrganizationsPage() {
             ) : filteredOrgs.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-12">
-                  <Building2 className="h-8 w-8 mx-auto text-slate-300 mb-2" />
-                  <p className="text-slate-500">No organizations found</p>
+                  <Building2 className="h-8 w-8 mx-auto text-muted-foreground/60 mb-2" />
+                  <p className="text-muted-foreground">No organizations found</p>
                   {hasActiveFilters && (
                     <button
                       onClick={() => {
@@ -520,18 +500,18 @@ export default function OrganizationsPage() {
               filteredOrgs.map((org) => (
                 <TableRow
                   key={org.id}
-                  className="cursor-pointer hover:bg-slate-50/50 transition-colors group"
+                  className="cursor-pointer hover:bg-muted/50 transition-colors group"
                   onClick={() => router.push(`/organizations/${org.id}`)}
                 >
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-slate-200 transition-colors">
-                        <Building2 className="h-4 w-4 text-slate-500" />
+                      <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center group-hover:bg-muted transition-colors">
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div>
-                        <div className="font-medium text-slate-900">{org.name}</div>
+                        <div className="font-medium text-foreground">{org.name}</div>
                         {org.sector && (
-                          <div className="text-xs text-slate-500">{org.sector}</div>
+                          <div className="text-xs text-muted-foreground">{org.sector}</div>
                         )}
                       </div>
                     </div>
@@ -539,11 +519,11 @@ export default function OrganizationsPage() {
                   <TableCell>
                     <KindBadge kind={org.kind} />
                   </TableCell>
-                  <TableCell className="text-slate-600">
+                  <TableCell className="text-muted-foreground">
                     {org.city && org.country
                       ? `${org.city}, ${org.country}`
                       : org.city || org.country || (
-                          <span className="text-slate-300">—</span>
+                          <span className="text-muted-foreground/60">—</span>
                         )}
                   </TableCell>
                   <TableCell>
@@ -559,7 +539,7 @@ export default function OrganizationsPage() {
                         <ExternalLink className="h-3 w-3 opacity-50" />
                       </a>
                     ) : (
-                      <span className="text-slate-300">—</span>
+                      <span className="text-muted-foreground/60">—</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -571,25 +551,25 @@ export default function OrganizationsPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     {org.peopleCount > 0 ? (
-                      <span className="inline-flex items-center gap-1 text-sm text-slate-600">
-                        <Users className="h-3.5 w-3.5 text-slate-400" />
+                      <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                        <Users className="h-3.5 w-3.5 text-muted-foreground" />
                         {org.peopleCount}
                       </span>
                     ) : (
-                      <span className="text-slate-300">—</span>
+                      <span className="text-muted-foreground/60">—</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
                     {org.dealsCount > 0 ? (
-                      <span className="inline-flex items-center gap-1 text-sm text-slate-600">
-                        <Briefcase className="h-3.5 w-3.5 text-slate-400" />
+                      <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                        <Briefcase className="h-3.5 w-3.5 text-muted-foreground" />
                         {org.dealsCount}
                       </span>
                     ) : (
-                      <span className="text-slate-300">—</span>
+                      <span className="text-muted-foreground/60">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm text-slate-500">
+                  <TableCell className="text-sm text-muted-foreground">
                     {formatDate(org.lastContactedAt)}
                   </TableCell>
                 </TableRow>
@@ -597,6 +577,7 @@ export default function OrganizationsPage() {
             )}
           </TableBody>
         </Table>
+      </div>
       </div>
     </div>
   );

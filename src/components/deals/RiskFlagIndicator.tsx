@@ -109,9 +109,9 @@ export function RiskFlagIndicator({
             {/* Tooltip */}
             {hoveredFlag === key && (
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-20">
-                <div className="bg-slate-900 text-white text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                <div className="bg-foreground text-background text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
                   <div className="font-medium">{config.label}</div>
-                  <div className="text-slate-300 mt-0.5">{flag.message}</div>
+                  <div className="text-muted-foreground/60 mt-0.5">{flag.message}</div>
                 </div>
                 <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
               </div>
@@ -204,13 +204,13 @@ export function RiskFlagsPanel({
               <div className={`font-medium text-sm ${colors.text}`}>
                 {config.label}
               </div>
-              <div className="text-sm text-slate-600 mt-0.5">{flag.message}</div>
+              <div className="text-sm text-muted-foreground mt-0.5">{flag.message}</div>
               {flag.missing && flag.missing.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {flag.missing.slice(0, 3).map((item) => (
                     <span
                       key={item}
-                      className="text-xs bg-white px-2 py-0.5 rounded border"
+                      className="text-xs bg-card px-2 py-0.5 rounded border"
                     >
                       {item.replace(/_/g, " ")}
                     </span>
@@ -226,7 +226,7 @@ export function RiskFlagsPanel({
             {onDismiss && (
               <button
                 onClick={() => onDismiss(key)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-muted-foreground hover:text-muted-foreground p-1"
               >
                 <span className="sr-only">Dismiss</span>
                 &times;

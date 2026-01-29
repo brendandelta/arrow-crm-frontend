@@ -168,13 +168,13 @@ function EventKindBadge({ kind }: { kind: string }) {
     whatsapp: { label: "WhatsApp", className: "bg-emerald-100 text-emerald-700" },
     sms: { label: "SMS", className: "bg-cyan-100 text-cyan-700" },
     linkedin_message: { label: "LinkedIn", className: "bg-sky-100 text-sky-700" },
-    note: { label: "Note", className: "bg-slate-100 text-slate-700" },
+    note: { label: "Note", className: "bg-muted text-foreground" },
     task: { label: "Task", className: "bg-orange-100 text-orange-700" },
   };
 
   const { label, className } = config[kind] || {
     label: kind.replace(/_/g, " "),
-    className: "bg-slate-100 text-slate-700",
+    className: "bg-muted text-foreground",
   };
 
   return (
@@ -191,7 +191,7 @@ function OutcomeBadge({ outcome }: { outcome: string | null }) {
   const config: Record<string, { label: string; className: string }> = {
     connected: { label: "Connected", className: "bg-green-100 text-green-700" },
     voicemail: { label: "Voicemail", className: "bg-yellow-100 text-yellow-700" },
-    no_answer: { label: "No Answer", className: "bg-slate-100 text-slate-600" },
+    no_answer: { label: "No Answer", className: "bg-muted text-muted-foreground" },
     left_message: { label: "Left Message", className: "bg-blue-100 text-blue-700" },
     replied: { label: "Replied", className: "bg-green-100 text-green-700" },
     bounced: { label: "Bounced", className: "bg-red-100 text-red-700" },
@@ -203,7 +203,7 @@ function OutcomeBadge({ outcome }: { outcome: string | null }) {
 
   const { label, className } = config[outcome] || {
     label: outcome.replace(/_/g, " "),
-    className: "bg-slate-100 text-slate-600",
+    className: "bg-muted text-muted-foreground",
   };
 
   return (
@@ -261,16 +261,16 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative bg-white border border-slate-200 rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="relative bg-card border border-border rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between p-4 border-b border-slate-100">
+        <div className="flex items-start justify-between p-4 border-b border-border">
           <div className="flex-1 min-w-0">
             {loading ? (
-              <div className="h-6 w-48 bg-slate-200 rounded animate-pulse" />
+              <div className="h-6 w-48 bg-muted rounded animate-pulse" />
             ) : activity ? (
               <>
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-lg font-semibold text-slate-900 truncate">
+                  <h2 className="text-lg font-semibold text-foreground truncate">
                     {activity.subject || `${activity.kind.replace(/_/g, " ")} Activity`}
                   </h2>
                   {activity.taskCompleted && (
@@ -284,7 +284,7 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
                   <EventKindBadge kind={activity.kind} />
                   {activity.outcome && <OutcomeBadge outcome={activity.outcome} />}
                   {isPast && !activity.taskCompleted && (
-                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
+                    <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded-full text-xs font-medium">
                       Past
                     </span>
                   )}
@@ -296,12 +296,12 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
                 </div>
               </>
             ) : (
-              <h2 className="text-lg font-semibold text-slate-900">Event Details</h2>
+              <h2 className="text-lg font-semibold text-foreground">Event Details</h2>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-slate-600 rounded transition-colors"
+            className="p-1 text-muted-foreground hover:text-muted-foreground rounded transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -311,38 +311,38 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
         <div className="flex-1 overflow-y-auto p-4">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 text-slate-400 animate-spin" />
+              <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-slate-500">{error}</p>
+              <p className="text-muted-foreground">{error}</p>
             </div>
           ) : activity ? (
             <div className="space-y-6">
               {/* Date & Time */}
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-slate-100 rounded-lg">
-                  <Calendar className="h-5 w-5 text-slate-600" />
+                <div className="p-2 bg-muted rounded-lg">
+                  <Calendar className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-slate-900">
+                  <div className="text-sm font-medium text-foreground">
                     {formatDateTime(activity.startsAt || activity.occurredAt, activity.allDay)}
                   </div>
                   {!activity.allDay && activity.startsAt && activity.endsAt && (
-                    <div className="text-sm text-slate-500">
+                    <div className="text-sm text-muted-foreground">
                       {formatTime(activity.startsAt)} – {formatTime(activity.endsAt)}
-                      <span className="text-slate-400 ml-2">
+                      <span className="text-muted-foreground ml-2">
                         ({formatDuration(activity.durationMinutes, activity.startsAt, activity.endsAt)})
                       </span>
                     </div>
                   )}
                   {activity.durationMinutes && !activity.endsAt && (
-                    <div className="text-sm text-slate-500">
+                    <div className="text-sm text-muted-foreground">
                       Duration: {formatDuration(activity.durationMinutes, null, null)}
                     </div>
                   )}
                   {activity.timezone && (
-                    <div className="text-xs text-slate-400 mt-0.5">{activity.timezone}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{activity.timezone}</div>
                   )}
                 </div>
               </div>
@@ -350,12 +350,12 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
               {/* Location / Meeting URL */}
               {(activity.location || activity.meetingUrl) && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <MapPin className="h-5 w-5 text-slate-600" />
+                  <div className="p-2 bg-muted rounded-lg">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="space-y-1">
                     {activity.location && (
-                      <div className="text-sm font-medium text-slate-900">{activity.location}</div>
+                      <div className="text-sm font-medium text-foreground">{activity.location}</div>
                     )}
                     {activity.meetingUrl && (
                       <a
@@ -376,8 +376,8 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
               {/* Related Deal */}
               {activity.dealId && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Briefcase className="h-5 w-5 text-slate-600" />
+                  <div className="p-2 bg-muted rounded-lg">
+                    <Briefcase className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
                     <Link
@@ -393,31 +393,31 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
               {/* Attendees */}
               {activity.attendees && activity.attendees.length > 0 && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Users className="h-5 w-5 text-slate-600" />
+                  <div className="p-2 bg-muted rounded-lg">
+                    <Users className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-slate-700 mb-2">
+                    <div className="text-sm font-medium text-foreground mb-2">
                       Attendees ({activity.attendees.length})
                     </div>
                     <div className="space-y-2">
                       {activity.attendees.map((attendee) => (
                         <div
                           key={attendee.id}
-                          className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg"
+                          className="flex items-center gap-2 p-2 bg-muted rounded-lg"
                         >
-                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center text-xs font-medium text-slate-600">
+                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center text-xs font-medium text-muted-foreground">
                             {attendee.name?.charAt(0) || attendee.email?.charAt(0) || "?"}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="text-sm font-medium text-slate-900 truncate">
+                            <div className="text-sm font-medium text-foreground truncate">
                               {attendee.name || attendee.email || "Unknown"}
                               {attendee.isOrganizer && (
-                                <span className="ml-2 text-xs text-slate-500">(Organizer)</span>
+                                <span className="ml-2 text-xs text-muted-foreground">(Organizer)</span>
                               )}
                             </div>
                             {attendee.email && attendee.name && (
-                              <div className="text-xs text-slate-500 truncate">{attendee.email}</div>
+                              <div className="text-xs text-muted-foreground truncate">{attendee.email}</div>
                             )}
                           </div>
                           {attendee.responseStatus && (
@@ -425,7 +425,7 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
                               attendee.responseStatus === "accepted" ? "bg-green-100 text-green-700" :
                               attendee.responseStatus === "declined" ? "bg-red-100 text-red-700" :
                               attendee.responseStatus === "tentative" ? "bg-yellow-100 text-yellow-700" :
-                              "bg-slate-100 text-slate-600"
+                              "bg-muted text-muted-foreground"
                             }`}>
                               {attendee.responseStatus}
                             </span>
@@ -440,12 +440,12 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
               {/* Performed By */}
               {activity.performedBy && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Users className="h-5 w-5 text-slate-600" />
+                  <div className="p-2 bg-muted rounded-lg">
+                    <Users className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-500 mb-0.5">Performed by</div>
-                    <div className="text-sm font-medium text-slate-900">
+                    <div className="text-xs text-muted-foreground mb-0.5">Performed by</div>
+                    <div className="text-sm font-medium text-foreground">
                       {activity.performedBy.firstName} {activity.performedBy.lastName}
                     </div>
                   </div>
@@ -455,12 +455,12 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
               {/* Body/Description */}
               {activity.body && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <FileText className="h-5 w-5 text-slate-600" />
+                  <div className="p-2 bg-muted rounded-lg">
+                    <FileText className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-slate-700 mb-1">Notes</div>
-                    <p className="text-sm text-slate-600 whitespace-pre-wrap">{activity.body}</p>
+                    <div className="text-sm font-medium text-foreground mb-1">Notes</div>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{activity.body}</p>
                   </div>
                 </div>
               )}
@@ -468,12 +468,12 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
               {/* Task Due Date */}
               {activity.isTask && activity.taskDueAt && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Clock className="h-5 w-5 text-slate-600" />
+                  <div className="p-2 bg-muted rounded-lg">
+                    <Clock className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-500 mb-0.5">Due Date</div>
-                    <div className={`text-sm font-medium ${activity.isOverdue ? "text-red-600" : "text-slate-900"}`}>
+                    <div className="text-xs text-muted-foreground mb-0.5">Due Date</div>
+                    <div className={`text-sm font-medium ${activity.isOverdue ? "text-red-600" : "text-foreground"}`}>
                       {new Date(activity.taskDueAt).toLocaleDateString("en-US", {
                         weekday: "long",
                         month: "long",
@@ -488,12 +488,12 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
 
               {/* Calendar link */}
               {activity.calendarUrl && (
-                <div className="pt-2 border-t border-slate-100">
+                <div className="pt-2 border-t border-border">
                   <a
                     href={activity.calendarUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+                    className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
                   >
                     <ExternalLink className="h-4 w-4" />
                     View in {activity.calendarProvider === "gcal" ? "Google Calendar" :
@@ -506,10 +506,10 @@ export function EventModal({ activityId, onClose }: EventModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-4 border-t border-slate-100">
+        <div className="flex items-center justify-end gap-3 p-4 border-t border-border">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             Close
           </button>

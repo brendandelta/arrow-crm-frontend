@@ -519,7 +519,7 @@ export function getRotationStatusColor(status: string): string {
     case 'ok':
       return 'text-green-600 bg-green-50 border-green-200';
     default:
-      return 'text-slate-500 bg-slate-50 border-slate-200';
+      return 'text-muted-foreground bg-muted border-border';
   }
 }
 

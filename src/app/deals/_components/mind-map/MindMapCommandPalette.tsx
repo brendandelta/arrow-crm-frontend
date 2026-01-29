@@ -109,7 +109,7 @@ export function MindMapCommandPalette({
                   onOpenChange(false);
                 }}
               >
-                <Briefcase className="h-4 w-4 mr-2 text-slate-400" />
+                <Briefcase className="h-4 w-4 mr-2 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm">{deal.name}</span>
                   {deal.company && (
@@ -135,7 +135,7 @@ export function MindMapCommandPalette({
                   onOpenChange(false);
                 }}
               >
-                <Target className="h-4 w-4 mr-2 text-slate-400" />
+                <Target className="h-4 w-4 mr-2 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm">{child.name}</span>
                   <span className="ml-2 text-xs text-muted-foreground">{child.dealName}</span>
@@ -156,7 +156,7 @@ export function MindMapCommandPalette({
                   onOpenChange(false);
                 }}
               >
-                <DollarSign className="h-4 w-4 mr-2 text-slate-400" />
+                <DollarSign className="h-4 w-4 mr-2 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm">{child.name}</span>
                   <span className="ml-2 text-xs text-muted-foreground">{child.dealName}</span>

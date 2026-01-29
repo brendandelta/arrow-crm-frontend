@@ -24,13 +24,13 @@ export function TextFilter({ value, onChange }: TextFilterProps) {
 
   return (
     <div className="relative">
-      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
       <input
         type="text"
         value={local}
         onChange={(e) => handleChange(e.target.value)}
         placeholder="Search..."
-        className="w-full text-[13px] pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder:text-slate-300"
+        className="w-full text-[13px] pl-8 pr-3 py-1.5 bg-card border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder:text-muted-foreground/60"
         onPointerDown={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
       />

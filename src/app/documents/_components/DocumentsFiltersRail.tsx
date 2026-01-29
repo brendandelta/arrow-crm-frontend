@@ -156,10 +156,10 @@ export function DocumentsFiltersRail({
 
   if (isCollapsed) {
     return (
-      <div className="w-12 border-r border-slate-200/60 bg-slate-50/50 flex flex-col items-center py-4 gap-2">
+      <div className="w-12 border-r border-border/60 bg-muted/50 flex flex-col items-center py-4 gap-2">
         <button
           onClick={onToggleCollapse}
-          className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
+          className="p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
           title="Expand filters"
         >
           <ChevronRight className="h-4 w-4" />
@@ -171,7 +171,7 @@ export function DocumentsFiltersRail({
             className={`p-2 rounded-lg transition-colors ${
               isQuickScopeActive(scope)
                 ? "bg-indigo-100 text-indigo-700"
-                : "text-slate-500 hover:bg-slate-100"
+                : "text-muted-foreground hover:bg-muted"
             }`}
             title={scope.label}
           >
@@ -183,10 +183,10 @@ export function DocumentsFiltersRail({
   }
 
   return (
-    <div className="w-[260px] border-r border-slate-200/60 bg-slate-50/30 flex flex-col overflow-hidden">
+    <div className="w-[260px] border-r border-border/60 bg-muted/30 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200/60">
-        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/60">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Filters
         </span>
         <div className="flex items-center gap-1">
@@ -200,7 +200,7 @@ export function DocumentsFiltersRail({
           )}
           <button
             onClick={onToggleCollapse}
-            className="p-1 rounded hover:bg-slate-100 text-slate-400 transition-colors"
+            className="p-1 rounded hover:bg-muted text-muted-foreground transition-colors"
             title="Collapse filters"
           >
             <X className="h-4 w-4" />
@@ -210,7 +210,7 @@ export function DocumentsFiltersRail({
 
       <div className="flex-1 overflow-y-auto">
         {/* Quick Scopes */}
-        <div className="px-3 py-3 border-b border-slate-200/60">
+        <div className="px-3 py-3 border-b border-border/60">
           <div className="space-y-1">
             {QUICK_SCOPES.map((scope) => (
               <button
@@ -219,7 +219,7 @@ export function DocumentsFiltersRail({
                 className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
                   isQuickScopeActive(scope)
                     ? "bg-indigo-50 text-indigo-700 font-medium"
-                    : "text-slate-600 hover:bg-slate-100"
+                    : "text-muted-foreground hover:bg-muted"
                 }`}
               >
                 {scope.icon}
@@ -276,20 +276,20 @@ export function DocumentsFiltersRail({
             open={openSections.has("dateRange")}
             onOpenChange={() => toggleSection("dateRange")}
           >
-            <CollapsibleTrigger className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
+            <CollapsibleTrigger className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-foreground hover:bg-muted rounded-lg transition-colors">
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-slate-400" />
+                <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span>Date Range</span>
               </div>
               <ChevronRight
-                className={`h-4 w-4 text-slate-400 transition-transform ${
+                className={`h-4 w-4 text-muted-foreground transition-transform ${
                   openSections.has("dateRange") ? "rotate-90" : ""
                 }`}
               />
             </CollapsibleTrigger>
             <CollapsibleContent className="px-2 pt-2 pb-1 space-y-2">
               <div>
-                <label className="block text-xs text-slate-500 mb-1">Updated after</label>
+                <label className="block text-xs text-muted-foreground mb-1">Updated after</label>
                 <input
                   type="date"
                   value={filters.updatedAfter?.split("T")[0] || ""}
@@ -299,11 +299,11 @@ export function DocumentsFiltersRail({
                       updatedAfter: e.target.value ? `${e.target.value}T00:00:00Z` : undefined,
                     })
                   }
-                  className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                  className="w-full px-2 py-1.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-500 mb-1">Updated before</label>
+                <label className="block text-xs text-muted-foreground mb-1">Updated before</label>
                 <input
                   type="date"
                   value={filters.updatedBefore?.split("T")[0] || ""}
@@ -313,7 +313,7 @@ export function DocumentsFiltersRail({
                       updatedBefore: e.target.value ? `${e.target.value}T23:59:59Z` : undefined,
                     })
                   }
-                  className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                  className="w-full px-2 py-1.5 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                 />
               </div>
             </CollapsibleContent>
@@ -347,7 +347,7 @@ function FacetSection({
 
   return (
     <Collapsible open={isOpen} onOpenChange={onToggleOpen}>
-      <CollapsibleTrigger className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors">
+      <CollapsibleTrigger className="w-full flex items-center justify-between px-2 py-2 text-sm font-medium text-foreground hover:bg-muted rounded-lg transition-colors">
         <div className="flex items-center gap-2">
           <span>{title}</span>
           {selectedCount > 0 && (
@@ -357,21 +357,21 @@ function FacetSection({
           )}
         </div>
         <ChevronRight
-          className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? "rotate-90" : ""}`}
+          className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-90" : ""}`}
         />
       </CollapsibleTrigger>
       <CollapsibleContent className="px-2 pt-1 pb-1 space-y-0.5">
         {items.map((item) => (
           <label
             key={item.value}
-            className="flex items-center gap-2 px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-50 rounded cursor-pointer"
+            className="flex items-center gap-2 px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted rounded cursor-pointer"
           >
             <Checkbox
               checked={selectedValues.includes(item.value)}
               onCheckedChange={() => onToggle(item.value)}
             />
             <span className="flex-1 truncate">{item.label}</span>
-            <span className="text-xs text-slate-400">{item.count}</span>
+            <span className="text-xs text-muted-foreground">{item.count}</span>
           </label>
         ))}
       </CollapsibleContent>

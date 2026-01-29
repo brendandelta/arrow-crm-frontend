@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   KeyRound,
-  Plus,
-  Search,
   Shield,
   AlertTriangle,
   Clock,
@@ -18,6 +16,7 @@ import {
   Users,
   Lock,
 } from "lucide-react";
+import { PageHeader, PageSearch } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import {
   fetchVaults,
@@ -42,7 +41,7 @@ function VaultCard({
     admin: "bg-purple-100 text-purple-700",
     editor: "bg-blue-100 text-blue-700",
     revealer: "bg-amber-100 text-amber-700",
-    viewer: "bg-slate-100 text-slate-600",
+    viewer: "bg-muted text-muted-foreground",
   };
 
   const hasRotationIssues =
@@ -50,13 +49,13 @@ function VaultCard({
 
   return (
     <div
-      className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white cursor-pointer"
+      className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-card cursor-pointer"
       onClick={onClick}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-slate-100 rounded-lg">
-            <KeyRound className="h-5 w-5 text-slate-600" />
+          <div className="p-2 bg-muted rounded-lg">
+            <KeyRound className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
             <h3 className="font-medium">{vault.name}</h3>
@@ -73,9 +72,9 @@ function VaultCard({
               e.stopPropagation();
               setShowMenu(!showMenu);
             }}
-            className="p-1 hover:bg-slate-100 rounded"
+            className="p-1 hover:bg-muted rounded"
           >
-            <MoreHorizontal className="h-4 w-4 text-slate-400" />
+            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
           </button>
           {showMenu && (
             <>
@@ -86,14 +85,14 @@ function VaultCard({
                   setShowMenu(false);
                 }}
               />
-              <div className="absolute right-0 top-full mt-1 bg-white border rounded-md shadow-lg py-1 z-20 w-32">
+              <div className="absolute right-0 top-full mt-1 bg-card border rounded-md shadow-lg py-1 z-20 w-32">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit(vault);
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   Edit
@@ -113,7 +112,7 @@ function VaultCard({
       {/* Credential Stats */}
       <div className="flex items-center gap-4 text-sm mb-3">
         <div className="flex items-center gap-1.5">
-          <Lock className="h-4 w-4 text-slate-400" />
+          <Lock className="h-4 w-4 text-muted-foreground" />
           <span>{vault.credentialsCount} credential{vault.credentialsCount !== 1 ? "s" : ""}</span>
         </div>
       </div>
@@ -191,19 +190,19 @@ function VaultModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+      <div className="relative bg-card rounded-lg shadow-xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">
             {isNew ? "Create Vault" : "Edit Vault"}
           </h2>
-          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded">
+          <button onClick={onClose} className="p-1 hover:bg-muted rounded">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -217,7 +216,7 @@ function VaultModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Description
             </label>
             <textarea
@@ -234,14 +233,14 @@ function VaultModal({
         <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md"
+            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-md"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving || !formData.name.trim()}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md disabled:opacity-50"
           >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -311,59 +310,48 @@ export default function VaultPage() {
   const totalDueSoon = vaults.reduce((sum, v) => sum + v.dueSoonRotationsCount, 0);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Credential Vault</h1>
-          <p className="text-sm text-muted-foreground">
-            {vaults.length} vault{vaults.length !== 1 ? "s" : ""} &middot;{" "}
-            {totalCredentials} credential{totalCredentials !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <button
-          onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
-        >
-          <Plus className="h-4 w-4" />
-          New Vault
-        </button>
-      </div>
-
-      {/* Summary Strip */}
-      {(totalOverdue > 0 || totalDueSoon > 0) && (
-        <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border">
-          <Shield className="h-5 w-5 text-slate-500" />
-          <div className="flex items-center gap-6 text-sm">
-            {totalOverdue > 0 && (
-              <div className="flex items-center gap-2 text-red-600">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="font-medium">{totalOverdue} overdue rotation{totalOverdue !== 1 ? "s" : ""}</span>
-              </div>
-            )}
-            {totalDueSoon > 0 && (
-              <div className="flex items-center gap-2 text-amber-600">
-                <Clock className="h-4 w-4" />
-                <span className="font-medium">{totalDueSoon} due soon</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Search */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search vaults..."
+    <div className="flex flex-col">
+      <PageHeader
+        title="Vault"
+        subtitle={
+          <span className="flex items-center gap-2">
+            <span>{vaults.length} vault{vaults.length !== 1 ? "s" : ""}</span>
+            <span className="text-muted-foreground/60">·</span>
+            <span>{totalCredentials} credential{totalCredentials !== 1 ? "s" : ""}</span>
+          </span>
+        }
+        primaryActionLabel="New Vault"
+        onPrimaryAction={handleCreate}
+        search={
+          <PageSearch
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
+            onChange={setSearchQuery}
+            placeholder="Search vaults..."
           />
-        </div>
-      </div>
+        }
+      />
+
+      <div className="px-8 py-6 space-y-6">
+        {/* Summary Strip */}
+        {(totalOverdue > 0 || totalDueSoon > 0) && (
+          <div className="flex items-center gap-4 p-4 bg-muted rounded-lg border">
+            <Shield className="h-5 w-5 text-muted-foreground" />
+            <div className="flex items-center gap-6 text-sm">
+              {totalOverdue > 0 && (
+                <div className="flex items-center gap-2 text-red-600">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="font-medium">{totalOverdue} overdue rotation{totalOverdue !== 1 ? "s" : ""}</span>
+                </div>
+              )}
+              {totalDueSoon > 0 && (
+                <div className="flex items-center gap-2 text-amber-600">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-medium">{totalDueSoon} due soon</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
       {/* Vaults Grid */}
       {loading ? (
@@ -377,7 +365,7 @@ export default function VaultPage() {
           {vaults.length === 0 && (
             <button
               onClick={handleCreate}
-              className="mt-4 text-sm text-slate-600 hover:text-slate-900 underline"
+              className="mt-4 text-sm text-muted-foreground hover:text-foreground underline"
             >
               Create your first vault
             </button>
@@ -407,6 +395,7 @@ export default function VaultPage() {
           onSave={handleModalSave}
         />
       )}
+      </div>
     </div>
   );
 }

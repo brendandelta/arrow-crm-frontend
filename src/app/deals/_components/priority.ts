@@ -36,8 +36,8 @@ export const DEAL_PRIORITIES: PriorityConfig[] = [
     value: 3,
     label: "Low",
     shortLabel: "Low",
-    color: "bg-slate-100 text-slate-600 border-slate-200",
-    dot: "bg-slate-400",
+    color: "bg-muted text-muted-foreground border-border",
+    dot: "bg-muted-foreground",
     row: "",
   },
 ];

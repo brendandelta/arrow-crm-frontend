@@ -568,9 +568,9 @@ export function getStatusColor(status: string): string {
     case 'inactive':
       return 'bg-amber-100 text-amber-700 border-amber-200';
     case 'dissolved':
-      return 'bg-slate-100 text-slate-600 border-slate-200';
+      return 'bg-muted text-muted-foreground border-border';
     default:
-      return 'bg-slate-100 text-slate-600 border-slate-200';
+      return 'bg-muted text-muted-foreground border-border';
   }
 }
 
@@ -588,7 +588,7 @@ export function getEntityTypeColor(type: string): string {
     case 'trust':
       return 'bg-amber-50 text-amber-700 border-amber-200';
     default:
-      return 'bg-slate-50 text-slate-600 border-slate-200';
+      return 'bg-muted text-muted-foreground border-border';
   }
 }
 

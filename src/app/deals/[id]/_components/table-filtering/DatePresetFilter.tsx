@@ -35,12 +35,12 @@ export function DatePresetFilter({ presets, selected, counts, onChange }: DatePr
             className={`text-[12px] px-2.5 py-1 rounded-full font-medium transition-colors ${
               isActive
                 ? "bg-blue-500 text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                : "bg-muted text-muted-foreground hover:bg-muted"
             }`}
             onPointerDown={(e) => e.stopPropagation()}
           >
             {preset.label}
-            <span className={`ml-1 text-[10px] ${isActive ? "text-blue-200" : "text-slate-400"}`}>
+            <span className={`ml-1 text-[10px] ${isActive ? "text-blue-200" : "text-muted-foreground"}`}>
               {count}
             </span>
           </button>

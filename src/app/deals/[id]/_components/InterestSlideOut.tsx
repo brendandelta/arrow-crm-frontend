@@ -108,21 +108,21 @@ function parseCurrency(value: string): number | null {
 
 function getStatusColor(status: string) {
   const colors: Record<string, string> = {
-    prospecting: "bg-slate-100 text-slate-600 border-slate-200",
-    contacted: "bg-slate-200 text-slate-700 border-slate-300",
+    prospecting: "bg-muted text-muted-foreground border-border",
+    contacted: "bg-muted text-foreground border-border",
     soft_circled: "bg-blue-100 text-blue-700 border-blue-200",
     committed: "bg-purple-100 text-purple-700 border-purple-200",
     allocated: "bg-indigo-100 text-indigo-700 border-indigo-200",
     funded: "bg-emerald-100 text-emerald-700 border-emerald-200",
     declined: "bg-red-100 text-red-600 border-red-200",
-    withdrawn: "bg-slate-100 text-slate-500 border-slate-200",
+    withdrawn: "bg-muted text-muted-foreground border-border",
   };
   return colors[status] || colors.prospecting;
 }
 
-const inputClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text";
-const selectClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-pointer appearance-none";
-const textareaClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text resize-none min-h-[80px]";
+const inputClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-muted hover:border-border focus:bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text";
+const selectClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-muted hover:border-border focus:bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-pointer appearance-none";
+const textareaClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-muted hover:border-border focus:bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text resize-none min-h-[80px]";
 
 export function InterestSlideOut({
   interest,
@@ -215,9 +215,9 @@ export function InterestSlideOut({
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative w-full max-w-xl bg-white shadow-xl flex flex-col">
+      <div className="relative w-full max-w-xl bg-card shadow-xl flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-card border-b px-6 py-4 flex items-center justify-between z-10">
           <div>
             <h2 className="text-lg font-semibold">
               {isNew ? "Add Interest" : "Interest"}
@@ -234,7 +234,7 @@ export function InterestSlideOut({
               </p>
             )}
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded">
+          <button onClick={onClose} className="p-2 hover:bg-muted rounded">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -245,8 +245,8 @@ export function InterestSlideOut({
             {/* Status */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-2 px-3">
-                <Target className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Status</span>
+                <Target className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</span>
               </div>
               <div className="grid grid-cols-4 gap-1.5 px-3">
                 {INTEREST_STATUSES.map((s) => (
@@ -256,7 +256,7 @@ export function InterestSlideOut({
                     className={`py-1.5 px-2 text-[11px] font-medium rounded-lg border transition-colors ${
                       formData.status === s.value
                         ? getStatusColor(s.value)
-                        : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted"
                     }`}
                   >
                     {s.label}
@@ -269,12 +269,12 @@ export function InterestSlideOut({
             {interest?.investor && (
               <div className="py-2">
                 <div className="flex items-center gap-2 mb-1 px-3">
-                  <Building2 className="h-3.5 w-3.5 text-slate-400" />
-                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Investor</span>
+                  <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Investor</span>
                 </div>
                 <div className="px-3 py-2 text-sm font-medium">
                   {interest.investor.name}
-                  <span className="text-slate-400 ml-2">({interest.investor.kind})</span>
+                  <span className="text-muted-foreground ml-2">({interest.investor.kind})</span>
                 </div>
               </div>
             )}
@@ -282,8 +282,8 @@ export function InterestSlideOut({
             {/* Target Amount */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <Target className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Target Amount</span>
+                <Target className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Target Amount</span>
               </div>
               <input
                 type="text"
@@ -297,8 +297,8 @@ export function InterestSlideOut({
             {/* Committed Amount */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <DollarSign className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Committed</span>
+                <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Committed</span>
               </div>
               <input
                 type="text"
@@ -313,8 +313,8 @@ export function InterestSlideOut({
             <div className="py-2 grid grid-cols-2 gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1 px-3">
-                  <DollarSign className="h-3.5 w-3.5 text-slate-400" />
-                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Minimum</span>
+                  <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Minimum</span>
                 </div>
                 <input
                   type="text"
@@ -326,8 +326,8 @@ export function InterestSlideOut({
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1 px-3">
-                  <DollarSign className="h-3.5 w-3.5 text-slate-400" />
-                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Maximum</span>
+                  <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Maximum</span>
                 </div>
                 <input
                   type="text"
@@ -342,8 +342,8 @@ export function InterestSlideOut({
             {/* Block Allocation */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <Link2 className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Allocated Block</span>
+                <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Allocated Block</span>
               </div>
               <select
                 value={formData.allocatedBlockId}
@@ -363,8 +363,8 @@ export function InterestSlideOut({
             {/* Allocated Amount */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <DollarSign className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Allocated Amount</span>
+                <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Allocated Amount</span>
               </div>
               <input
                 type="text"
@@ -378,8 +378,8 @@ export function InterestSlideOut({
             {/* Source */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <Building2 className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Source</span>
+                <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Source</span>
               </div>
               <select
                 value={formData.source}
@@ -398,8 +398,8 @@ export function InterestSlideOut({
             {/* Next Step */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Next Step</span>
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Next Step</span>
               </div>
               <input
                 type="text"
@@ -413,8 +413,8 @@ export function InterestSlideOut({
             {/* Next Step Due */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Due Date</span>
+                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due Date</span>
               </div>
               <input
                 type="date"
@@ -427,8 +427,8 @@ export function InterestSlideOut({
             {/* Internal Notes */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <FileText className="h-3.5 w-3.5 text-slate-400" />
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Internal Notes</span>
+                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Internal Notes</span>
               </div>
               <textarea
                 value={formData.internalNotes}
@@ -442,12 +442,12 @@ export function InterestSlideOut({
             {interest?.contact && (
               <div className="py-4 mt-2 border-t">
                 <div className="flex items-center gap-2 mb-2 px-3">
-                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Contact</span>
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact</span>
                 </div>
                 <div className="px-3 text-sm">
                   <div className="font-medium">{interest.contact.firstName} {interest.contact.lastName}</div>
-                  {interest.contact.email && <div className="text-slate-500">{interest.contact.email}</div>}
-                  {interest.contact.phone && <div className="text-slate-500">{interest.contact.phone}</div>}
+                  {interest.contact.email && <div className="text-muted-foreground">{interest.contact.email}</div>}
+                  {interest.contact.phone && <div className="text-muted-foreground">{interest.contact.phone}</div>}
                 </div>
               </div>
             )}
@@ -464,7 +464,7 @@ export function InterestSlideOut({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex items-center justify-between">
+        <div className="sticky bottom-0 bg-card border-t px-6 py-4 flex items-center justify-between">
           {!isNew && onDelete && (
             <>
               {!showDeleteConfirm ? (
@@ -487,7 +487,7 @@ export function InterestSlideOut({
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded"
+                    className="px-3 py-1 text-sm text-muted-foreground hover:bg-muted rounded"
                   >
                     No
                   </button>
@@ -500,7 +500,7 @@ export function InterestSlideOut({
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md disabled:opacity-50 transition-colors"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 {isNew ? "Create" : "Save"}

@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import {
   FolderKanban,
-  Plus,
-  Search,
   CheckSquare,
   AlertCircle,
   Clock,
@@ -15,6 +13,7 @@ import {
   Save,
   Loader2,
 } from "lucide-react";
+import { PageHeader, PageSearch } from "@/components/PageHeader";
 import { Badge } from "@/components/ui/badge";
 
 interface Owner {
@@ -49,7 +48,7 @@ const STATUS_OPTIONS = [
   { value: "open", label: "Open", color: "bg-blue-100 text-blue-700" },
   { value: "active", label: "Active", color: "bg-green-100 text-green-700" },
   { value: "paused", label: "Paused", color: "bg-amber-100 text-amber-700" },
-  { value: "complete", label: "Complete", color: "bg-slate-100 text-slate-600" },
+  { value: "complete", label: "Complete", color: "bg-muted text-muted-foreground" },
 ];
 
 function ProjectCard({
@@ -69,11 +68,11 @@ function ProjectCard({
     totalTasks > 0 ? Math.round((project.completedTasksCount / totalTasks) * 100) : 0;
 
   return (
-    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white">
+    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-card">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-slate-100 rounded-lg">
-            <FolderKanban className="h-5 w-5 text-slate-600" />
+          <div className="p-2 bg-muted rounded-lg">
+            <FolderKanban className="h-5 w-5 text-muted-foreground" />
           </div>
           <div>
             <h3 className="font-medium">{project.name}</h3>
@@ -85,9 +84,9 @@ function ProjectCard({
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-1 hover:bg-slate-100 rounded"
+            className="p-1 hover:bg-muted rounded"
           >
-            <MoreHorizontal className="h-4 w-4 text-slate-400" />
+            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
           </button>
           {showMenu && (
             <>
@@ -95,13 +94,13 @@ function ProjectCard({
                 className="fixed inset-0 z-10"
                 onClick={() => setShowMenu(false)}
               />
-              <div className="absolute right-0 top-full mt-1 bg-white border rounded-md shadow-lg py-1 z-20 w-32">
+              <div className="absolute right-0 top-full mt-1 bg-card border rounded-md shadow-lg py-1 z-20 w-32">
                 <button
                   onClick={() => {
                     onEdit(project);
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   Edit
@@ -133,7 +132,7 @@ function ProjectCard({
       {/* Task Stats */}
       <div className="flex items-center gap-4 text-sm mb-3">
         <div className="flex items-center gap-1.5">
-          <CheckSquare className="h-4 w-4 text-slate-400" />
+          <CheckSquare className="h-4 w-4 text-muted-foreground" />
           <span>{project.openTasksCount} open</span>
         </div>
         {project.overdueTasksCount > 0 && (
@@ -151,7 +150,7 @@ function ProjectCard({
             <span>Progress</span>
             <span>{completionPercent}%</span>
           </div>
-          <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full bg-green-500 transition-all"
               style={{ width: `${completionPercent}%` }}
@@ -231,19 +230,19 @@ function ProjectModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+      <div className="relative bg-card rounded-lg shadow-xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">
             {isNew ? "Create Project" : "Edit Project"}
           </h2>
-          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded">
+          <button onClick={onClose} className="p-1 hover:bg-muted rounded">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -257,7 +256,7 @@ function ProjectModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Description
             </label>
             <textarea
@@ -272,7 +271,7 @@ function ProjectModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Status
               </label>
               <select
@@ -291,7 +290,7 @@ function ProjectModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Owner
               </label>
               <select
@@ -315,14 +314,14 @@ function ProjectModal({
         <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md"
+            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-md"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving || !formData.name.trim()}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md disabled:opacity-50"
           >
             {saving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -419,49 +418,36 @@ export default function ProjectsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Projects</h1>
-          <p className="text-sm text-muted-foreground">
-            {projects.length} project{projects.length !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <button
-          onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
-        >
-          <Plus className="h-4 w-4" />
-          New Project
-        </button>
-      </div>
-
-      {/* Search & Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search projects..."
+    <div className="flex flex-col">
+      <PageHeader
+        subtitle={`${projects.length} project${projects.length !== 1 ? "s" : ""}`}
+        primaryActionLabel="New Project"
+        onPrimaryAction={handleCreate}
+        search={
+          <PageSearch
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
+            onChange={setSearchQuery}
+            placeholder="Search projects..."
           />
+        }
+      />
+
+      <div className="px-8 py-6 space-y-6">
+        {/* Filters */}
+        <div className="flex items-center gap-4">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 text-sm border rounded-md"
+          >
+            <option value="">All statuses</option>
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 text-sm border rounded-md"
-        >
-          <option value="">All statuses</option>
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
 
       {/* Projects Grid */}
       {loading ? (
@@ -474,7 +460,7 @@ export default function ProjectsPage() {
           <p>No projects found</p>
           <button
             onClick={handleCreate}
-            className="mt-4 text-sm text-slate-600 hover:text-slate-900 underline"
+            className="mt-4 text-sm text-muted-foreground hover:text-foreground underline"
           >
             Create your first project
           </button>
@@ -552,6 +538,7 @@ export default function ProjectsPage() {
           onSave={handleModalSave}
         />
       )}
+      </div>
     </div>
   );
 }

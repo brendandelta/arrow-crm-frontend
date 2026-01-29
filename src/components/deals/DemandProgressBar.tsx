@@ -82,7 +82,7 @@ export function DemandProgressBar({
 
   return (
     <div className="relative">
-      <div className={`flex ${heights[size]} bg-slate-100 rounded-full overflow-hidden`}>
+      <div className={`flex ${heights[size]} bg-muted rounded-full overflow-hidden`}>
         {segments.map((segment) => (
           segment.pct > 0 && (
             <div
@@ -98,7 +98,7 @@ export function DemandProgressBar({
 
       {/* Hover tooltip */}
       {hoveredSegment && (
-        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-foreground text-background text-xs px-2 py-1 rounded whitespace-nowrap z-10">
           {segments.find((s) => s.key === hoveredSegment)?.label}:{" "}
           {formatCurrency(segments.find((s) => s.key === hoveredSegment)?.value || 0)}
         </div>
@@ -142,8 +142,8 @@ export function DemandFunnel({
   onStageClick?: (stage: string) => void;
 }) {
   const stages = [
-    { key: "prospecting", label: "Prospecting", count: funnel.prospecting, color: "bg-slate-200" },
-    { key: "contacted", label: "Contacted", count: funnel.contacted, color: "bg-slate-300" },
+    { key: "prospecting", label: "Prospecting", count: funnel.prospecting, color: "bg-muted" },
+    { key: "contacted", label: "Contacted", count: funnel.contacted, color: "bg-muted" },
     { key: "softCircled", label: "Soft Circled", count: funnel.softCircled, color: "bg-blue-400" },
     { key: "committed", label: "Committed", count: funnel.committed, color: "bg-purple-500" },
     { key: "allocated", label: "Allocated", count: funnel.allocated, color: "bg-indigo-500" },
@@ -165,7 +165,7 @@ export function DemandFunnel({
             <div className="w-24 text-xs text-right text-muted-foreground group-hover:text-foreground transition-colors">
               {stage.label}
             </div>
-            <div className="flex-1 h-6 bg-slate-100 rounded overflow-hidden">
+            <div className="flex-1 h-6 bg-muted rounded overflow-hidden">
               <div
                 className={`h-full ${stage.color} transition-all group-hover:opacity-80`}
                 style={{ width: `${Math.max(widthPct, 2)}%` }}

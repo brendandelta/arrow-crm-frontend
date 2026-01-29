@@ -155,7 +155,7 @@ export default function VaultDetailPage() {
         <p>Vault not found</p>
         <button
           onClick={() => router.push("/vault")}
-          className="mt-4 text-sm text-slate-600 hover:text-slate-900 underline"
+          className="mt-4 text-sm text-muted-foreground hover:text-foreground underline"
         >
           Back to vaults
         </button>
@@ -169,7 +169,7 @@ export default function VaultDetailPage() {
       <div className="flex items-center gap-4">
         <button
           onClick={() => router.push("/vault")}
-          className="p-2 hover:bg-slate-100 rounded-lg"
+          className="p-2 hover:bg-muted rounded-lg"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -190,7 +190,7 @@ export default function VaultDetailPage() {
           {vault.canManageMemberships && (
             <button
               onClick={() => setMembersDialogOpen(true)}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium border rounded-lg hover:bg-slate-50"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium border rounded-lg hover:bg-muted"
             >
               <Users className="h-4 w-4" />
               Members ({members.length})
@@ -199,7 +199,7 @@ export default function VaultDetailPage() {
           {vault.canEdit && (
             <button
               onClick={handleCreate}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
+              className="flex items-center gap-2 px-4 py-2 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90"
             >
               <Plus className="h-4 w-4" />
               Add Credential
@@ -210,13 +210,13 @@ export default function VaultDetailPage() {
 
       {/* Rotation Status Tabs */}
       {(overdueCount > 0 || dueSoonCount > 0) && (
-        <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-lg w-fit">
+        <div className="flex items-center gap-2 p-1 bg-muted rounded-lg w-fit">
           <button
             onClick={() => setFilterTab("all")}
             className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
               filterTab === "all"
-                ? "bg-white shadow-sm"
-                : "hover:bg-slate-200"
+                ? "bg-card shadow-sm"
+                : "hover:bg-muted"
             }`}
           >
             All ({credentials.length})
@@ -226,7 +226,7 @@ export default function VaultDetailPage() {
               onClick={() => setFilterTab("overdue")}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 filterTab === "overdue"
-                  ? "bg-white shadow-sm text-red-600"
+                  ? "bg-card shadow-sm text-red-600"
                   : "text-red-600 hover:bg-red-50"
               }`}
             >
@@ -239,7 +239,7 @@ export default function VaultDetailPage() {
               onClick={() => setFilterTab("due_soon")}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 filterTab === "due_soon"
-                  ? "bg-white shadow-sm text-amber-600"
+                  ? "bg-card shadow-sm text-amber-600"
                   : "text-amber-600 hover:bg-amber-50"
               }`}
             >
@@ -296,7 +296,7 @@ export default function VaultDetailPage() {
           {credentials.length === 0 && vault.canEdit && (
             <button
               onClick={handleCreate}
-              className="mt-4 text-sm text-slate-600 hover:text-slate-900 underline"
+              className="mt-4 text-sm text-muted-foreground hover:text-foreground underline"
             >
               Add your first credential
             </button>
@@ -377,10 +377,10 @@ function CredentialRow({
   const typeConfig = CREDENTIAL_TYPES.find((t) => t.value === credential.credentialType);
 
   return (
-    <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-slate-50 transition-colors">
+    <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted transition-colors">
       {/* Icon */}
-      <div className="p-2 bg-slate-100 rounded-lg shrink-0">
-        <KeyRound className="h-5 w-5 text-slate-600" />
+      <div className="p-2 bg-muted rounded-lg shrink-0">
+        <KeyRound className="h-5 w-5 text-muted-foreground" />
       </div>
 
       {/* Main Info */}
@@ -417,7 +417,7 @@ function CredentialRow({
         </div>
         {credential.links.length > 0 && (
           <div className="flex items-center gap-2 mt-2">
-            <Link2 className="h-3.5 w-3.5 text-slate-400" />
+            <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
             <div className="flex flex-wrap gap-1">
               {credential.links.slice(0, 3).map((link) => (
                 <Badge key={link.id} variant="outline" className="text-xs">
@@ -439,7 +439,7 @@ function CredentialRow({
         {canReveal && (
           <button
             onClick={onReveal}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 border rounded-md hover:bg-slate-100"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-foreground border rounded-md hover:bg-muted"
           >
             <Eye className="h-4 w-4" />
             Reveal
@@ -448,9 +448,9 @@ function CredentialRow({
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="p-2 hover:bg-slate-100 rounded-md"
+            className="p-2 hover:bg-muted rounded-md"
           >
-            <MoreHorizontal className="h-4 w-4 text-slate-400" />
+            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
           </button>
           {showMenu && (
             <>
@@ -458,14 +458,14 @@ function CredentialRow({
                 className="fixed inset-0 z-10"
                 onClick={() => setShowMenu(false)}
               />
-              <div className="absolute right-0 top-full mt-1 bg-white border rounded-md shadow-lg py-1 z-20 w-36">
+              <div className="absolute right-0 top-full mt-1 bg-card border rounded-md shadow-lg py-1 z-20 w-36">
                 {canEdit && (
                   <button
                     onClick={() => {
                       onEdit();
                       setShowMenu(false);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-50"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                   >
                     <Pencil className="h-3.5 w-3.5" />
                     Edit

@@ -60,12 +60,12 @@ export function MindMapFilterRail({
     });
 
   return (
-    <div className="w-[240px] shrink-0 border-r border-slate-200 bg-white flex flex-col h-full overflow-hidden">
+    <div className="w-[240px] shrink-0 border-r border-border bg-card flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-slate-400" />
-          <span className="text-sm font-semibold text-slate-700">Filters</span>
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-semibold text-foreground">Filters</span>
         </div>
         {hasActiveFilters && (
           <button
@@ -81,20 +81,20 @@ export function MindMapFilterRail({
         {/* Search */}
         <div>
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search deals..."
               value={filters.search}
               onChange={(e) => update({ search: e.target.value })}
-              className="w-full pl-8 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+              className="w-full pl-8 pr-8 py-1.5 text-xs bg-muted border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
             />
             {filters.search && (
               <button
                 onClick={() => update({ search: "" })}
                 className="absolute right-2 top-1/2 -translate-y-1/2"
               >
-                <X className="h-3 w-3 text-slate-400 hover:text-slate-600" />
+                <X className="h-3 w-3 text-muted-foreground hover:text-muted-foreground" />
               </button>
             )}
           </div>
@@ -102,7 +102,7 @@ export function MindMapFilterRail({
 
         {/* Bucket */}
         <div>
-          <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-2">
+          <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
             Bucket
           </label>
           <div className="flex gap-1">
@@ -113,7 +113,7 @@ export function MindMapFilterRail({
                 className={`flex-1 py-1.5 text-[11px] font-medium rounded-md border transition-colors ${
                   filters.bucket === b.value
                     ? "bg-indigo-50 text-indigo-700 border-indigo-200"
-                    : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+                    : "bg-card text-muted-foreground border-border hover:bg-muted"
                 }`}
               >
                 {b.label}
@@ -126,7 +126,7 @@ export function MindMapFilterRail({
         <div>
           <button
             onClick={() => setStageOpen(!stageOpen)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 w-full"
+            className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 w-full"
           >
             {stageOpen ? (
               <ChevronDown className="h-3 w-3" />
@@ -144,7 +144,7 @@ export function MindMapFilterRail({
                   className={`px-2.5 py-1 text-[11px] font-medium rounded-md border transition-colors ${
                     filters.stages.has(s.value)
                       ? "bg-indigo-50 text-indigo-700 border-indigo-200"
-                      : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+                      : "bg-card text-muted-foreground border-border hover:bg-muted"
                   }`}
                 >
                   {s.label}
@@ -158,7 +158,7 @@ export function MindMapFilterRail({
         <div>
           <button
             onClick={() => setOwnerOpen(!ownerOpen)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 w-full"
+            className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 w-full"
           >
             {ownerOpen ? (
               <ChevronDown className="h-3 w-3" />
@@ -171,7 +171,7 @@ export function MindMapFilterRail({
             <select
               value={filters.owner}
               onChange={(e) => update({ owner: e.target.value })}
-              className="w-full text-xs bg-white border border-slate-200 rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+              className="w-full text-xs bg-card border border-border rounded-md px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
             >
               <option value="all">All owners</option>
               {owners.map((o) => (
@@ -185,17 +185,17 @@ export function MindMapFilterRail({
 
         {/* Risk toggle */}
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+          <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
             At risk only
           </span>
           <button
             onClick={() => update({ risk: !filters.risk })}
             className={`relative w-9 h-5 rounded-full transition-colors ${
-              filters.risk ? "bg-indigo-500" : "bg-slate-200"
+              filters.risk ? "bg-indigo-500" : "bg-muted"
             }`}
           >
             <span
-              className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+              className={`absolute top-0.5 left-0.5 w-4 h-4 bg-card rounded-full shadow transition-transform ${
                 filters.risk ? "translate-x-4" : ""
               }`}
             />
@@ -204,7 +204,7 @@ export function MindMapFilterRail({
 
         {/* Filter mode */}
         <div>
-          <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-2">
+          <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-2">
             Non-matching
           </label>
           <div className="flex gap-1">
@@ -213,7 +213,7 @@ export function MindMapFilterRail({
               className={`flex-1 py-1.5 text-[11px] font-medium rounded-md border transition-colors ${
                 filters.filterMode === "dim"
                   ? "bg-indigo-50 text-indigo-700 border-indigo-200"
-                  : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+                  : "bg-card text-muted-foreground border-border hover:bg-muted"
               }`}
             >
               Dim
@@ -223,7 +223,7 @@ export function MindMapFilterRail({
               className={`flex-1 py-1.5 text-[11px] font-medium rounded-md border transition-colors ${
                 filters.filterMode === "hide"
                   ? "bg-indigo-50 text-indigo-700 border-indigo-200"
-                  : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
+                  : "bg-card text-muted-foreground border-border hover:bg-muted"
               }`}
             >
               Hide

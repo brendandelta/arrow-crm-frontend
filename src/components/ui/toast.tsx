@@ -107,14 +107,14 @@ function ToastItem({
     >
       {icons[toast.type || "info"]}
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-slate-900">{toast.title}</p>
+        <p className="font-medium text-foreground">{toast.title}</p>
         {toast.description && (
-          <p className="text-sm text-slate-600 mt-1 whitespace-pre-line">{toast.description}</p>
+          <p className="text-sm text-muted-foreground mt-1 whitespace-pre-line">{toast.description}</p>
         )}
       </div>
       <button
         onClick={() => onRemove(toast.id)}
-        className="text-slate-400 hover:text-slate-600 transition-colors"
+        className="text-muted-foreground hover:text-muted-foreground transition-colors"
       >
         <X className="h-4 w-4" />
       </button>

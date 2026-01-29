@@ -114,10 +114,10 @@ function FieldRow({
   icon?: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="py-3 border-b border-slate-100 last:border-0">
+    <div className="py-3 border-b border-border last:border-0">
       <div className="flex items-center gap-2 mb-1">
-        {Icon && <Icon className="h-4 w-4 text-slate-400" />}
-        <label className="text-sm font-medium text-slate-500">{label}</label>
+        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+        <label className="text-sm font-medium text-muted-foreground">{label}</label>
         {missing && (
           <span className="flex items-center gap-1 text-xs text-amber-600">
             <AlertCircle className="h-3 w-3" />
@@ -184,9 +184,9 @@ function InlineSubtaskForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2 mt-2 bg-slate-50 rounded-md p-2">
-      <div className="w-4 h-4 rounded border border-slate-300 flex items-center justify-center">
-        <Plus className="h-2.5 w-2.5 text-slate-400" />
+    <form onSubmit={handleSubmit} className="flex items-center gap-2 mt-2 bg-muted rounded-md p-2">
+      <div className="w-4 h-4 rounded border border-border flex items-center justify-center">
+        <Plus className="h-2.5 w-2.5 text-muted-foreground" />
       </div>
       <input
         ref={inputRef}
@@ -195,14 +195,14 @@ function InlineSubtaskForm({
         onChange={(e) => setSubject(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Add a subtask..."
-        className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+        className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         disabled={saving}
       />
       {subject.trim() && (
         <button
           type="submit"
           disabled={saving}
-          className="px-2 py-1 text-xs font-medium text-white bg-slate-700 hover:bg-slate-800 rounded disabled:opacity-50"
+          className="px-2 py-1 text-xs font-medium text-background bg-muted-foreground hover:bg-foreground/90 rounded disabled:opacity-50"
         >
           {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Add"}
         </button>
@@ -210,7 +210,7 @@ function InlineSubtaskForm({
       <button
         type="button"
         onClick={onCancel}
-        className="p-1 text-slate-400 hover:text-slate-600"
+        className="p-1 text-muted-foreground hover:text-muted-foreground"
       >
         <X className="h-3.5 w-3.5" />
       </button>
@@ -419,9 +419,9 @@ export function TasksSlideOut({
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative w-full max-w-xl bg-white shadow-xl flex flex-col">
+      <div className="relative w-full max-w-xl bg-card shadow-xl flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-card border-b px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <div
               className={`p-2 rounded-lg ${
@@ -447,12 +447,12 @@ export function TasksSlideOut({
             {!isNew && !editing && (
               <button
                 onClick={() => setEditing(true)}
-                className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded"
+                className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded"
               >
                 <Pencil className="h-4 w-4" />
               </button>
             )}
-            <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded">
+            <button onClick={onClose} className="p-2 hover:bg-muted rounded">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -464,7 +464,7 @@ export function TasksSlideOut({
             <div className="space-y-4">
               {/* Task Type Toggle */}
               <div>
-                <label className="block text-sm font-medium text-slate-500 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Task Type
                 </label>
                 <div className="flex gap-2">
@@ -474,8 +474,8 @@ export function TasksSlideOut({
                     }
                     className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded border transition-colors ${
                       !formData.isSubtask
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted"
                     }`}
                   >
                     <CheckSquare className="h-4 w-4" />
@@ -485,8 +485,8 @@ export function TasksSlideOut({
                     onClick={() => setFormData({ ...formData, isSubtask: true })}
                     className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded border transition-colors ${
                       formData.isSubtask
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted"
                     }`}
                   >
                     <ListTree className="h-4 w-4" />
@@ -498,7 +498,7 @@ export function TasksSlideOut({
               {/* Parent Task (for subtasks) */}
               {formData.isSubtask && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-500 mb-1">
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">
                     Parent Task
                   </label>
                   <select
@@ -520,7 +520,7 @@ export function TasksSlideOut({
 
               {/* Attachment Type */}
               <div className="pt-4 border-t">
-                <label className="block text-sm font-medium text-slate-500 mb-2">
+                <label className="block text-sm font-medium text-muted-foreground mb-2">
                   Attach To
                 </label>
                 <div className="flex gap-2 mb-3">
@@ -535,8 +535,8 @@ export function TasksSlideOut({
                     }
                     className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded border transition-colors ${
                       formData.attachmentType === "general"
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted"
                     }`}
                   >
                     <CheckSquare className="h-4 w-4" />
@@ -552,8 +552,8 @@ export function TasksSlideOut({
                     }
                     className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded border transition-colors ${
                       formData.attachmentType === "deal"
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted"
                     }`}
                   >
                     <Building2 className="h-4 w-4" />
@@ -569,8 +569,8 @@ export function TasksSlideOut({
                     }
                     className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded border transition-colors ${
                       formData.attachmentType === "project"
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-card text-muted-foreground border-border hover:bg-muted"
                     }`}
                   >
                     <FolderKanban className="h-4 w-4" />
@@ -615,7 +615,7 @@ export function TasksSlideOut({
 
               {/* Subject */}
               <div className="pt-4 border-t">
-                <label className="block text-sm font-medium text-slate-500 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Task Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -633,7 +633,7 @@ export function TasksSlideOut({
               {/* Due Date & Priority */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-500 mb-1">
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">
                     Due Date
                   </label>
                   <input
@@ -644,7 +644,7 @@ export function TasksSlideOut({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-500 mb-1">
+                  <label className="block text-sm font-medium text-muted-foreground mb-1">
                     Priority
                   </label>
                   <select
@@ -663,7 +663,7 @@ export function TasksSlideOut({
 
               {/* Assignee */}
               <div>
-                <label className="block text-sm font-medium text-slate-500 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Assign To
                 </label>
                 <select
@@ -693,8 +693,8 @@ export function TasksSlideOut({
                     }
                     className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                       formData.assignedToId === user.id.toString()
-                        ? "bg-slate-900 text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground hover:bg-muted"
                     }`}
                   >
                     {user.firstName}
@@ -704,7 +704,7 @@ export function TasksSlideOut({
 
               {/* Status */}
               <div>
-                <label className="block text-sm font-medium text-slate-500 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Status
                 </label>
                 <select
@@ -727,7 +727,7 @@ export function TasksSlideOut({
                       className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
                         formData.completed
                           ? "bg-green-500 border-green-500 text-white"
-                          : "border-slate-300 hover:border-slate-400"
+                          : "border-border hover:border-muted-foreground"
                       }`}
                       onClick={() =>
                         setFormData({ ...formData, completed: !formData.completed })
@@ -735,7 +735,7 @@ export function TasksSlideOut({
                     >
                       {formData.completed && <Check className="h-3.5 w-3.5" />}
                     </div>
-                    <span className="text-sm font-medium text-slate-700">
+                    <span className="text-sm font-medium text-foreground">
                       Mark as completed
                     </span>
                   </label>
@@ -744,7 +744,7 @@ export function TasksSlideOut({
 
               {/* Description */}
               <div className="pt-4 border-t">
-                <label className="block text-sm font-medium text-slate-500 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   Description
                 </label>
                 <textarea
@@ -832,7 +832,7 @@ export function TasksSlideOut({
                     {localSubtasks.length > 0 && (
                       <>
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+                          <div className="flex-1 bg-muted rounded-full h-2 overflow-hidden">
                             <div
                               className="h-full bg-green-500 transition-all"
                               style={{
@@ -854,7 +854,7 @@ export function TasksSlideOut({
                           {localSubtasks.map((st) => (
                             <div
                               key={st.id}
-                              className="group flex items-center gap-2 text-sm py-1.5 px-2 -mx-2 rounded hover:bg-slate-50 transition-colors"
+                              className="group flex items-center gap-2 text-sm py-1.5 px-2 -mx-2 rounded hover:bg-muted transition-colors"
                             >
                               <button
                                 onClick={() => handleToggleSubtask(st)}
@@ -862,7 +862,7 @@ export function TasksSlideOut({
                                 className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
                                   st.completed
                                     ? "bg-green-500 border-green-500 text-white"
-                                    : "border-slate-300 hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
+                                    : "border-border hover:border-green-400 hover:bg-green-50 group-hover:border-green-400"
                                 } ${togglingSubtaskId === st.id ? "opacity-50" : ""}`}
                               >
                                 {togglingSubtaskId === st.id ? (
@@ -905,7 +905,7 @@ export function TasksSlideOut({
                     ) : (
                       <button
                         onClick={() => setShowSubtaskForm(true)}
-                        className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 py-1.5 transition-colors"
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground py-1.5 transition-colors"
                       >
                         <Plus className="h-4 w-4" />
                         Add subtask
@@ -928,7 +928,7 @@ export function TasksSlideOut({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex items-center justify-between">
+        <div className="sticky bottom-0 bg-card border-t px-6 py-4 flex items-center justify-between">
           {!isNew && onDelete && !editing && (
             <button
               onClick={() => setShowDeleteConfirm(true)}
@@ -950,7 +950,7 @@ export function TasksSlideOut({
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded"
+                className="px-3 py-1 text-sm text-muted-foreground hover:bg-muted rounded"
               >
                 Cancel
               </button>
@@ -962,7 +962,7 @@ export function TasksSlideOut({
                 <button
                   onClick={() => setEditing(false)}
                   disabled={saving}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-md"
                 >
                   Cancel
                 </button>
@@ -971,7 +971,7 @@ export function TasksSlideOut({
                 <button
                   onClick={handleSave}
                   disabled={saving || !formData.subject.trim()}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md disabled:opacity-50"
                 >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -983,7 +983,7 @@ export function TasksSlideOut({
               ) : (
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-md"
                 >
                   Close
                 </button>

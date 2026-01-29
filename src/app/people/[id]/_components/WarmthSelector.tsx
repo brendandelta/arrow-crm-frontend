@@ -13,7 +13,7 @@ export function WarmthSelector({ warmth, onChange, editing }: WarmthSelectorProp
     return (
       <div className="flex items-center gap-2">
         <div className={`w-2 h-2 rounded-full ${config.color}`} />
-        <span className="text-sm text-slate-600">{config.label}</span>
+        <span className="text-sm text-muted-foreground">{config.label}</span>
       </div>
     );
   }
@@ -27,8 +27,8 @@ export function WarmthSelector({ warmth, onChange, editing }: WarmthSelectorProp
           onClick={() => onChange(item.value)}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
             warmth === item.value
-              ? "bg-slate-900 text-white"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              ? "bg-foreground text-background"
+              : "bg-muted text-muted-foreground hover:bg-muted"
           }`}
         >
           <div className={`w-1.5 h-1.5 rounded-full ${item.color}`} />

@@ -136,10 +136,10 @@ export function DocumentPreviewPanel({
 
   if (!document && !loading) {
     return (
-      <div className="w-[420px] border-l border-slate-200/60 bg-slate-50/30 flex flex-col items-center justify-center p-8">
-        <FileText className="h-16 w-16 text-slate-200 mb-4" />
-        <h3 className="text-sm font-medium text-slate-600 mb-2">No document selected</h3>
-        <p className="text-sm text-slate-500 text-center">
+      <div className="w-[420px] border-l border-border/60 bg-muted/30 flex flex-col items-center justify-center p-8">
+        <FileText className="h-16 w-16 text-muted-foreground mb-4" />
+        <h3 className="text-sm font-medium text-muted-foreground mb-2">No document selected</h3>
+        <p className="text-sm text-muted-foreground text-center">
           Select a document from the list to preview it here.
         </p>
       </div>
@@ -148,8 +148,8 @@ export function DocumentPreviewPanel({
 
   if (loading) {
     return (
-      <div className="w-[420px] border-l border-slate-200/60 bg-white flex flex-col">
-        <div className="p-4 border-b border-slate-200/60">
+      <div className="w-[420px] border-l border-border/60 bg-card flex flex-col">
+        <div className="p-4 border-b border-border/60">
           <Skeleton className="h-6 w-3/4 mb-2" />
           <Skeleton className="h-4 w-1/2" />
         </div>
@@ -167,13 +167,13 @@ export function DocumentPreviewPanel({
     if (document.isPdf) return <FileText className="h-6 w-6 text-red-500" />;
     if (document.isImage) return <FileImage className="h-6 w-6 text-blue-500" />;
     if (document.isSpreadsheet) return <FileSpreadsheet className="h-6 w-6 text-green-600" />;
-    return <File className="h-6 w-6 text-slate-400" />;
+    return <File className="h-6 w-6 text-muted-foreground" />;
   })();
 
   return (
-    <div className="w-[420px] border-l border-slate-200/60 bg-white flex flex-col overflow-hidden">
+    <div className="w-[420px] border-l border-border/60 bg-card flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-start justify-between p-4 border-b border-slate-200/60">
+      <div className="flex items-start justify-between p-4 border-b border-border/60">
         <div className="flex items-start gap-3 min-w-0">
           {fileIcon}
           <div className="min-w-0">
@@ -188,7 +188,7 @@ export function DocumentPreviewPanel({
                   if (e.key === "Escape") setEditingField(null);
                 }}
                 autoFocus
-                className="w-full font-semibold text-slate-900 border-b border-indigo-400 focus:outline-none bg-transparent"
+                className="w-full font-semibold text-foreground border-b border-indigo-400 focus:outline-none bg-transparent"
               />
             ) : (
               <h2
@@ -196,27 +196,27 @@ export function DocumentPreviewPanel({
                   setEditingField("title");
                   setEditValue(document.title);
                 }}
-                className="font-semibold text-slate-900 truncate cursor-pointer hover:text-indigo-700 transition-colors"
+                className="font-semibold text-foreground truncate cursor-pointer hover:text-indigo-700 transition-colors"
                 title="Click to edit"
               >
                 {document.title}
               </h2>
             )}
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {formatFileSize(document.fileSizeBytes)} · v{document.version || 1}
             </p>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+          className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-muted-foreground transition-colors"
         >
           <X className="h-5 w-5" />
         </button>
       </div>
 
       {/* Actions Bar */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200/60 bg-slate-50/50">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-border/60 bg-muted/50">
         <Button
           variant="outline"
           size="sm"
@@ -251,7 +251,7 @@ export function DocumentPreviewPanel({
         {/* Preview Area */}
         <div className="p-4">
           {document.previewUrl ? (
-            <div className="rounded-xl overflow-hidden border border-slate-200 bg-slate-100">
+            <div className="rounded-xl overflow-hidden border border-border bg-muted">
               {document.isPdf ? (
                 <iframe
                   src={`${document.previewUrl}#toolbar=0`}
@@ -267,10 +267,10 @@ export function DocumentPreviewPanel({
               ) : null}
             </div>
           ) : (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 flex flex-col items-center justify-center">
+            <div className="rounded-xl border border-border bg-muted p-8 flex flex-col items-center justify-center">
               {fileIcon}
-              <p className="text-sm text-slate-500 mt-2">{document.name}</p>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-sm text-muted-foreground mt-2">{document.name}</p>
+              <p className="text-xs text-muted-foreground mt-1">
                 Preview not available for this file type
               </p>
             </div>
@@ -279,14 +279,14 @@ export function DocumentPreviewPanel({
 
         {/* Metadata Card */}
         <div className="px-4 pb-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4">
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+          <div className="rounded-2xl border border-border bg-card p-4 space-y-4">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Details
             </h3>
 
             {/* Description */}
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Description</label>
+              <label className="block text-xs text-muted-foreground mb-1">Description</label>
               {editingField === "description" ? (
                 <textarea
                   value={editValue}
@@ -294,7 +294,7 @@ export function DocumentPreviewPanel({
                   onBlur={() => handleInlineEdit("description", editValue)}
                   autoFocus
                   rows={3}
-                  className="w-full text-sm text-slate-700 border border-slate-200 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                  className="w-full text-sm text-foreground border border-border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                 />
               ) : (
                 <p
@@ -302,10 +302,10 @@ export function DocumentPreviewPanel({
                     setEditingField("description");
                     setEditValue(document.description || "");
                   }}
-                  className="text-sm text-slate-700 cursor-pointer hover:bg-slate-50 rounded p-1 -m-1 transition-colors"
+                  className="text-sm text-foreground cursor-pointer hover:bg-muted rounded p-1 -m-1 transition-colors"
                 >
                   {document.description || (
-                    <span className="text-slate-400 italic">Add description...</span>
+                    <span className="text-muted-foreground italic">Add description...</span>
                   )}
                 </p>
               )}
@@ -314,7 +314,7 @@ export function DocumentPreviewPanel({
             {/* Selects Grid */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-slate-500 mb-1">Category</label>
+                <label className="block text-xs text-muted-foreground mb-1">Category</label>
                 <Select
                   value={document.category || ""}
                   onValueChange={(v) => handleSelectChange("category", v)}
@@ -333,7 +333,7 @@ export function DocumentPreviewPanel({
               </div>
 
               <div>
-                <label className="block text-xs text-slate-500 mb-1">Status</label>
+                <label className="block text-xs text-muted-foreground mb-1">Status</label>
                 <Select
                   value={document.status || ""}
                   onValueChange={(v) => handleSelectChange("status", v)}
@@ -352,7 +352,7 @@ export function DocumentPreviewPanel({
               </div>
 
               <div>
-                <label className="block text-xs text-slate-500 mb-1">Sensitivity</label>
+                <label className="block text-xs text-muted-foreground mb-1">Sensitivity</label>
                 <Select
                   value={document.sensitivity || ""}
                   onValueChange={(v) => handleSelectChange("sensitivity", v)}
@@ -371,15 +371,15 @@ export function DocumentPreviewPanel({
               </div>
 
               <div>
-                <label className="block text-xs text-slate-500 mb-1">Doc Type</label>
-                <p className="text-sm text-slate-700 px-2 py-1">
+                <label className="block text-xs text-muted-foreground mb-1">Doc Type</label>
+                <p className="text-sm text-foreground px-2 py-1">
                   {document.docType?.replace(/_/g, " ") || "—"}
                 </p>
               </div>
             </div>
 
             {/* File info */}
-            <div className="flex items-center gap-4 text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t border-border">
               <span>Uploaded {new Date(document.createdAt).toLocaleDateString()}</span>
               {document.uploadedBy && <span>by {document.uploadedBy.name}</span>}
             </div>
@@ -388,9 +388,9 @@ export function DocumentPreviewPanel({
 
         {/* Links Card */}
         <div className="px-4 pb-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="rounded-2xl border border-border bg-card p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Linked To
               </h3>
               <Button
@@ -405,7 +405,7 @@ export function DocumentPreviewPanel({
             </div>
 
             {document.links.length === 0 ? (
-              <p className="text-sm text-slate-400 italic">No links yet</p>
+              <p className="text-sm text-muted-foreground italic">No links yet</p>
             ) : (
               <div className="space-y-2">
                 {document.links.map((link) => (
@@ -424,8 +424,8 @@ export function DocumentPreviewPanel({
         {/* Versions Card */}
         {document.versions.length > 1 && (
           <div className="px-4 pb-4">
-            <div className="rounded-2xl border border-slate-200 bg-white p-4">
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                 Version History
               </h3>
               <div className="space-y-2">
@@ -433,11 +433,11 @@ export function DocumentPreviewPanel({
                   <div
                     key={v.id}
                     className={`flex items-center justify-between px-3 py-2 rounded-lg ${
-                      v.id === document.id ? "bg-indigo-50" : "bg-slate-50"
+                      v.id === document.id ? "bg-indigo-50" : "bg-muted"
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-slate-700">v{v.version}</span>
+                      <span className="text-sm font-medium text-foreground">v{v.version}</span>
                       {v.status === "executed" && (
                         <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
                           Executed
@@ -447,7 +447,7 @@ export function DocumentPreviewPanel({
                         <span className="text-xs text-indigo-600">(current)</span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       {new Date(v.createdAt).toLocaleDateString()}
                     </div>
@@ -482,7 +482,7 @@ function LinkItem({
       case "InternalEntity":
         return <Shield className="h-4 w-4 text-amber-600" />;
       default:
-        return <Link2 className="h-4 w-4 text-slate-400" />;
+        return <Link2 className="h-4 w-4 text-muted-foreground" />;
     }
   })();
 
@@ -490,18 +490,18 @@ function LinkItem({
     <div className="flex items-center gap-2 group">
       <button
         onClick={onNavigate}
-        className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+        className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-muted hover:bg-muted transition-colors text-left"
       >
         {icon}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-700 truncate">{link.linkableLabel || link.label}</p>
-          <p className="text-xs text-slate-500">{link.linkableType}</p>
+          <p className="text-sm font-medium text-foreground truncate">{link.label}</p>
+          <p className="text-xs text-muted-foreground">{link.linkableType}</p>
         </div>
-        <ExternalLink className="h-3.5 w-3.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
       </button>
       <button
         onClick={onRemove}
-        className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
+        className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all"
         title="Remove link"
       >
         <Trash2 className="h-4 w-4" />

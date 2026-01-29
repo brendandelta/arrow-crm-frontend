@@ -44,24 +44,24 @@ function ChildNodeComponent({ id, data }: NodeProps) {
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-1.5 !h-1.5 !bg-slate-300 !border-0"
+        className="!w-1.5 !h-1.5 !bg-muted-foreground/30 !border-0"
       />
       <button
         onClick={(e) => {
           e.stopPropagation();
           onNavigate(dealId);
         }}
-        className="absolute top-1.5 right-1.5 p-0.5 text-slate-300 hover:text-indigo-500 transition-colors"
+        className="absolute top-1.5 right-1.5 p-0.5 text-muted-foreground/60 hover:text-indigo-500 transition-colors"
         title="Go to deal"
       >
         <ExternalLink className="w-3 h-3" />
       </button>
-      <div className="text-[12px] font-medium text-slate-700 truncate leading-tight pr-4">
+      <div className="text-[12px] font-medium text-foreground truncate leading-tight pr-4">
         {name}
       </div>
       <div
         className={`text-[11px] mt-0.5 truncate leading-tight ${
-          isOverdue ? "text-red-500 font-medium" : "text-slate-400"
+          isOverdue ? "text-red-500 font-medium" : "text-muted-foreground"
         }`}
       >
         {nextAction}

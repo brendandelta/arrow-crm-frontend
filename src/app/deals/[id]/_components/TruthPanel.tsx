@@ -205,12 +205,12 @@ export function TruthPanel({
             tabIndex={isInteractive ? 0 : undefined}
             onClick={panel.onClick}
             onKeyDown={isInteractive ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); panel.onClick?.(); } } : undefined}
-            className={`rounded-lg border p-4 transition-all ${panel.hasData ? panel.bgColor : "bg-slate-50"} ${
+            className={`rounded-lg border p-4 transition-all ${panel.hasData ? panel.bgColor : "bg-muted"} ${
               isInteractive ? `cursor-pointer hover:ring-2 ${panel.hoverColor}` : ""
             }`}
           >
             <div className="flex items-center gap-2 mb-3">
-              <Icon className={`h-4 w-4 ${panel.hasData ? panel.iconColor : "text-slate-400"}`} />
+              <Icon className={`h-4 w-4 ${panel.hasData ? panel.iconColor : "text-muted-foreground"}`} />
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 {panel.label}
               </span>

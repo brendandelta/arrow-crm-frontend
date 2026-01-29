@@ -57,7 +57,7 @@ const STATUSES = ["sourcing", "live", "closing", "closed", "dead"];
 const SOURCES = ["inbound", "outbound", "referral", "broker", "network", "conference"];
 
 const STATUS_COLORS: Record<string, string> = {
-  sourcing: "bg-slate-100 text-slate-700",
+  sourcing: "bg-muted text-foreground",
   live: "bg-green-100 text-green-700 border border-green-200",
   closing: "bg-blue-100 text-blue-700 border border-blue-200",
   closed: "bg-purple-100 text-purple-700 border border-purple-200",
@@ -138,7 +138,7 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
   const showTerms = hasTermsData || !lpMode;
 
   return (
-    <Card className="overflow-hidden border-slate-200 shadow-sm">
+    <Card className="overflow-hidden border-border shadow-sm">
       <div className="px-5 py-4">
         {/* ═══ Zone A + Zone B: Two-column layout ═══ */}
         <div className="flex gap-8">
@@ -151,7 +151,7 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
                 options={STATUSES}
                 placeholder="Set stage"
                 onSave={(val) => saveField("status", val)}
-                displayClass={STATUS_COLORS[deal.status] || "bg-slate-50 text-slate-600"}
+                displayClass={STATUS_COLORS[deal.status] || "bg-muted text-muted-foreground"}
               />
             </FieldRow>
 
@@ -254,14 +254,14 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
 
         {/* ═══ "More" Drawer ═══ */}
         <Collapsible open={moreOpen} onOpenChange={setMoreOpen} className="mt-4">
-          <CollapsibleTrigger className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500 hover:text-slate-700 transition-colors cursor-pointer">
+          <CollapsibleTrigger className="flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
             {moreOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
             More
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-3 space-y-4">
             {/* Source Detail */}
             <div>
-              <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Source Detail</div>
+              <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-1">Source Detail</div>
               <InlineTextCompact
                 value={deal.sourceDetail || ""}
                 placeholder="Add context about source..."
@@ -271,12 +271,12 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
 
             {/* Tags */}
             <div>
-              <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1.5">Tags</div>
+              <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-1.5">Tags</div>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {tags.map((tag) => (
-                  <Badge key={tag} variant="secondary" className="text-[11px] font-normal pl-2 pr-1 py-0 h-5 flex items-center gap-0.5 bg-slate-100">
+                  <Badge key={tag} variant="secondary" className="text-[11px] font-normal pl-2 pr-1 py-0 h-5 flex items-center gap-0.5 bg-muted">
                     {tag}
-                    <button onClick={() => removeTag(tag)} className="text-slate-400 hover:text-rose-500 transition-colors ml-0.5">
+                    <button onClick={() => removeTag(tag)} className="text-muted-foreground hover:text-rose-500 transition-colors ml-0.5">
                       <X className="h-2.5 w-2.5" />
                     </button>
                   </Badge>
@@ -293,12 +293,12 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
                       if (e.key === "Escape") { setAddingTag(false); setNewTag(""); }
                     }}
                     placeholder="tag"
-                    className="text-[11px] border-b border-slate-300 outline-none w-14 py-0.5 bg-transparent"
+                    className="text-[11px] border-b border-border outline-none w-14 py-0.5 bg-transparent"
                   />
                 ) : (
                   <button
                     onClick={() => setAddingTag(true)}
-                    className="text-slate-300 hover:text-slate-500 transition-colors"
+                    className="text-muted-foreground/60 hover:text-muted-foreground transition-colors"
                   >
                     <Plus className="h-3.5 w-3.5" />
                   </button>
@@ -309,7 +309,7 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
             {/* Notes */}
             {!lpMode && (
               <div>
-                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1">Notes</div>
+                <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-1">Notes</div>
                 <NotesEditor
                   value={deal.notes || ""}
                   onSave={(val) => saveField("notes", val)}
@@ -320,7 +320,7 @@ export function EditableDealDetails({ deal, lpMode, onSave }: EditableDealDetail
         </Collapsible>
 
         {/* ═══ Clarification Line ═══ */}
-        <div className="mt-4 text-[11px] text-slate-400 italic">
+        <div className="mt-4 text-[11px] text-muted-foreground italic">
           KPIs are live-calculated from interests/blocks
         </div>
       </div>
@@ -343,7 +343,7 @@ function InlinePrioritySelector({ value, onSave }: { value: number; onSave: (val
             type="button"
             onClick={() => { onSave(p.value); setEditing(false); }}
             className={`px-2 py-0.5 text-[11px] font-medium rounded-full border transition-colors ${
-              p.value === value ? p.color : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"
+              p.value === value ? p.color : "bg-card text-muted-foreground border-border hover:bg-muted"
             }`}
           >
             {p.label}
@@ -369,7 +369,7 @@ function InlinePrioritySelector({ value, onSave }: { value: number; onSave: (val
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider w-20 shrink-0">{label}</div>
+      <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider w-20 shrink-0">{label}</div>
       <div className="min-w-0">{children}</div>
     </div>
   );
@@ -410,7 +410,7 @@ function InlineOwnerField({ owner, onSave }: {
 
   if (editing) {
     if (loadingUsers) {
-      return <span className="text-[13px] text-slate-400">Loading...</span>;
+      return <span className="text-[13px] text-muted-foreground">Loading...</span>;
     }
     return (
       <select
@@ -422,7 +422,7 @@ function InlineOwnerField({ owner, onSave }: {
           setEditing(false);
         }}
         onBlur={() => setEditing(false)}
-        className="text-[13px] font-medium bg-transparent border-b border-slate-300 outline-none py-0 cursor-pointer"
+        className="text-[13px] font-medium bg-transparent border-b border-border outline-none py-0 cursor-pointer"
       >
         <option value="">Unassigned</option>
         {users.map((u) => (
@@ -437,10 +437,10 @@ function InlineOwnerField({ owner, onSave }: {
   return (
     <button
       onClick={startEdit}
-      className="flex items-center gap-1.5 text-[13px] font-medium text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer"
+      className="flex items-center gap-1.5 text-[13px] font-medium text-foreground hover:text-indigo-600 transition-colors cursor-pointer"
     >
-      <User className="h-3 w-3 text-slate-400" />
-      {owner ? `${owner.firstName} ${owner.lastName}` : <span className="text-slate-300">Assign owner</span>}
+      <User className="h-3 w-3 text-muted-foreground" />
+      {owner ? `${owner.firstName} ${owner.lastName}` : <span className="text-muted-foreground/60">Assign owner</span>}
     </button>
   );
 }
@@ -465,7 +465,7 @@ function InlineSelect({ value, options, placeholder, onSave, displayClass }: {
       value={value}
       onChange={(e) => { onSave(e.target.value); setEditing(false); }}
       onBlur={() => setEditing(false)}
-      className="text-[13px] font-medium bg-transparent border-b border-slate-300 outline-none py-0 cursor-pointer"
+      className="text-[13px] font-medium bg-transparent border-b border-border outline-none py-0 cursor-pointer"
     >
       <option value="">{placeholder}</option>
       {options.map((opt) => (
@@ -478,10 +478,10 @@ function InlineSelect({ value, options, placeholder, onSave, displayClass }: {
       className={`text-[13px] font-medium cursor-pointer transition-colors ${
         displayClass
           ? `px-2 py-0.5 rounded-full text-[11px] ${displayClass}`
-          : "text-slate-900 hover:text-indigo-600"
+          : "text-foreground hover:text-indigo-600"
       }`}
     >
-      {value ? formatLabel(value) : <span className="text-slate-300">{placeholder}</span>}
+      {value ? formatLabel(value) : <span className="text-muted-foreground/60">{placeholder}</span>}
     </button>
   );
 }
@@ -501,11 +501,11 @@ function InlineDateCompact({ value, onSave }: { value: string; onSave: (val: str
       value={localValue}
       onChange={(e) => { setLocalValue(e.target.value); onSave(e.target.value); setEditing(false); }}
       onBlur={() => setEditing(false)}
-      className="text-[13px] font-medium bg-transparent border-b border-slate-300 outline-none py-0"
+      className="text-[13px] font-medium bg-transparent border-b border-border outline-none py-0"
     />
   ) : (
-    <button onClick={() => setEditing(true)} className="text-[13px] font-medium text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer">
-      {localValue ? formatDate(localValue) : <span className="text-slate-300">Set date</span>}
+    <button onClick={() => setEditing(true)} className="text-[13px] font-medium text-foreground hover:text-indigo-600 transition-colors cursor-pointer">
+      {localValue ? formatDate(localValue) : <span className="text-muted-foreground/60">Set date</span>}
     </button>
   );
 }
@@ -534,11 +534,11 @@ function InlineTextCompact({ value, placeholder, onSave }: {
       onBlur={commit}
       onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
       placeholder={placeholder}
-      className="text-[13px] text-slate-700 bg-transparent border-b border-slate-300 outline-none py-0.5 w-full"
+      className="text-[13px] text-foreground bg-transparent border-b border-border outline-none py-0.5 w-full"
     />
   ) : (
-    <button onClick={() => { setDraft(value); setEditing(true); }} className="text-[13px] text-slate-700 hover:text-indigo-600 transition-colors cursor-text text-left">
-      {value || <span className="text-slate-300 italic">{placeholder}</span>}
+    <button onClick={() => { setDraft(value); setEditing(true); }} className="text-[13px] text-foreground hover:text-indigo-600 transition-colors cursor-text text-left">
+      {value || <span className="text-muted-foreground/60 italic">{placeholder}</span>}
     </button>
   );
 }
@@ -562,7 +562,7 @@ function InlineCurrencyField({ value, placeholder, onSave }: {
 
   return editing ? (
     <div className="flex items-center gap-0.5">
-      <DollarSign className="h-3 w-3 text-slate-400" />
+      <DollarSign className="h-3 w-3 text-muted-foreground" />
       <input
         ref={ref}
         value={draft}
@@ -570,12 +570,12 @@ function InlineCurrencyField({ value, placeholder, onSave }: {
         onBlur={commit}
         onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value ? (formatCurrency(value)?.replace("$", "") || "") : ""); setEditing(false); } }}
         placeholder={placeholder}
-        className="text-[13px] font-semibold text-slate-900 bg-transparent border-b border-slate-300 outline-none py-0.5 w-24"
+        className="text-[13px] font-semibold text-foreground bg-transparent border-b border-border outline-none py-0.5 w-24"
       />
     </div>
   ) : (
-    <button onClick={() => { setDraft(value ? (formatCurrency(value)?.replace("$", "") || "") : ""); setEditing(true); }} className="text-[13px] font-semibold text-slate-900 hover:text-indigo-600 transition-colors cursor-text">
-      {value ? formatCurrency(value) : <span className="text-slate-300 font-normal">{placeholder || "—"}</span>}
+    <button onClick={() => { setDraft(value ? (formatCurrency(value)?.replace("$", "") || "") : ""); setEditing(true); }} className="text-[13px] font-semibold text-foreground hover:text-indigo-600 transition-colors cursor-text">
+      {value ? formatCurrency(value) : <span className="text-muted-foreground/60 font-normal">{placeholder || "—"}</span>}
     </button>
   );
 }
@@ -598,7 +598,7 @@ function InlineSharePriceField({ value, onSave }: {
 
   return editing ? (
     <div className="flex items-center gap-0.5">
-      <DollarSign className="h-3 w-3 text-slate-400" />
+      <DollarSign className="h-3 w-3 text-muted-foreground" />
       <input
         ref={ref}
         value={draft}
@@ -606,12 +606,12 @@ function InlineSharePriceField({ value, onSave }: {
         onBlur={commit}
         onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value ? (value / 100).toFixed(2) : ""); setEditing(false); } }}
         placeholder="0.00"
-        className="text-[13px] font-semibold text-slate-900 bg-transparent border-b border-slate-300 outline-none py-0.5 w-20"
+        className="text-[13px] font-semibold text-foreground bg-transparent border-b border-border outline-none py-0.5 w-20"
       />
     </div>
   ) : (
-    <button onClick={() => { setDraft(value ? (value / 100).toFixed(2) : ""); setEditing(true); }} className="text-[13px] font-semibold text-slate-900 hover:text-indigo-600 transition-colors cursor-text">
-      {value ? `$${(value / 100).toFixed(2)}` : <span className="text-slate-300 font-normal">—</span>}
+    <button onClick={() => { setDraft(value ? (value / 100).toFixed(2) : ""); setEditing(true); }} className="text-[13px] font-semibold text-foreground hover:text-indigo-600 transition-colors cursor-text">
+      {value ? `$${(value / 100).toFixed(2)}` : <span className="text-muted-foreground/60 font-normal">—</span>}
     </button>
   );
 }
@@ -636,7 +636,7 @@ function ConfidenceMeter({ value, onSave, showLabel }: {
   };
 
   const pct = value || 0;
-  const color = pct >= 70 ? "bg-emerald-500" : pct >= 40 ? "bg-amber-400" : pct > 0 ? "bg-rose-400" : "bg-slate-200";
+  const color = pct >= 70 ? "bg-emerald-500" : pct >= 40 ? "bg-amber-400" : pct > 0 ? "bg-rose-400" : "bg-muted";
 
   if (editing) {
     return (
@@ -649,7 +649,7 @@ function ConfidenceMeter({ value, onSave, showLabel }: {
         onChange={(e) => setDraft(e.target.value)}
         onBlur={commit}
         onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value?.toString() || ""); setEditing(false); } }}
-        className="text-[13px] font-medium text-slate-900 bg-transparent border-b border-slate-300 outline-none py-0 w-12"
+        className="text-[13px] font-medium text-foreground bg-transparent border-b border-border outline-none py-0 w-12"
         placeholder="0"
       />
     );
@@ -657,14 +657,14 @@ function ConfidenceMeter({ value, onSave, showLabel }: {
 
   return (
     <button onClick={() => { setDraft(value?.toString() || ""); setEditing(true); }} className="flex items-center gap-1.5 cursor-pointer group">
-      <div className="w-12 h-[5px] rounded-full bg-slate-100 overflow-hidden">
+      <div className="w-12 h-[5px] rounded-full bg-muted overflow-hidden">
         <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[12px] font-medium text-slate-600 group-hover:text-indigo-600 transition-colors tabular-nums">
-        {value !== null && value !== undefined ? `${value}%` : <span className="text-slate-300">—</span>}
+      <span className="text-[12px] font-medium text-muted-foreground group-hover:text-indigo-600 transition-colors tabular-nums">
+        {value !== null && value !== undefined ? `${value}%` : <span className="text-muted-foreground/60">—</span>}
       </span>
       {showLabel && value !== null && value !== undefined && (
-        <span className="text-[11px] text-slate-400">
+        <span className="text-[11px] text-muted-foreground">
           {pct >= 70 ? "High" : pct >= 40 ? "Medium" : "Low"}
         </span>
       )}
@@ -693,8 +693,8 @@ function LinkChip({ label, icon: Icon, url, onSave }: {
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1.5 bg-slate-50 rounded-md px-2 py-1 border border-slate-200">
-        <Icon className="h-3 w-3 text-slate-400 shrink-0" />
+      <div className="flex items-center gap-1.5 bg-muted rounded-md px-2 py-1 border border-border">
+        <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
         <input
           ref={ref}
           value={draft}
@@ -714,7 +714,7 @@ function LinkChip({ label, icon: Icon, url, onSave }: {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 rounded-md px-2.5 py-1 transition-colors border border-slate-200 hover:border-indigo-200"
+        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-indigo-600 bg-muted hover:bg-indigo-50 rounded-md px-2.5 py-1 transition-colors border border-border hover:border-indigo-200"
         onContextMenu={(e) => { e.preventDefault(); setDraft(url); setEditing(true); }}
       >
         <Icon className="h-3 w-3" />
@@ -727,7 +727,7 @@ function LinkChip({ label, icon: Icon, url, onSave }: {
   return (
     <button
       onClick={() => { setDraft(""); setEditing(true); }}
-      className="inline-flex items-center gap-1.5 text-[11px] text-slate-300 hover:text-slate-500 rounded-md px-2.5 py-1 transition-colors border border-dashed border-slate-200 hover:border-slate-300"
+      className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/60 hover:text-muted-foreground rounded-md px-2.5 py-1 transition-colors border border-dashed border-border hover:border-border"
     >
       <Icon className="h-3 w-3" />
       {label}
@@ -767,14 +767,14 @@ function NotesEditor({ value, onSave }: { value: string; onSave: (val: string) =
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commit}
           rows={6}
-          className="w-full text-[14px] leading-relaxed text-slate-700 bg-white border border-slate-200 rounded-lg px-4 py-3 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 outline-none resize-none placeholder:text-slate-300"
+          className="w-full text-[14px] leading-relaxed text-foreground bg-card border border-border rounded-lg px-4 py-3 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 outline-none resize-none placeholder:text-muted-foreground/60"
           placeholder="Write your deal narrative here — context, thesis, key considerations..."
         />
         <div className="flex items-center gap-2">
-          <button onClick={commit} className="px-3 py-1.5 text-[12px] font-medium text-white bg-slate-800 rounded-md hover:bg-slate-700 transition-colors shadow-sm">
+          <button onClick={commit} className="px-3 py-1.5 text-[12px] font-medium text-background bg-foreground rounded-md hover:bg-foreground/80 transition-colors shadow-sm">
             Save
           </button>
-          <button onClick={() => { setDraft(value); setEditing(false); }} className="px-3 py-1.5 text-[12px] text-slate-400 hover:text-slate-600 transition-colors">
+          <button onClick={() => { setDraft(value); setEditing(false); }} className="px-3 py-1.5 text-[12px] text-muted-foreground hover:text-muted-foreground transition-colors">
             Cancel
           </button>
         </div>
@@ -786,7 +786,7 @@ function NotesEditor({ value, onSave }: { value: string; onSave: (val: string) =
     return (
       <button
         onClick={() => { setDraft(""); setEditing(true); }}
-        className="text-[13px] text-slate-300 italic hover:text-slate-500 transition-colors cursor-text"
+        className="text-[13px] text-muted-foreground/60 italic hover:text-muted-foreground transition-colors cursor-text"
       >
         Add deal narrative...
       </button>
@@ -797,7 +797,7 @@ function NotesEditor({ value, onSave }: { value: string; onSave: (val: string) =
     <div>
       <button
         onClick={() => { setDraft(value); setEditing(true); }}
-        className="text-[14px] leading-relaxed text-slate-700 whitespace-pre-wrap text-left cursor-text hover:bg-slate-50 rounded-md px-2 py-1 -mx-2 -my-1 transition-colors"
+        className="text-[14px] leading-relaxed text-foreground whitespace-pre-wrap text-left cursor-text hover:bg-muted rounded-md px-2 py-1 -mx-2 -my-1 transition-colors"
       >
         {displayText}
       </button>

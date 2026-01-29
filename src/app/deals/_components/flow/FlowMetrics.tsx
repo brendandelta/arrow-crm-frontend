@@ -106,7 +106,7 @@ export function FlowMetrics({
               className={`flex items-center gap-2.5 rounded-lg border px-3 py-2 transition-all text-left ${
                 isActive
                   ? `${kpi.bg} ${kpi.ring} ring-1 border-transparent`
-                  : "bg-white border-slate-200 hover:border-slate-300"
+                  : "bg-card border-border hover:border-border"
               }`}
             >
               <div className={`p-1.5 rounded-md ${kpi.bg}`}>
@@ -135,19 +135,19 @@ export function FlowMetrics({
           <strong className="font-medium text-foreground">{stats.totalDeals}</strong>{" "}
           total deals
         </span>
-        <span className="text-slate-300">|</span>
+        <span className="text-muted-foreground/60">|</span>
         <span>
           <strong className="font-medium text-foreground">{fmt(totalValue)}</strong>{" "}
           pipeline
         </span>
-        <span className="text-slate-300">|</span>
+        <span className="text-muted-foreground/60">|</span>
         <span>
           <strong className="font-medium text-foreground">{fmt(closedValue)}</strong>{" "}
           closed
         </span>
         {convRate && (
           <>
-            <span className="text-slate-300">|</span>
+            <span className="text-muted-foreground/60">|</span>
             <span>
               <strong className="font-medium text-foreground">{convRate}%</strong>{" "}
               conversion

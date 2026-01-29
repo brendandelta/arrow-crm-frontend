@@ -194,7 +194,7 @@ export function LinkDocumentDialog({
         <div className="space-y-4">
           {/* Entity Type Selector */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Link to</label>
+            <label className="block text-sm font-medium text-foreground mb-2">Link to</label>
             <div className="grid grid-cols-4 gap-2">
               {LINKABLE_TYPES.map((type) => (
                 <button
@@ -203,7 +203,7 @@ export function LinkDocumentDialog({
                   className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-colors ${
                     linkableType === type.value
                       ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                      : "border-slate-200 hover:border-slate-300 text-slate-600"
+                      : "border-border hover:border-border text-muted-foreground"
                   }`}
                 >
                   {getIcon(type.value)}
@@ -215,28 +215,28 @@ export function LinkDocumentDialog({
 
           {/* Entity Search */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Select {linkableType.replace(/([A-Z])/g, " $1").trim()}
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={`Search ${linkableType.toLowerCase()}s...`}
-                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
               />
             </div>
 
             {/* Results List */}
-            <div className="mt-2 max-h-48 overflow-y-auto border border-slate-200 rounded-lg">
+            <div className="mt-2 max-h-48 overflow-y-auto border border-border rounded-lg">
               {loading ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                 </div>
               ) : searchResults.length === 0 ? (
-                <div className="py-8 text-center text-sm text-slate-500">
+                <div className="py-8 text-center text-sm text-muted-foreground">
                   {searchQuery ? "No results found" : `Search for a ${linkableType.toLowerCase()}`}
                 </div>
               ) : (
@@ -248,24 +248,24 @@ export function LinkDocumentDialog({
                       className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
                         selectedEntity?.id === entity.id
                           ? "bg-indigo-50"
-                          : "hover:bg-slate-50"
+                          : "hover:bg-muted"
                       }`}
                     >
                       <div
                         className={`flex items-center justify-center h-8 w-8 rounded-lg ${
                           selectedEntity?.id === entity.id
                             ? "bg-indigo-100 text-indigo-600"
-                            : "bg-slate-100 text-slate-500"
+                            : "bg-muted text-muted-foreground"
                         }`}
                       >
                         {getIcon(linkableType)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate">
+                        <p className="text-sm font-medium text-foreground truncate">
                           {entity.name}
                         </p>
                         {entity.subtitle && (
-                          <p className="text-xs text-slate-500 truncate">{entity.subtitle}</p>
+                          <p className="text-xs text-muted-foreground truncate">{entity.subtitle}</p>
                         )}
                       </div>
                       {selectedEntity?.id === entity.id && (
@@ -280,7 +280,7 @@ export function LinkDocumentDialog({
 
           {/* Relationship */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Relationship</label>
+            <label className="block text-sm font-medium text-foreground mb-2">Relationship</label>
             <Select value={relationship} onValueChange={setRelationship}>
               <SelectTrigger>
                 <SelectValue />

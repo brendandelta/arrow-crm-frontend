@@ -124,7 +124,7 @@ export function AddBankAccountDialog({
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           {/* Bank Name */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               Bank Name <span className="text-red-500">*</span>
             </label>
             <Input
@@ -137,7 +137,7 @@ export function AddBankAccountDialog({
 
           {/* Account Name */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               Account Name <span className="text-red-500">*</span>
             </label>
             <Input
@@ -150,7 +150,7 @@ export function AddBankAccountDialog({
 
           {/* Account Type */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               Account Type
             </label>
             <Select value={accountType} onValueChange={setAccountType}>
@@ -170,7 +170,7 @@ export function AddBankAccountDialog({
           {/* Routing and Account Numbers */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 Routing Number <span className="text-red-500">*</span>
               </label>
               <Input
@@ -182,7 +182,7 @@ export function AddBankAccountDialog({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-medium text-foreground mb-1.5">
                 Account Number <span className="text-red-500">*</span>
               </label>
               <Input
@@ -195,13 +195,13 @@ export function AddBankAccountDialog({
             </div>
           </div>
 
-          <p className="text-xs text-slate-500 -mt-2">
+          <p className="text-xs text-muted-foreground -mt-2">
             Account numbers are stored encrypted with access logging
           </p>
 
           {/* Nickname */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               Nickname
             </label>
             <Input
@@ -219,7 +219,7 @@ export function AddBankAccountDialog({
               checked={isPrimary}
               onCheckedChange={(checked) => setIsPrimary(checked === true)}
             />
-            <label htmlFor="isPrimary" className="text-sm text-slate-700 cursor-pointer">
+            <label htmlFor="isPrimary" className="text-sm text-foreground cursor-pointer">
               Set as primary account
             </label>
           </div>

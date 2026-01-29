@@ -179,16 +179,16 @@ function MindMapCanvasInner({
         {/* Breadcrumbs */}
         {breadcrumbs.length > 0 && (
           <Panel position="top-left">
-            <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm">
+            <div className="flex items-center gap-1 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-1.5 shadow-sm">
               {breadcrumbs.map((crumb, i) => (
                 <span key={crumb.id} className="flex items-center gap-1">
-                  {i > 0 && <ChevronRight className="h-3 w-3 text-slate-300" />}
+                  {i > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/60" />}
                   <button
                     onClick={() => handleBreadcrumbClick(crumb.id)}
                     className={`text-xs font-medium transition-colors ${
                       i === breadcrumbs.length - 1
                         ? "text-indigo-600"
-                        : "text-slate-500 hover:text-slate-800"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {crumb.label}
@@ -203,26 +203,26 @@ function MindMapCanvasInner({
           position="bottom-left"
           showInteractive={false}
           showFitView={false}
-          className="!border-slate-200 !shadow-sm"
+          className="!border-border !shadow-sm"
         />
         <Panel position="bottom-left" className="!ml-[52px] !mb-[9px]">
           <div className="flex gap-1">
             <button
               onClick={handleFitView}
-              className="flex items-center justify-center w-[26px] h-[26px] bg-white border border-slate-200 rounded shadow-sm hover:bg-slate-50 transition-colors"
+              className="flex items-center justify-center w-[26px] h-[26px] bg-card border border-border rounded shadow-sm hover:bg-muted transition-colors"
               title="Fit to view"
             >
-              <Locate className="h-3.5 w-3.5 text-slate-600" />
+              <Locate className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
             <button
               onClick={toggleFullscreen}
-              className="flex items-center justify-center w-[26px] h-[26px] bg-white border border-slate-200 rounded shadow-sm hover:bg-slate-50 transition-colors"
+              className="flex items-center justify-center w-[26px] h-[26px] bg-card border border-border rounded shadow-sm hover:bg-muted transition-colors"
               title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
             >
               {isFullscreen ? (
-                <Minimize className="h-3.5 w-3.5 text-slate-600" />
+                <Minimize className="h-3.5 w-3.5 text-muted-foreground" />
               ) : (
-                <Maximize className="h-3.5 w-3.5 text-slate-600" />
+                <Maximize className="h-3.5 w-3.5 text-muted-foreground" />
               )}
             </button>
           </div>
@@ -232,7 +232,7 @@ function MindMapCanvasInner({
           pannable
           zoomable
           maskColor="rgba(248,250,252,0.7)"
-          className="!bg-white !border-slate-200 !shadow-sm !rounded-lg"
+          className="!bg-card !border-border !shadow-sm !rounded-lg"
         />
         <Background
           variant={BackgroundVariant.Dots}

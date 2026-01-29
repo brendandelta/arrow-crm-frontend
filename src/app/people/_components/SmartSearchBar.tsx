@@ -161,10 +161,10 @@ export function SmartSearchBar({
     <div className={`relative ${className}`}>
       {/* Search Input */}
       <div
-        className={`relative flex items-center gap-2 bg-white border rounded-lg transition-all ${
+        className={`relative flex items-center gap-2 bg-card border rounded-lg transition-all ${
           isFocused
             ? "border-indigo-300 ring-2 ring-indigo-100 shadow-sm"
-            : "border-slate-200"
+            : "border-border"
         }`}
       >
         <div className="flex items-center gap-1.5 pl-3">
@@ -173,7 +173,7 @@ export function SmartSearchBar({
           ) : (
             <Sparkles className="h-4 w-4 text-indigo-400" />
           )}
-          <Search className="h-4 w-4 text-slate-400" />
+          <Search className="h-4 w-4 text-muted-foreground" />
         </div>
         <input
           ref={inputRef}
@@ -183,12 +183,12 @@ export function SmartSearchBar({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={currentPlaceholder}
-          className="flex-1 py-2 pr-3 text-sm bg-transparent focus:outline-none placeholder:text-slate-400"
+          className="flex-1 py-2 pr-3 text-sm bg-transparent focus:outline-none placeholder:text-muted-foreground"
         />
         {query && (
           <button
             onClick={handleClear}
-            className="pr-3 text-slate-400 hover:text-slate-600"
+            className="pr-3 text-muted-foreground hover:text-muted-foreground"
           >
             <X className="h-4 w-4" />
           </button>
@@ -198,7 +198,7 @@ export function SmartSearchBar({
       {/* Intent chips */}
       {parsed && parsed.intents.length > 0 && (
         <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-          <span className="text-[10px] text-slate-400 uppercase tracking-wide font-medium">
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">
             Understood:
           </span>
           {llmActive && (
@@ -224,8 +224,8 @@ export function SmartSearchBar({
 
       {/* Quick filter chips when empty and focused */}
       {!query && isFocused && (
-        <div className="absolute z-40 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-3">
-          <div className="text-[10px] text-slate-400 uppercase tracking-wide font-medium mb-2">
+        <div className="absolute z-40 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg p-3">
+          <div className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium mb-2">
             Try searching for
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -236,7 +236,7 @@ export function SmartSearchBar({
                   e.preventDefault();
                   handleExampleClick(example);
                 }}
-                className="px-2.5 py-1 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-full hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-colors"
+                className="px-2.5 py-1 text-xs text-muted-foreground bg-muted border border-border rounded-full hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-colors"
               >
                 {example}
               </button>
@@ -285,8 +285,8 @@ export function ExplainTooltip({ explanations }: ExplainTooltipProps) {
         <Info className="h-3.5 w-3.5 text-indigo-400" />
       </button>
       {isOpen && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 w-56 bg-slate-900 text-white text-xs rounded-lg shadow-xl p-2.5">
-          <div className="font-medium text-slate-300 mb-1">Why this result</div>
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 w-56 bg-foreground text-background text-xs rounded-lg shadow-xl p-2.5">
+          <div className="font-medium text-muted-foreground/60 mb-1">Why this result</div>
           <ul className="space-y-0.5">
             {explanations.map((exp, i) => (
               <li key={i} className="flex items-start gap-1.5">
@@ -296,7 +296,7 @@ export function ExplainTooltip({ explanations }: ExplainTooltipProps) {
             ))}
           </ul>
           {/* Arrow */}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-900 rotate-45 -mt-1" />
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-foreground rotate-45 -mt-1" />
         </div>
       )}
     </div>

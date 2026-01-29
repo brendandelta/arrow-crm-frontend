@@ -92,10 +92,10 @@ export const STATUS_CONFIG: Record<
 > = {
   sourcing: {
     label: "Sourcing",
-    color: "text-slate-700",
-    bgColor: "bg-slate-50",
-    dotColor: "bg-slate-400",
-    borderColor: "border-slate-200",
+    color: "text-muted-foreground",
+    bgColor: "bg-muted",
+    dotColor: "bg-muted-foreground",
+    borderColor: "border-border",
   },
   live: {
     label: "Live",
@@ -120,10 +120,10 @@ export const STATUS_CONFIG: Record<
   },
   dead: {
     label: "Dead",
-    color: "text-slate-500",
-    bgColor: "bg-slate-50",
-    dotColor: "bg-slate-300",
-    borderColor: "border-slate-200",
+    color: "text-muted-foreground",
+    bgColor: "bg-muted",
+    dotColor: "bg-muted-foreground/50",
+    borderColor: "border-border",
   },
 };
 

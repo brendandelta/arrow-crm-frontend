@@ -72,7 +72,7 @@ export function FlowToolbar({
           value={filter.search}
           onChange={(e) => onFilterChange({ search: e.target.value })}
           placeholder="Search deals..."
-          className="w-full pl-8 pr-3 h-8 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-shadow"
+          className="w-full pl-8 pr-3 h-8 text-sm border border-border rounded-md bg-card focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-shadow"
         />
       </div>
 
@@ -83,7 +83,7 @@ export function FlowToolbar({
         value={filter.owner}
         onValueChange={(v) => onFilterChange({ owner: v })}
       >
-        <SelectTrigger size="sm" className="h-8 text-xs gap-1.5 min-w-[90px] bg-white">
+        <SelectTrigger size="sm" className="h-8 text-xs gap-1.5 min-w-[90px] bg-card">
           <SelectValue placeholder="Owner" />
         </SelectTrigger>
         <SelectContent>
@@ -112,8 +112,8 @@ export function FlowToolbar({
               }}
               className={`h-7 px-2 rounded-md text-xs font-medium transition-colors ${
                 isActive
-                  ? "bg-slate-900 text-white"
-                  : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                  ? "bg-foreground text-background"
+                  : "bg-card border border-border text-muted-foreground hover:bg-muted"
               }`}
             >
               {p.label}
@@ -128,7 +128,7 @@ export function FlowToolbar({
         className={`h-7 px-2 rounded-md text-xs font-medium transition-colors ${
           filter.risk
             ? "bg-red-600 text-white"
-            : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+            : "bg-card border border-border text-muted-foreground hover:bg-muted"
         }`}
       >
         At Risk
@@ -141,7 +141,7 @@ export function FlowToolbar({
           onFilterChange({ coverage: v as FlowFilter["coverage"] })
         }
       >
-        <SelectTrigger size="sm" className="h-8 text-xs gap-1.5 min-w-[100px] bg-white">
+        <SelectTrigger size="sm" className="h-8 text-xs gap-1.5 min-w-[100px] bg-card">
           <SelectValue placeholder="Coverage" />
         </SelectTrigger>
         <SelectContent>
@@ -159,7 +159,7 @@ export function FlowToolbar({
           onFilterChange({ closeDate: v as FlowFilter["closeDate"] })
         }
       >
-        <SelectTrigger size="sm" className="h-8 text-xs gap-1.5 min-w-[90px] bg-white">
+        <SelectTrigger size="sm" className="h-8 text-xs gap-1.5 min-w-[90px] bg-card">
           <SelectValue placeholder="Close" />
         </SelectTrigger>
         <SelectContent>
@@ -187,7 +187,7 @@ export function FlowToolbar({
         value={sort}
         onValueChange={(v) => onSortChange(v as FlowSort)}
       >
-        <SelectTrigger size="sm" className="h-8 text-xs gap-1.5 min-w-[100px] bg-white">
+        <SelectTrigger size="sm" className="h-8 text-xs gap-1.5 min-w-[100px] bg-card">
           <SlidersHorizontal className="h-3 w-3" />
           <SelectValue />
         </SelectTrigger>
@@ -206,8 +206,8 @@ export function FlowToolbar({
         onClick={onToggleFocus}
         className={`h-8 w-8 rounded-md flex items-center justify-center transition-colors ${
           focusMode
-            ? "bg-slate-900 text-white"
-            : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+            ? "bg-foreground text-background"
+            : "bg-card border border-border text-muted-foreground hover:bg-muted"
         }`}
         title="Focus mode"
       >
@@ -217,7 +217,7 @@ export function FlowToolbar({
       {/* Funnel analytics */}
       <button
         onClick={onOpenFunnel}
-        className="h-8 w-8 rounded-md flex items-center justify-center bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+        className="h-8 w-8 rounded-md flex items-center justify-center bg-card border border-border text-muted-foreground hover:bg-muted transition-colors"
         title="Funnel analytics"
       >
         <BarChart3 className="h-3.5 w-3.5" />
@@ -226,11 +226,11 @@ export function FlowToolbar({
       {/* Command palette */}
       <button
         onClick={onOpenCommand}
-        className="h-8 rounded-md flex items-center gap-1.5 px-2.5 bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors text-xs"
+        className="h-8 rounded-md flex items-center gap-1.5 px-2.5 bg-card border border-border text-muted-foreground hover:bg-muted transition-colors text-xs"
         title="Command palette (⌘K)"
       >
         <Keyboard className="h-3.5 w-3.5" />
-        <kbd className="hidden sm:inline text-[10px] font-mono bg-slate-100 rounded px-1 py-px">
+        <kbd className="hidden sm:inline text-[10px] font-mono bg-muted rounded px-1 py-px">
           ⌘K
         </kbd>
       </button>

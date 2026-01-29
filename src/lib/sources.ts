@@ -53,8 +53,8 @@ export const SOURCE_CATEGORIES: {
   {
     value: "other",
     label: "Other",
-    color: "bg-slate-500",
-    badgeStyle: "bg-slate-100 text-slate-600",
+    color: "bg-muted-foreground",
+    badgeStyle: "bg-muted text-muted-foreground",
   },
 ];
 

@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Users } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 
 // Dynamically import the map component to avoid SSR issues with Leaflet
 const MapView = dynamic(() => import("@/components/Sidebar/map-view"), {
   ssr: false,
   loading: () => (
-    <div className="h-[calc(100vh-180px)] bg-slate-100 rounded-md flex items-center justify-center">
+    <div className="h-[calc(100vh-180px)] bg-muted rounded-md flex items-center justify-center">
       <span className="text-muted-foreground">Loading map...</span>
     </div>
   ),
@@ -112,26 +113,27 @@ export default function MapPage() {
   }).filter((m) => m.coords);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold">People Map</h1>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+    <div className="flex flex-col">
+      <PageHeader
+        title="Map"
+        subtitle={
+          <span className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <Users className="h-3.5 w-3.5" />
               {peopleWithLocations.length} with locations
             </span>
-            <span>·</span>
+            <span className="text-muted-foreground/60">·</span>
             <span className="flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" />
               {markers.length} locations
             </span>
-          </div>
-        </div>
-      </div>
+          </span>
+        }
+      />
 
-      {loading ? (
-        <div className="h-[calc(100vh-180px)] bg-slate-100 rounded-md flex items-center justify-center">
+      <div className="px-8 py-6 space-y-4">
+        {loading ? (
+        <div className="h-[calc(100vh-180px)] bg-muted rounded-md flex items-center justify-center">
           <span className="text-muted-foreground">Loading...</span>
         </div>
       ) : (
@@ -149,6 +151,7 @@ export default function MapPage() {
             <span className="ml-1 text-muted-foreground">({marker.people.length})</span>
           </Badge>
         ))}
+      </div>
       </div>
     </div>
   );
