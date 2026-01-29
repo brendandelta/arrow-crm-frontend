@@ -7,7 +7,6 @@ import {
   Search,
   CheckSquare,
   AlertCircle,
-  Clock,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -16,6 +15,13 @@ import {
   Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { getPageIdentity } from "@/lib/page-registry";
+import { cn } from "@/lib/utils";
+
+// Get page identity for theming
+const pageIdentity = getPageIdentity("projects");
+const theme = pageIdentity?.theme;
+const PageIcon = pageIdentity?.icon || FolderKanban;
 
 interface Owner {
   id: number;
@@ -419,68 +425,117 @@ export default function ProjectsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Projects</h1>
-          <p className="text-sm text-muted-foreground">
-            {projects.length} project{projects.length !== 1 ? "s" : ""}
-          </p>
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
+      {/* Premium Header */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg",
+                theme && `bg-gradient-to-br ${theme.gradient} ${theme.shadow}`
+              )}>
+                <PageIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  Projects
+                </h1>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {loading ? (
+                    <span className="inline-block w-24 h-4 bg-slate-100 rounded animate-pulse" />
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <span>{projects.length} project{projects.length !== 1 ? "s" : ""}</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-green-600">{activeProjects.length} active</span>
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {/* Search */}
+              <div className="relative group">
+                <div className={cn(
+                  "absolute inset-0 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity",
+                  theme && `bg-gradient-to-r ${theme.gradient}`
+                )} style={{ opacity: 0.15 }} />
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search projects..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={cn(
+                      "w-72 h-11 pl-11 pr-4 text-sm rounded-xl transition-all duration-200",
+                      "bg-slate-50 border border-slate-200/80",
+                      "placeholder:text-slate-400",
+                      "focus:outline-none focus:bg-white focus:border-cyan-300 focus:ring-4 focus:ring-cyan-500/10"
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="h-11 px-4 text-sm border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-4 focus:ring-cyan-500/10"
+              >
+                <option value="">All statuses</option>
+                {STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+
+              {/* New Project Button */}
+              <button
+                onClick={handleCreate}
+                className={cn(
+                  "group relative flex items-center gap-2.5 h-11 px-5",
+                  "text-white text-sm font-medium rounded-xl",
+                  "shadow-lg active:scale-[0.98] transition-all duration-200",
+                  theme && `bg-gradient-to-b ${theme.gradient} ${theme.shadow}`,
+                  theme && "hover:shadow-xl"
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                <span>New Project</span>
+              </button>
+            </div>
+          </div>
         </div>
-        <button
-          onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
-        >
-          <Plus className="h-4 w-4" />
-          New Project
-        </button>
       </div>
 
-      {/* Search & Filters */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search projects..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-          />
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 text-sm border rounded-md"
-        >
-          <option value="">All statuses</option>
-          {STATUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Projects Grid */}
-      {loading ? (
-        <div className="flex items-center justify-center h-64 text-muted-foreground">
-          Loading...
-        </div>
-      ) : filteredProjects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-          <FolderKanban className="h-12 w-12 mb-4 opacity-50" />
-          <p>No projects found</p>
-          <button
-            onClick={handleCreate}
-            className="mt-4 text-sm text-slate-600 hover:text-slate-900 underline"
-          >
-            Create your first project
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-6">
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto p-8">
+        {loading ? (
+          <div className="flex items-center justify-center h-64 text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent" />
+              Loading projects...
+            </div>
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+            <FolderKanban className="h-12 w-12 mb-4 opacity-50" />
+            <p>No projects found</p>
+            <button
+              onClick={handleCreate}
+              className="mt-4 text-sm text-cyan-600 hover:text-cyan-700 font-medium"
+            >
+              Create your first project
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-6">
           {/* Active Projects */}
           {activeProjects.length > 0 && (
             <div>
@@ -537,8 +592,9 @@ export default function ProjectsPage() {
               </div>
             </div>
           )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
       {/* Project Modal */}
       {modalOpen && (

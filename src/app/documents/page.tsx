@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { PanelLeftClose, PanelLeft } from "lucide-react";
+import { FileText } from "lucide-react";
 import { DocumentsHeader } from "./_components/DocumentsHeader";
 import { DocumentsFiltersRail } from "./_components/DocumentsFiltersRail";
 import { DocumentsList } from "./_components/DocumentsList";
@@ -19,6 +19,13 @@ import {
   type DocumentFacets,
   type DocumentLink,
 } from "@/lib/documents-api";
+import { getPageIdentity } from "@/lib/page-registry";
+import { cn } from "@/lib/utils";
+
+// Get page identity for theming
+const pageIdentity = getPageIdentity("documents");
+const theme = pageIdentity?.theme;
+const PageIcon = pageIdentity?.icon || FileText;
 
 // localStorage keys
 const STORAGE_KEYS = {
@@ -320,19 +327,55 @@ export default function DocumentsPage() {
   const filteredCount = documents.length;
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col">
-      {/* Header */}
-      <div className="px-6 pt-4">
-        <DocumentsHeader
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onUploadClick={() => setShowUploadDialog(true)}
-          savedViews={savedViews}
-          onSelectSavedView={handleSelectSavedView}
-          onSaveCurrentView={handleSaveCurrentView}
-          totalCount={totalCount}
-          filteredCount={filteredCount}
-        />
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
+      {/* Premium Header */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg",
+                theme && `bg-gradient-to-br ${theme.gradient} ${theme.shadow}`
+              )}>
+                <PageIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  Documents
+                </h1>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {loading ? (
+                    <span className="inline-block w-32 h-4 bg-slate-100 rounded animate-pulse" />
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <span>{totalCount} total documents</span>
+                      {filteredCount !== totalCount && (
+                        <>
+                          <span className="text-slate-300">·</span>
+                          <span className="text-pink-600">{filteredCount} filtered</span>
+                        </>
+                      )}
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <DocumentsHeader
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onUploadClick={() => setShowUploadDialog(true)}
+              savedViews={savedViews}
+              onSelectSavedView={handleSelectSavedView}
+              onSaveCurrentView={handleSaveCurrentView}
+              totalCount={totalCount}
+              filteredCount={filteredCount}
+              theme={theme}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}

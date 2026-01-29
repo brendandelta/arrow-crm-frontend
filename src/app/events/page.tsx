@@ -21,7 +21,6 @@ import {
   ChevronDown,
   Filter,
   MapPin,
-  Building2,
   Briefcase,
   Clock,
   MessageSquare,
@@ -31,6 +30,13 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import NewEventModal from "@/components/NewEventModal";
+import { getPageIdentity } from "@/lib/page-registry";
+import { cn } from "@/lib/utils";
+
+// Get page identity for theming
+const pageIdentity = getPageIdentity("events");
+const theme = pageIdentity?.theme;
+const PageIcon = pageIdentity?.icon || Calendar;
 
 // Activity/Event interface matching the backend API
 interface Activity {
@@ -454,39 +460,95 @@ export default function EventsPage() {
   }).length;
 
   return (
-    <div className="flex-1 p-6 overflow-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Events</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            {filteredActivities.length} events
-            {upcomingCount > 0 && ` \u00b7 ${upcomingCount} upcoming`}
-            {todayCount > 0 && ` \u00b7 ${todayCount} today`}
-          </p>
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
+      {/* Premium Header */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg",
+                theme && `bg-gradient-to-br ${theme.gradient} ${theme.shadow}`
+              )}>
+                <PageIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  Events
+                </h1>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {loading ? (
+                    <span className="inline-block w-32 h-4 bg-slate-100 rounded animate-pulse" />
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <span>{filteredActivities.length} events</span>
+                      {upcomingCount > 0 && (
+                        <>
+                          <span className="text-slate-300">·</span>
+                          <span className="text-rose-600">{upcomingCount} upcoming</span>
+                        </>
+                      )}
+                      {todayCount > 0 && (
+                        <>
+                          <span className="text-slate-300">·</span>
+                          <span className="text-rose-600">{todayCount} today</span>
+                        </>
+                      )}
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {/* Search */}
+              <div className="relative group">
+                <div className={cn(
+                  "absolute inset-0 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity",
+                  theme && `bg-gradient-to-r ${theme.gradient}`
+                )} style={{ opacity: 0.15 }} />
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search events..."
+                    className={cn(
+                      "w-72 h-11 pl-11 pr-4 text-sm rounded-xl transition-all duration-200",
+                      "bg-slate-50 border border-slate-200/80",
+                      "placeholder:text-slate-400",
+                      "focus:outline-none focus:bg-white focus:border-rose-300 focus:ring-4 focus:ring-rose-500/10"
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* New Event Button */}
+              <button
+                onClick={() => setShowNewEventModal(true)}
+                className={cn(
+                  "group relative flex items-center gap-2.5 h-11 px-5",
+                  "text-white text-sm font-medium rounded-xl",
+                  "shadow-lg active:scale-[0.98] transition-all duration-200",
+                  theme && `bg-gradient-to-b ${theme.gradient} ${theme.shadow}`,
+                  theme && "hover:shadow-xl"
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                <span>New Event</span>
+              </button>
+            </div>
+          </div>
         </div>
-        <button
-          onClick={() => setShowNewEventModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          New Event
-        </button>
       </div>
 
-      {/* Filters Bar */}
-      <div className="flex items-center gap-3 mb-4">
-        {/* Search */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search events..."
-            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto p-8">
+        {/* Filters Bar */}
+        <div className="flex items-center gap-3 mb-4">
 
         {/* Kind Filter */}
         <div className="relative">
@@ -640,21 +702,30 @@ export default function EventsPage() {
         </div>
       )}
 
-      {/* Table */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
-        </div>
-      ) : filteredActivities.length === 0 ? (
-        <div className="text-center py-12 bg-white border border-slate-200 rounded-xl">
-          <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500">No events found</p>
-          {(searchQuery || activeFiltersCount > 0) && (
-            <p className="text-sm text-slate-400 mt-1">Try adjusting your search or filters</p>
-          )}
-        </div>
-      ) : (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        {/* Table */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-rose-500 border-t-transparent" />
+              Loading events...
+            </div>
+          </div>
+        ) : filteredActivities.length === 0 ? (
+          <div className="text-center py-12 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+            <p className="text-slate-500">No events found</p>
+            {(searchQuery || activeFiltersCount > 0) && (
+              <p className="text-sm text-slate-400 mt-1">Try adjusting your search or filters</p>
+            )}
+            <button
+              onClick={() => setShowNewEventModal(true)}
+              className="mt-3 text-sm text-rose-600 hover:text-rose-700 font-medium"
+            >
+              Create your first event
+            </button>
+          </div>
+        ) : (
+          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="bg-slate-50">
@@ -786,8 +857,9 @@ export default function EventsPage() {
               ))}
             </TableBody>
           </Table>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (

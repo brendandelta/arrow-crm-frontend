@@ -11,11 +11,9 @@ import {
   Clock,
   MoreHorizontal,
   Pencil,
-  Trash2,
   X,
   Save,
   Loader2,
-  Users,
   Lock,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +24,13 @@ import {
   VaultSummary,
 } from "@/lib/vault-api";
 import { toast } from "sonner";
+import { getPageIdentity } from "@/lib/page-registry";
+import { cn } from "@/lib/utils";
+
+// Get page identity for theming
+const pageIdentity = getPageIdentity("vault");
+const theme = pageIdentity?.theme;
+const PageIcon = pageIdentity?.icon || KeyRound;
 
 function VaultCard({
   vault,
@@ -311,90 +316,145 @@ export default function VaultPage() {
   const totalDueSoon = vaults.reduce((sum, v) => sum + v.dueSoonRotationsCount, 0);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Credential Vault</h1>
-          <p className="text-sm text-muted-foreground">
-            {vaults.length} vault{vaults.length !== 1 ? "s" : ""} &middot;{" "}
-            {totalCredentials} credential{totalCredentials !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <button
-          onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
-        >
-          <Plus className="h-4 w-4" />
-          New Vault
-        </button>
-      </div>
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
+      {/* Premium Header */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg",
+                theme && `bg-gradient-to-br ${theme.gradient} ${theme.shadow}`
+              )}>
+                <PageIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  Credential Vault
+                </h1>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {loading ? (
+                    <span className="inline-block w-32 h-4 bg-slate-100 rounded animate-pulse" />
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <span>{vaults.length} vault{vaults.length !== 1 ? "s" : ""}</span>
+                      <span className="text-slate-300">·</span>
+                      <span>{totalCredentials} credential{totalCredentials !== 1 ? "s" : ""}</span>
+                      {totalOverdue > 0 && (
+                        <>
+                          <span className="text-slate-300">·</span>
+                          <span className="text-red-600">{totalOverdue} overdue</span>
+                        </>
+                      )}
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
 
-      {/* Summary Strip */}
-      {(totalOverdue > 0 || totalDueSoon > 0) && (
-        <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-lg border">
-          <Shield className="h-5 w-5 text-slate-500" />
-          <div className="flex items-center gap-6 text-sm">
-            {totalOverdue > 0 && (
-              <div className="flex items-center gap-2 text-red-600">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="font-medium">{totalOverdue} overdue rotation{totalOverdue !== 1 ? "s" : ""}</span>
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {/* Search */}
+              <div className="relative group">
+                <div className={cn(
+                  "absolute inset-0 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity",
+                  theme && `bg-gradient-to-r ${theme.gradient}`
+                )} style={{ opacity: 0.15 }} />
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search vaults..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={cn(
+                      "w-72 h-11 pl-11 pr-4 text-sm rounded-xl transition-all duration-200",
+                      "bg-slate-50 border border-slate-200/80",
+                      "placeholder:text-slate-400",
+                      "focus:outline-none focus:bg-white focus:border-teal-300 focus:ring-4 focus:ring-teal-500/10"
+                    )}
+                  />
+                </div>
               </div>
-            )}
-            {totalDueSoon > 0 && (
-              <div className="flex items-center gap-2 text-amber-600">
-                <Clock className="h-4 w-4" />
-                <span className="font-medium">{totalDueSoon} due soon</span>
-              </div>
-            )}
+
+              {/* New Vault Button */}
+              <button
+                onClick={handleCreate}
+                className={cn(
+                  "group relative flex items-center gap-2.5 h-11 px-5",
+                  "text-white text-sm font-medium rounded-xl",
+                  "shadow-lg active:scale-[0.98] transition-all duration-200",
+                  theme && `bg-gradient-to-b ${theme.gradient} ${theme.shadow}`,
+                  theme && "hover:shadow-xl"
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                <span>New Vault</span>
+              </button>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Search */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search vaults..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-          />
-        </div>
+        {/* Summary Strip */}
+        {(totalOverdue > 0 || totalDueSoon > 0) && (
+          <div className="px-8 pb-4">
+            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <Shield className="h-5 w-5 text-slate-500" />
+              <div className="flex items-center gap-6 text-sm">
+                {totalOverdue > 0 && (
+                  <div className="flex items-center gap-2 text-red-600">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span className="font-medium">{totalOverdue} overdue rotation{totalOverdue !== 1 ? "s" : ""}</span>
+                  </div>
+                )}
+                {totalDueSoon > 0 && (
+                  <div className="flex items-center gap-2 text-amber-600">
+                    <Clock className="h-4 w-4" />
+                    <span className="font-medium">{totalDueSoon} due soon</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Vaults Grid */}
-      {loading ? (
-        <div className="flex items-center justify-center h-64 text-muted-foreground">
-          Loading...
-        </div>
-      ) : filteredVaults.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-          <KeyRound className="h-12 w-12 mb-4 opacity-50" />
-          <p>No vaults found</p>
-          {vaults.length === 0 && (
-            <button
-              onClick={handleCreate}
-              className="mt-4 text-sm text-slate-600 hover:text-slate-900 underline"
-            >
-              Create your first vault
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredVaults.map((vault) => (
-            <VaultCard
-              key={vault.id}
-              vault={vault}
-              onEdit={handleEdit}
-              onClick={() => router.push(`/vault/${vault.id}`)}
-            />
-          ))}
-        </div>
-      )}
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto p-8">
+        {loading ? (
+          <div className="flex items-center justify-center h-64 text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-teal-500 border-t-transparent" />
+              Loading vaults...
+            </div>
+          </div>
+        ) : filteredVaults.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+            <KeyRound className="h-12 w-12 mb-4 opacity-50" />
+            <p>No vaults found</p>
+            {vaults.length === 0 && (
+              <button
+                onClick={handleCreate}
+                className="mt-4 text-sm text-teal-600 hover:text-teal-700 font-medium"
+              >
+                Create your first vault
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredVaults.map((vault) => (
+              <VaultCard
+                key={vault.id}
+                vault={vault}
+                onEdit={handleEdit}
+                onClick={() => router.push(`/vault/${vault.id}`)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Vault Modal */}
       {modalOpen && (
