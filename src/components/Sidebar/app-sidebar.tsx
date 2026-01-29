@@ -13,6 +13,7 @@ import {
   CheckSquare,
   FolderKanban,
   KeyRound,
+  Landmark,
 } from "lucide-react"
 
 import { NavMain } from "@/components/Sidebar/nav-main"
@@ -54,6 +55,11 @@ const data = {
         { title: "Funds", url: "/organizations/funds" },
         { title: "Companies", url: "/organizations/companies" },
       ],
+    },
+    {
+      title: "Internal Entities",
+      url: "/internal-entities",
+      icon: Landmark,
     },
     {
       title: "People",
