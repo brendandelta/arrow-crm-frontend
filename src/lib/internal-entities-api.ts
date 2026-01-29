@@ -694,7 +694,11 @@ export const LINKED_OBJECT_TYPES = [
 // Fetch entity links for a specific entity
 export async function fetchEntityLinks(entityId: number): Promise<EntityLink[]> {
   const res = await authFetch(`${API_BASE}/api/internal_entities/${entityId}/entity_links`);
-  if (!res.ok) throw new Error('Failed to fetch entity links');
+  // Return empty array for 404 (no links found) or other non-ok responses
+  if (!res.ok) {
+    if (res.status === 404) return [];
+    throw new Error('Failed to fetch entity links');
+  }
   return res.json();
 }
 
