@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { Search, Plus, Landmark } from "lucide-react";
 import { EntityFiltersRail } from "./_components/EntityFiltersRail";
 import { EntityList } from "./_components/EntityList";
 import { EntityDetailPanel } from "./_components/EntityDetailPanel";
@@ -272,49 +273,70 @@ export default function InternalEntitiesPage() {
   }, [activeEntityId]);
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-slate-200/60">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Internal Entities</h1>
-            <p className="text-sm text-slate-500 mt-0.5">
-              {totalCount} {totalCount === 1 ? "entity" : "entities"} total
-              {entities.length !== totalCount && ` · ${entities.length} showing`}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search entities..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-64 pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
-              />
-              <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
+      {/* Premium Header */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <Landmark className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  Internal Entities
+                </h1>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {loading ? (
+                    <span className="inline-block w-24 h-4 bg-slate-100 rounded animate-pulse" />
+                  ) : (
+                    <>
+                      {totalCount} {totalCount === 1 ? "entity" : "entities"}
+                      {entities.length !== totalCount && (
+                        <span className="text-slate-400"> · {entities.length} showing</span>
+                      )}
+                    </>
+                  )}
+                </p>
+              </div>
             </div>
-            <button
-              onClick={() => setShowNewEntityDialog(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 transition-colors"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              New Entity
-            </button>
+
+            {/* Actions */}
+            <div className="flex items-center gap-4">
+              {/* Search */}
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                  <input
+                    type="text"
+                    placeholder="Search entities..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-72 h-11 pl-11 pr-4 text-sm bg-slate-50 border border-slate-200/80 rounded-xl
+                             placeholder:text-slate-400
+                             focus:outline-none focus:bg-white focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10
+                             transition-all duration-200"
+                  />
+                </div>
+              </div>
+
+              {/* New Entity Button */}
+              <button
+                onClick={() => setShowNewEntityDialog(true)}
+                className="group relative flex items-center gap-2.5 h-11 px-5
+                         bg-gradient-to-b from-indigo-500 to-indigo-600
+                         text-white text-sm font-medium rounded-xl
+                         shadow-lg shadow-indigo-500/25
+                         hover:from-indigo-600 hover:to-indigo-700 hover:shadow-xl hover:shadow-indigo-500/30
+                         active:scale-[0.98]
+                         transition-all duration-200"
+              >
+                <Plus className="h-4 w-4" />
+                <span>New Entity</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -331,7 +353,7 @@ export default function InternalEntitiesPage() {
         />
 
         {/* Entities List */}
-        <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200/60">
+        <div className="flex-1 flex flex-col min-w-0">
           <EntityList
             entities={entities}
             loading={loading}

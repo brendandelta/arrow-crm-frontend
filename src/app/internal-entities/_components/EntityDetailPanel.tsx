@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import {
   X,
   Landmark,
@@ -15,12 +15,12 @@ import {
   FileText,
   Briefcase,
   Plus,
-  MapPin,
   ExternalLink,
   Trash2,
   ChevronDown,
-  ChevronUp,
+  ChevronRight,
   Copy,
+  Shield,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -36,10 +36,6 @@ import {
   getStatusColor,
   getEntityTypeColor,
   formatEinWithDash,
-  ENTITY_TYPES,
-  ENTITY_STATUSES,
-  TAX_CLASSIFICATIONS,
-  US_STATES,
 } from "@/lib/internal-entities-api";
 
 interface EntityDetailPanelProps {
@@ -180,8 +176,6 @@ export function EntityDetailPanel({
       return;
     }
 
-    // If revealed, copy the full EIN formatted with dash
-    // If not revealed, just copy the last 4
     const textToCopy = revealedEin ? formatEinWithDash(revealedEin) : entity.einLast4;
 
     try {
@@ -194,13 +188,18 @@ export function EntityDetailPanel({
 
   if (loading) {
     return (
-      <div className="w-[420px] bg-white border-l border-slate-200/60 flex flex-col">
-        <div className="p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 w-48 bg-slate-100 rounded" />
-            <div className="h-4 w-32 bg-slate-100 rounded" />
-            <div className="h-32 bg-slate-50 rounded-xl" />
-            <div className="h-32 bg-slate-50 rounded-xl" />
+      <div className="w-[460px] bg-white border-l border-slate-200/80 flex flex-col shadow-xl shadow-slate-200/50">
+        <div className="p-8">
+          <div className="animate-pulse space-y-6">
+            <div className="flex items-start gap-4">
+              <div className="h-14 w-14 bg-slate-100 rounded-2xl" />
+              <div className="flex-1 space-y-2">
+                <div className="h-6 w-48 bg-slate-100 rounded-lg" />
+                <div className="h-4 w-32 bg-slate-50 rounded-lg" />
+              </div>
+            </div>
+            <div className="h-40 bg-slate-50 rounded-2xl" />
+            <div className="h-32 bg-slate-50 rounded-2xl" />
           </div>
         </div>
       </div>
@@ -209,8 +208,13 @@ export function EntityDetailPanel({
 
   if (!entity) {
     return (
-      <div className="w-[420px] bg-white border-l border-slate-200/60 flex items-center justify-center">
-        <p className="text-slate-500">Select an entity to view details</p>
+      <div className="w-[460px] bg-white border-l border-slate-200/80 flex items-center justify-center shadow-xl shadow-slate-200/50">
+        <div className="text-center p-12">
+          <div className="h-16 w-16 mx-auto mb-4 rounded-2xl bg-slate-50 flex items-center justify-center">
+            <Landmark className="h-8 w-8 text-slate-300" />
+          </div>
+          <p className="text-slate-500">Select an entity to view details</p>
+        </div>
       </div>
     );
   }
@@ -219,18 +223,18 @@ export function EntityDetailPanel({
   const typeColor = getEntityTypeColor(entity.entityType);
 
   return (
-    <div className="w-[420px] bg-white border-l border-slate-200/60 flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-slate-100">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3">
-            <div className="h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center">
-              <Landmark className="h-5 w-5 text-indigo-600" />
+    <div className="w-[460px] bg-white border-l border-slate-200/80 flex flex-col overflow-hidden shadow-xl shadow-slate-200/50">
+      {/* Premium Header */}
+      <div className="px-8 py-6 bg-gradient-to-b from-slate-50 to-white border-b border-slate-100">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start gap-4">
+            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+              <Landmark className="h-7 w-7 text-white" />
             </div>
-            <div>
-              <h2 className="font-semibold text-slate-900">{entity.displayName}</h2>
+            <div className="pt-1">
+              <h2 className="text-xl font-semibold text-slate-900 tracking-tight">{entity.displayName}</h2>
               {entity.nameShort && entity.nameShort !== entity.displayName && (
-                <p className="text-sm text-slate-500">{entity.nameLegal}</p>
+                <p className="text-sm text-slate-500 mt-0.5">{entity.nameLegal}</p>
               )}
             </div>
           </div>
@@ -238,7 +242,7 @@ export function EntityDetailPanel({
             <button
               onClick={handleDeleteEntity}
               disabled={deleting}
-              className="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors disabled:opacity-50"
+              className="h-9 w-9 rounded-xl hover:bg-red-50 flex items-center justify-center text-slate-400 hover:text-red-500 transition-all duration-200 disabled:opacity-50"
               title="Delete entity"
             >
               {deleting ? (
@@ -249,7 +253,7 @@ export function EntityDetailPanel({
             </button>
             <button
               onClick={onClose}
-              className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
+              className="h-9 w-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all duration-200"
             >
               <X className="h-5 w-5" />
             </button>
@@ -257,11 +261,11 @@ export function EntityDetailPanel({
         </div>
 
         {/* Status and Type Badges */}
-        <div className="flex items-center gap-2 mt-3">
-          <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${statusColor}`}>
+        <div className="flex items-center gap-2">
+          <span className={`px-3 py-1.5 text-xs font-medium rounded-full border ${statusColor}`}>
             {entity.statusLabel}
           </span>
-          <span className={`px-2.5 py-1 text-xs font-medium rounded-md border ${typeColor}`}>
+          <span className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${typeColor}`}>
             {entity.entityTypeLabel}
           </span>
         </div>
@@ -276,7 +280,7 @@ export function EntityDetailPanel({
           isExpanded={expandedSections.has("summary")}
           onToggle={() => toggleSection("summary")}
         >
-          <div className="space-y-3">
+          <div className="space-y-4">
             <EditableField
               label="Legal Name"
               value={entity.nameLegal}
@@ -294,21 +298,17 @@ export function EntityDetailPanel({
                 onUpdate(updated);
               }}
             />
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-slate-500 mb-1">Jurisdiction</label>
-                <div className="flex items-center gap-1.5 text-sm text-slate-700">
-                  <Building2 className="h-3.5 w-3.5 text-slate-400" />
-                  <span>{entity.fullJurisdiction || "—"}</span>
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs text-slate-500 mb-1">Formation Date</label>
-                <div className="flex items-center gap-1.5 text-sm text-slate-700">
-                  <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                  <span>{entity.formationDate ? new Date(entity.formationDate).toLocaleDateString() : "—"}</span>
-                </div>
-              </div>
+            <div className="grid grid-cols-2 gap-4">
+              <InfoField
+                label="Jurisdiction"
+                icon={<Building2 className="h-3.5 w-3.5" />}
+                value={entity.fullJurisdiction || "—"}
+              />
+              <InfoField
+                label="Formation Date"
+                icon={<Calendar className="h-3.5 w-3.5" />}
+                value={entity.formationDate ? new Date(entity.formationDate).toLocaleDateString() : "—"}
+              />
             </div>
             <EditableField
               label="Primary Address"
@@ -336,64 +336,61 @@ export function EntityDetailPanel({
         {/* Tax & Compliance Section */}
         <CollapsibleSection
           title="Tax & Compliance"
-          icon={<FileText className="h-4 w-4" />}
+          icon={<Shield className="h-4 w-4" />}
           isExpanded={expandedSections.has("tax")}
           onToggle={() => toggleSection("tax")}
         >
-          <div className="space-y-3">
-            {/* EIN with Reveal and Copy */}
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">EIN (Employer ID Number)</label>
-              <div className="flex items-center gap-2">
-                {entity.einPresent ? (
-                  <button
-                    onClick={handleCopyEin}
-                    className="flex-1 font-mono text-sm text-slate-700 hover:text-indigo-600 flex items-center gap-1.5 group text-left"
-                    title="Click to copy"
-                  >
-                    <span>{revealedEin ? formatEinWithDash(revealedEin) : formatEinWithDash(entity.einMasked)}</span>
-                    <Copy className="h-3 w-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
-                ) : (
-                  <span className="flex-1 font-mono text-sm text-slate-400">Not set</span>
-                )}
+          <div className="space-y-4">
+            {/* EIN Card */}
+            <div className="p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-100">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">EIN</label>
                 {entity.einPresent && (
                   <button
                     onClick={handleRevealEin}
                     disabled={revealingEin}
-                    className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-all duration-200 disabled:opacity-50"
                   >
                     {revealingEin ? (
                       <span className="h-3 w-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
                     ) : revealedEin ? (
-                      <EyeOff className="h-3 w-3" />
+                      <EyeOff className="h-3.5 w-3.5" />
                     ) : (
-                      <Eye className="h-3 w-3" />
+                      <Eye className="h-3.5 w-3.5" />
                     )}
                     {revealedEin ? "Hide" : "Reveal"}
                   </button>
                 )}
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-slate-500 mb-1">Tax Classification</label>
-                <p className="text-sm text-slate-700">
-                  {entity.taxClassificationLabel || "—"}
-                </p>
-              </div>
-              {entity.sCorpEffectiveDate && (
-                <div>
-                  <label className="block text-xs text-slate-500 mb-1">S-Corp Effective</label>
-                  <p className="text-sm text-slate-700">
-                    {new Date(entity.sCorpEffectiveDate).toLocaleDateString()}
-                  </p>
-                </div>
+              {entity.einPresent ? (
+                <button
+                  onClick={handleCopyEin}
+                  className="group flex items-center gap-2 text-left"
+                  title="Click to copy"
+                >
+                  <span className="font-mono text-lg font-medium text-slate-900">
+                    {revealedEin ? formatEinWithDash(revealedEin) : formatEinWithDash(entity.einMasked)}
+                  </span>
+                  <Copy className="h-4 w-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              ) : (
+                <span className="font-mono text-lg text-slate-400">Not set</span>
               )}
             </div>
 
-            {/* Registered Agent */}
+            <div className="grid grid-cols-2 gap-4">
+              <InfoField
+                label="Tax Classification"
+                value={entity.taxClassificationLabel || "—"}
+              />
+              {entity.sCorpEffectiveDate && (
+                <InfoField
+                  label="S-Corp Effective"
+                  value={new Date(entity.sCorpEffectiveDate).toLocaleDateString()}
+                />
+              )}
+            </div>
+
             <EditableField
               label="Registered Agent"
               value={entity.registeredAgentName || ""}
@@ -426,18 +423,21 @@ export function EntityDetailPanel({
           onToggle={() => toggleSection("banking")}
           action={
             <button
-              onClick={onAddBankAccount}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+              onClick={(e) => { e.stopPropagation(); onAddBankAccount(); }}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="h-3.5 w-3.5" />
               Add
             </button>
           }
         >
           {entity.bankAccounts.length === 0 ? (
-            <p className="text-sm text-slate-500 text-center py-4">
-              No bank accounts linked
-            </p>
+            <div className="text-center py-8">
+              <div className="h-12 w-12 mx-auto mb-3 rounded-xl bg-slate-50 flex items-center justify-center">
+                <Wallet className="h-6 w-6 text-slate-300" />
+              </div>
+              <p className="text-sm text-slate-500">No bank accounts linked</p>
+            </div>
           ) : (
             <div className="space-y-3">
               {entity.bankAccounts.map((account) => (
@@ -462,37 +462,40 @@ export function EntityDetailPanel({
           onToggle={() => toggleSection("signers")}
           action={
             <button
-              onClick={onAddSigner}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+              onClick={(e) => { e.stopPropagation(); onAddSigner(); }}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="h-3.5 w-3.5" />
               Add
             </button>
           }
         >
           {entity.signers.length === 0 ? (
-            <p className="text-sm text-slate-500 text-center py-4">
-              No authorized signers
-            </p>
+            <div className="text-center py-8">
+              <div className="h-12 w-12 mx-auto mb-3 rounded-xl bg-slate-50 flex items-center justify-center">
+                <Users className="h-6 w-6 text-slate-300" />
+              </div>
+              <p className="text-sm text-slate-500">No authorized signers</p>
+            </div>
           ) : (
             <div className="space-y-2">
               {entity.signers.map((signer) => (
                 <div
                   key={signer.id}
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                  className="group flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100/80 rounded-xl transition-colors"
                 >
                   <div>
                     <Link
                       href={`/people?id=${signer.personId}`}
-                      className="font-medium text-sm text-slate-900 hover:text-indigo-600"
+                      className="font-medium text-sm text-slate-900 hover:text-indigo-600 transition-colors"
                     >
                       {signer.fullName}
                     </Link>
-                    <p className="text-xs text-slate-500">{signer.roleLabel}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{signer.roleLabel}</p>
                   </div>
                   <button
                     onClick={() => handleDeleteSigner(signer.id, signer.fullName)}
-                    className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
                     title="Remove signer"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -511,31 +514,36 @@ export function EntityDetailPanel({
           onToggle={() => toggleSection("documents")}
         >
           {entity.documents.length === 0 ? (
-            <p className="text-sm text-slate-500 text-center py-4">
-              No documents linked
-            </p>
+            <div className="text-center py-8">
+              <div className="h-12 w-12 mx-auto mb-3 rounded-xl bg-slate-50 flex items-center justify-center">
+                <FileText className="h-6 w-6 text-slate-300" />
+              </div>
+              <p className="text-sm text-slate-500">No documents linked</p>
+            </div>
           ) : (
             <div className="space-y-2">
               {entity.documents.map((doc) => (
                 <Link
                   key={doc.id}
                   href={`/documents?id=${doc.id}`}
-                  className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors"
+                  className="group flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors"
                 >
-                  <FileText className="h-4 w-4 text-slate-400" />
+                  <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
+                    <FileText className="h-5 w-5 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-900 truncate">
                       {doc.title || doc.name}
                     </p>
                     <p className="text-xs text-slate-500">{doc.category}</p>
                   </div>
-                  <ExternalLink className="h-3 w-3 text-slate-400" />
+                  <ExternalLink className="h-4 w-4 text-slate-300 group-hover:text-indigo-400 transition-colors" />
                 </Link>
               ))}
               {entity.documentsCount > entity.documents.length && (
                 <Link
                   href={`/documents?linkableType=InternalEntity&linkableId=${entity.id}`}
-                  className="block text-center text-xs text-indigo-600 hover:text-indigo-700 py-2"
+                  className="block text-center text-sm text-indigo-600 hover:text-indigo-700 font-medium py-3 hover:bg-indigo-50 rounded-xl transition-colors"
                 >
                   View all {entity.documentsCount} documents
                 </Link>
@@ -557,9 +565,11 @@ export function EntityDetailPanel({
                 <Link
                   key={deal.id}
                   href={`/deals/${deal.id}`}
-                  className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors"
+                  className="group flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors"
                 >
-                  <Briefcase className="h-4 w-4 text-slate-400" />
+                  <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
+                    <Briefcase className="h-5 w-5 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-900 truncate">
                       {deal.name}
@@ -568,7 +578,7 @@ export function EntityDetailPanel({
                       <p className="text-xs text-slate-500">{deal.company}</p>
                     )}
                   </div>
-                  <span className="text-xs text-slate-500 capitalize">{deal.status}</span>
+                  <span className="text-xs text-slate-500 capitalize px-2 py-1 bg-slate-100 rounded-md">{deal.status}</span>
                 </Link>
               ))}
             </div>
@@ -594,15 +604,28 @@ export function EntityDetailPanel({
         </CollapsibleSection>
 
         {/* Footer Meta */}
-        <div className="px-5 py-4 text-xs text-slate-400 border-t border-slate-100">
-          <div className="flex justify-between">
+        <div className="px-6 py-5 bg-slate-50/50 border-t border-slate-100">
+          <div className="flex justify-between text-xs text-slate-400">
             <span>Created {new Date(entity.createdAt).toLocaleDateString()}</span>
             <span>Updated {new Date(entity.updatedAt).toLocaleDateString()}</span>
           </div>
           {entity.createdBy && (
-            <p className="mt-1">By {entity.createdBy.name}</p>
+            <p className="mt-1 text-xs text-slate-400">By {entity.createdBy.name}</p>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Info Field Component (read-only)
+function InfoField({ label, icon, value }: { label: string; icon?: React.ReactNode; value: string }) {
+  return (
+    <div>
+      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">{label}</label>
+      <div className="flex items-center gap-2 text-sm text-slate-700">
+        {icon && <span className="text-slate-400">{icon}</span>}
+        <span>{value}</span>
       </div>
     </div>
   );
@@ -628,27 +651,30 @@ function CollapsibleSection({
 }: CollapsibleSectionProps) {
   return (
     <div className="border-b border-slate-100">
-      <div className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 transition-colors">
+      <div className="flex items-center justify-between px-6 py-4 hover:bg-slate-50/50 transition-colors">
         <button
           onClick={onToggle}
-          className="flex-1 flex items-center gap-2 text-sm font-medium text-slate-700 text-left"
+          className="flex-1 flex items-center gap-3 text-sm font-medium text-slate-700 text-left"
         >
-          {icon}
+          <span className="text-slate-400">{icon}</span>
           {title}
         </button>
         <div className="flex items-center gap-2">
           {action}
-          <button onClick={onToggle} className="p-1">
+          <button
+            onClick={onToggle}
+            className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-slate-100 transition-colors"
+          >
             {isExpanded ? (
-              <ChevronUp className="h-4 w-4 text-slate-400" />
-            ) : (
               <ChevronDown className="h-4 w-4 text-slate-400" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-slate-400" />
             )}
           </button>
         </div>
       </div>
       {isExpanded && (
-        <div className="px-5 pb-4">
+        <div className="px-6 pb-5">
           {children}
         </div>
       )}
@@ -703,7 +729,7 @@ function EditableField({
   if (editing) {
     return (
       <div>
-        {label && <label className="block text-xs text-slate-500 mb-1">{label}</label>}
+        {label && <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">{label}</label>}
         <div className="flex items-start gap-2">
           {multiline ? (
             <textarea
@@ -711,7 +737,7 @@ function EditableField({
               onChange={(e) => setEditValue(e.target.value)}
               placeholder={placeholder}
               rows={3}
-              className="flex-1 px-2 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 resize-none"
+              className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 resize-none transition-all duration-200"
               autoFocus
             />
           ) : (
@@ -720,7 +746,7 @@ function EditableField({
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 px-2 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+              className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-all duration-200"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSave();
@@ -731,13 +757,13 @@ function EditableField({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
+            className="h-9 w-9 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors disabled:opacity-50"
           >
             <Check className="h-4 w-4" />
           </button>
           <button
             onClick={handleCancel}
-            className="p-1.5 text-slate-400 hover:bg-slate-100 rounded transition-colors"
+            className="h-9 w-9 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -748,18 +774,18 @@ function EditableField({
 
   return (
     <div>
-      {label && <label className="block text-xs text-slate-500 mb-1">{label}</label>}
+      {label && <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">{label}</label>}
       <button
         onClick={() => {
           setEditValue(value);
           setEditing(true);
         }}
-        className="w-full flex items-center justify-between group text-left"
+        className="w-full flex items-center justify-between group text-left py-1.5 px-1 -mx-1 rounded-lg hover:bg-slate-50 transition-colors"
       >
         <span className={`text-sm ${value ? "text-slate-700" : "text-slate-400"}`}>
           {value || placeholder || "Click to edit"}
         </span>
-        <Edit2 className="h-3 w-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <Edit2 className="h-3.5 w-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
       </button>
     </div>
   );
@@ -784,29 +810,35 @@ function BankAccountCard({
   const isActive = account.status === "active";
 
   return (
-    <div className={`p-3 rounded-lg border ${isActive ? "bg-white border-slate-200" : "bg-slate-50 border-slate-100"}`}>
+    <div className={`p-4 rounded-xl border transition-all duration-200 ${
+      isActive
+        ? "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
+        : "bg-slate-50 border-slate-100"
+    }`}>
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2">
-          <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${isActive ? "bg-green-50" : "bg-slate-100"}`}>
-            <Wallet className={`h-4 w-4 ${isActive ? "text-green-600" : "text-slate-400"}`} />
+        <div className="flex items-center gap-3">
+          <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
+            isActive ? "bg-gradient-to-br from-green-50 to-emerald-50" : "bg-slate-100"
+          }`}>
+            <Wallet className={`h-5 w-5 ${isActive ? "text-green-600" : "text-slate-400"}`} />
           </div>
           <div>
             <p className="font-medium text-sm text-slate-900">{account.bankName}</p>
-            <p className="text-xs text-slate-500">
-              {account.accountTypeLabel}
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-xs text-slate-500">{account.accountTypeLabel}</span>
               {account.isPrimary && (
-                <span className="ml-1.5 px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded text-[10px] font-medium">
-                  PRIMARY
+                <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded text-[10px] font-semibold uppercase tracking-wide">
+                  Primary
                 </span>
               )}
-            </p>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={onReveal}
             disabled={revealing}
-            className="p-1 text-slate-400 hover:text-indigo-600 transition-colors disabled:opacity-50"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-200 disabled:opacity-50"
             title={revealed ? "Hide numbers" : "Reveal numbers"}
           >
             {revealing ? (
@@ -819,7 +851,7 @@ function BankAccountCard({
           </button>
           <button
             onClick={onDelete}
-            className="p-1 text-slate-400 hover:text-red-500 transition-colors"
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200"
             title="Remove account"
           >
             <Trash2 className="h-4 w-4" />
@@ -827,23 +859,23 @@ function BankAccountCard({
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+      <div className="mt-4 grid grid-cols-2 gap-4">
         <div>
-          <span className="text-slate-500">Routing</span>
-          <p className="font-mono text-slate-700">
+          <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Routing</span>
+          <p className="font-mono text-sm text-slate-700 mt-1">
             {revealed ? revealed.routing : account.routingMasked || "••••••••"}
           </p>
         </div>
         <div>
-          <span className="text-slate-500">Account</span>
-          <p className="font-mono text-slate-700">
+          <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Account</span>
+          <p className="font-mono text-sm text-slate-700 mt-1">
             {revealed ? revealed.account : account.accountMasked || "••••••••"}
           </p>
         </div>
       </div>
 
       {account.nickname && (
-        <p className="mt-2 text-xs text-slate-500">{account.nickname}</p>
+        <p className="mt-3 text-xs text-slate-500 pt-3 border-t border-slate-100">{account.nickname}</p>
       )}
     </div>
   );
