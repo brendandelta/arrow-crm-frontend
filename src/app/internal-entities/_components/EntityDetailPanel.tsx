@@ -562,27 +562,25 @@ function CollapsibleSection({
 }: CollapsibleSectionProps) {
   return (
     <div className="border-b border-slate-100">
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between px-5 py-3 hover:bg-slate-50 transition-colors"
-      >
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+      <div className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 transition-colors">
+        <button
+          onClick={onToggle}
+          className="flex-1 flex items-center gap-2 text-sm font-medium text-slate-700 text-left"
+        >
           {icon}
           {title}
-        </div>
+        </button>
         <div className="flex items-center gap-2">
-          {action && (
-            <div onClick={(e) => e.stopPropagation()}>
-              {action}
-            </div>
-          )}
-          {isExpanded ? (
-            <ChevronUp className="h-4 w-4 text-slate-400" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-slate-400" />
-          )}
+          {action}
+          <button onClick={onToggle} className="p-1">
+            {isExpanded ? (
+              <ChevronUp className="h-4 w-4 text-slate-400" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-slate-400" />
+            )}
+          </button>
         </div>
-      </button>
+      </div>
       {isExpanded && (
         <div className="px-5 pb-4">
           {children}
