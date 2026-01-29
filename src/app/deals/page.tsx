@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, ChevronRight, ChevronDown, Plus } from "lucide-react";
+import { Search, ChevronRight, ChevronDown, Plus, CircleDollarSign } from "lucide-react";
 import { KPIStrip } from "./_components/KPIStrip";
 import { ExpandedRowContent } from "./_components/ExpandableTableRow";
 import { ViewToggle } from "./_components/ViewToggle";
@@ -32,6 +32,13 @@ import { useTableFiltering } from "./[id]/_components/table-filtering/useTableFi
 import { FilterableHeader } from "./[id]/_components/table-filtering/FilterableHeader";
 import { ActiveFiltersBar } from "./[id]/_components/table-filtering/ActiveFiltersBar";
 import type { ColumnDef } from "./[id]/_components/table-filtering/types";
+import { getPageIdentity } from "@/lib/page-registry";
+import { cn } from "@/lib/utils";
+
+// Get page identity for theming
+const pageIdentity = getPageIdentity("deals");
+const theme = pageIdentity?.theme;
+const Icon = pageIdentity?.icon || CircleDollarSign;
 
 interface Owner {
   id: number;
@@ -547,76 +554,135 @@ export default function DealsPage() {
   }, [activeFilters]);
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Deals</h1>
-        <div className="flex items-center gap-3">
-          <ViewToggle activeView={viewMode} onViewChange={setViewMode} />
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            New Deal
-          </button>
-        </div>
-      </div>
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
+      {/* Premium Header */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg",
+                theme && `bg-gradient-to-br ${theme.gradient} ${theme.shadow}`
+              )}>
+                <Icon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  Deals
+                </h1>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {loading ? (
+                    <span className="inline-block w-32 h-4 bg-slate-100 rounded animate-pulse" />
+                  ) : stats ? (
+                    <span className="flex items-center gap-2">
+                      <span>{deals.length} total deals</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-emerald-600">{stats.liveCount} live</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-amber-600">{stats.atRiskCount} at risk</span>
+                    </span>
+                  ) : (
+                    <span>{deals.length} deals</span>
+                  )}
+                </p>
+              </div>
+            </div>
 
-      {/* KPI Strip — table view only */}
-      {viewMode === "table" && stats && (
-        <KPIStrip
-          stats={{
-            liveCount: stats.liveCount,
-            totalSoftCircled: stats.totalSoftCircled,
-            totalCommitted: stats.totalCommitted,
-            totalWired: stats.totalWired,
-            atRiskCount: stats.atRiskCount,
-            overdueTasksCount: stats.overdueTasksCount,
-          }}
-          onFilterClick={handleKPIFilterClick}
-          activeFilter={liveKPIActive ? "live" : undefined}
-        />
-      )}
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {/* Search - Table view only */}
+              {viewMode === "table" && (
+                <div className="relative group">
+                  <div className={cn(
+                    "absolute inset-0 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity",
+                    theme && `bg-gradient-to-r ${theme.gradient}`
+                  )} style={{ opacity: 0.15 }} />
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Search deals, companies..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className={cn(
+                        "w-72 h-11 pl-11 pr-4 text-sm rounded-xl transition-all duration-200",
+                        "bg-slate-50 border border-slate-200/80",
+                        "placeholder:text-slate-400",
+                        "focus:outline-none focus:bg-white focus:border-emerald-300 focus:ring-4 focus:ring-emerald-500/10"
+                      )}
+                    />
+                  </div>
+                </div>
+              )}
 
-      {/* Search bar — table view only */}
-      {viewMode === "table" && (
-        <div className="flex items-center gap-3">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search deals, companies..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-            />
+              {/* View Toggle */}
+              <ViewToggle activeView={viewMode} onViewChange={setViewMode} />
+
+              {/* New Deal Button */}
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className={cn(
+                  "group relative flex items-center gap-2.5 h-11 px-5",
+                  "text-white text-sm font-medium rounded-xl",
+                  "shadow-lg active:scale-[0.98] transition-all duration-200",
+                  theme && `bg-gradient-to-b ${theme.gradient} ${theme.shadow}`,
+                  theme && "hover:shadow-xl"
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                <span>New Deal</span>
+              </button>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Content View */}
-      {viewMode === "mindmap" ? (
-        <MindMapView />
-      ) : viewMode === "flow" ? (
-        <FlowView
-          deals={deals}
-          stats={stats}
-          loading={loading}
-          onStatusChange={handleStatusChange}
-          onPriorityChange={handlePriorityChange}
-          onCreateDeal={() => setShowCreateModal(true)}
-          owners={allOwners}
-          currentUserId={user?.backendUserId}
-        />
-      ) : loading ? (
-        <div className="flex items-center justify-center h-64 text-muted-foreground">
-          Loading...
-        </div>
-      ) : (
-        /* Table View */
-        <div className="rounded-md border overflow-hidden">
-          <Table>
+        {/* KPI Strip - Table view only */}
+        {viewMode === "table" && stats && (
+          <div className="px-8 pb-4">
+            <KPIStrip
+              stats={{
+                liveCount: stats.liveCount,
+                totalSoftCircled: stats.totalSoftCircled,
+                totalCommitted: stats.totalCommitted,
+                totalWired: stats.totalWired,
+                atRiskCount: stats.atRiskCount,
+                overdueTasksCount: stats.overdueTasksCount,
+              }}
+              onFilterClick={handleKPIFilterClick}
+              activeFilter={liveKPIActive ? "live" : undefined}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        {viewMode === "mindmap" ? (
+          <MindMapView />
+        ) : viewMode === "flow" ? (
+          <FlowView
+            deals={deals}
+            stats={stats}
+            loading={loading}
+            onStatusChange={handleStatusChange}
+            onPriorityChange={handlePriorityChange}
+            onCreateDeal={() => setShowCreateModal(true)}
+            owners={allOwners}
+            currentUserId={user?.backendUserId}
+          />
+        ) : loading ? (
+          <div className="flex items-center justify-center h-64 text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+              Loading deals...
+            </div>
+          </div>
+        ) : (
+          /* Table View */
+          <div className="px-8 py-6">
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[40px]"></TableHead>
@@ -780,9 +846,11 @@ export default function DealsPage() {
                 ))
               )}
             </TableBody>
-          </Table>
-        </div>
-      )}
+              </Table>
+            </div>
+          </div>
+        )}
+      </div>
 
       {showCreateModal && (
         <CreateDealModal onClose={() => setShowCreateModal(false)} />

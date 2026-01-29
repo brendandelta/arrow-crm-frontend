@@ -15,6 +15,7 @@ import {
   Trash2,
   ExternalLink,
   Link2,
+  Plus,
 } from "lucide-react";
 import {
   fetchEntityLinks,
@@ -24,9 +25,11 @@ import {
   type EntityLink,
   type LinkedObjectType,
 } from "@/lib/internal-entities-api";
+import { LinkObjectDialog } from "./LinkObjectDialog";
 
 interface LinkedObjectsSectionProps {
   entityId: number;
+  entityName: string;
   onRefresh?: () => void;
 }
 
@@ -72,11 +75,12 @@ const OBJECT_TYPE_CONFIG: Record<
   },
 };
 
-export function LinkedObjectsSection({ entityId, onRefresh }: LinkedObjectsSectionProps) {
+export function LinkedObjectsSection({ entityId, entityName, onRefresh }: LinkedObjectsSectionProps) {
   const [links, setLinks] = useState<EntityLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(true);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
 
   const loadLinks = async () => {
     try {
@@ -122,6 +126,11 @@ export function LinkedObjectsSection({ entityId, onRefresh }: LinkedObjectsSecti
 
   const objectTypes = Object.keys(groupedLinks) as LinkedObjectType[];
 
+  const handleLinkSuccess = () => {
+    loadLinks();
+    onRefresh?.();
+  };
+
   return (
     <div className="border-b border-border">
       <div className="flex items-center justify-between px-6 py-4 hover:bg-muted/50 transition-colors">
@@ -135,16 +144,28 @@ export function LinkedObjectsSection({ entityId, onRefresh }: LinkedObjectsSecti
             <span className="text-xs text-muted-foreground">({links.length})</span>
           )}
         </button>
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-muted transition-colors"
-        >
-          {expanded ? (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          )}
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowLinkDialog(true);
+            }}
+            className="h-7 px-2.5 rounded-md text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 flex items-center gap-1.5 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Link
+          </button>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-muted transition-colors"
+          >
+            {expanded ? (
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+        </div>
       </div>
 
       {expanded && (
@@ -269,6 +290,15 @@ export function LinkedObjectsSection({ entityId, onRefresh }: LinkedObjectsSecti
           )}
         </div>
       )}
+
+      {/* Link Object Dialog */}
+      <LinkObjectDialog
+        open={showLinkDialog}
+        onOpenChange={setShowLinkDialog}
+        entityId={entityId}
+        entityName={entityName}
+        onSuccess={handleLinkSuccess}
+      />
     </div>
   );
 }

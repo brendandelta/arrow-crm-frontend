@@ -20,10 +20,17 @@ import {
   ChevronDown,
   ChevronUp,
   X,
-  Filter,
+  SlidersHorizontal,
   Plus,
   Briefcase,
 } from "lucide-react";
+import { getPageIdentity } from "@/lib/page-registry";
+import { cn } from "@/lib/utils";
+
+// Get page identity for theming
+const pageIdentity = getPageIdentity("organizations");
+const theme = pageIdentity?.theme;
+const Icon = pageIdentity?.icon || Building2;
 
 interface Organization {
   id: number;
@@ -335,133 +342,180 @@ export default function OrganizationsPage() {
   const hasActiveFilters = kindFilter !== "all" || warmthFilter !== "all" || search.length > 0;
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold text-slate-900">Organizations</h1>
-          <div className="flex items-center gap-3 text-sm text-slate-500">
-            <span>{stats.total} total</span>
-            <span className="text-slate-300">·</span>
-            <span className="text-blue-600">{stats.funds} funds</span>
-            <span className="text-slate-300">·</span>
-            <span className="text-purple-600">{stats.companies} companies</span>
-            <span className="text-slate-300">·</span>
-            <span className="text-orange-600">{stats.hot} hot+</span>
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
+      {/* Premium Header */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg",
+                theme && `bg-gradient-to-br ${theme.gradient} ${theme.shadow}`
+              )}>
+                <Icon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  Organizations
+                </h1>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {loading ? (
+                    <span className="inline-block w-32 h-4 bg-slate-100 rounded animate-pulse" />
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <span>{stats.total} total</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-blue-600">{stats.funds} funds</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-purple-600">{stats.companies} companies</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-orange-600">{stats.hot} hot+</span>
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {/* Search */}
+              <div className="relative group">
+                <div className={cn(
+                  "absolute inset-0 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity",
+                  theme && `bg-gradient-to-r ${theme.gradient}`
+                )} style={{ opacity: 0.15 }} />
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search organizations..."
+                    className={cn(
+                      "w-72 h-11 pl-11 pr-4 text-sm rounded-xl transition-all duration-200",
+                      "bg-slate-50 border border-slate-200/80",
+                      "placeholder:text-slate-400",
+                      "focus:outline-none focus:bg-white focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+                    )}
+                  />
+                  {search && (
+                    <button
+                      onClick={() => setSearch("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Filter Toggle */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 text-sm rounded-xl border transition-colors",
+                  showFilters || hasActiveFilters
+                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                    : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                )}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Filters
+                {hasActiveFilters && (
+                  <span className="ml-1 flex items-center justify-center h-5 w-5 bg-blue-600 text-white text-xs rounded-full">
+                    {[kindFilter !== "all", warmthFilter !== "all", search.length > 0].filter(Boolean).length}
+                  </span>
+                )}
+              </button>
+
+              {/* Add Organization Button */}
+              <button
+                onClick={() => router.push("/organizations/new")}
+                className={cn(
+                  "group relative flex items-center gap-2.5 h-11 px-5",
+                  "text-white text-sm font-medium rounded-xl",
+                  "shadow-lg active:scale-[0.98] transition-all duration-200",
+                  theme && `bg-gradient-to-b ${theme.gradient} ${theme.shadow}`,
+                  theme && "hover:shadow-xl"
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Organization</span>
+              </button>
+            </div>
           </div>
         </div>
-        <button
-          onClick={() => router.push("/organizations/new")}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Add Organization
-        </button>
+
+        {/* Filter Bar */}
+        {showFilters && (
+          <div className="px-8 pb-4">
+            <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
+              {/* Kind Filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Type</span>
+                <select
+                  value={kindFilter}
+                  onChange={(e) => setKindFilter(e.target.value)}
+                  className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  <option value="all">All Types</option>
+                  {availableKinds.map((kind) => (
+                    <option key={kind} value={kind}>
+                      {KIND_CONFIG[kind]?.label || kind}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Warmth Filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Warmth</span>
+                <select
+                  value={warmthFilter}
+                  onChange={(e) => setWarmthFilter(e.target.value)}
+                  className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                >
+                  <option value="all">All Warmth</option>
+                  {WARMTH_CONFIG.map((w, i) => (
+                    <option key={i} value={i.toString()}>
+                      {w.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex-1" />
+
+              {/* Results Count */}
+              {hasActiveFilters && (
+                <div className="text-sm text-slate-500">
+                  Showing {filteredOrgs.length} of {organizations.length}
+                </div>
+              )}
+
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <button
+                  onClick={() => {
+                    setSearch("");
+                    setKindFilter("all");
+                    setWarmthFilter("all");
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Search & Filters */}
-      <div className="flex items-center gap-3">
-        {/* Search */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search organizations..."
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/20"
-          />
-          {search && (
-            <button
-              onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-
-        {/* Filter Toggle */}
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border transition-colors ${
-            showFilters || hasActiveFilters
-              ? "bg-slate-900 text-white border-slate-900"
-              : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
-          }`}
-        >
-          <Filter className="h-4 w-4" />
-          Filters
-          {hasActiveFilters && (
-            <span className="ml-1 px-1.5 py-0.5 text-[10px] font-medium bg-white/20 rounded">
-              {[kindFilter !== "all", warmthFilter !== "all", search.length > 0].filter(Boolean).length}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Filter Bar */}
-      {showFilters && (
-        <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
-          {/* Kind Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Type</span>
-            <select
-              value={kindFilter}
-              onChange={(e) => setKindFilter(e.target.value)}
-              className="text-sm px-2 py-1 rounded border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/20"
-            >
-              <option value="all">All Types</option>
-              {availableKinds.map((kind) => (
-                <option key={kind} value={kind}>
-                  {KIND_CONFIG[kind]?.label || kind}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Warmth Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Warmth</span>
-            <select
-              value={warmthFilter}
-              onChange={(e) => setWarmthFilter(e.target.value)}
-              className="text-sm px-2 py-1 rounded border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/20"
-            >
-              <option value="all">All Warmth</option>
-              {WARMTH_CONFIG.map((w, i) => (
-                <option key={i} value={i.toString()}>
-                  {w.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Clear Filters */}
-          {hasActiveFilters && (
-            <button
-              onClick={() => {
-                setSearch("");
-                setKindFilter("all");
-                setWarmthFilter("all");
-              }}
-              className="text-xs text-slate-500 hover:text-slate-700 underline ml-auto"
-            >
-              Clear all
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Results Count */}
-      {hasActiveFilters && (
-        <div className="text-sm text-slate-500">
-          Showing {filteredOrgs.length} of {organizations.length} organizations
-        </div>
-      )}
-
-      {/* Table */}
-      <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        <div className="px-8 py-6">
+          <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50/50">
@@ -492,8 +546,8 @@ export default function OrganizationsPage() {
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-12 text-slate-400">
                   <div className="flex items-center justify-center gap-2">
-                    <div className="h-4 w-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
-                    Loading...
+                    <div className="h-4 w-4 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+                    Loading organizations...
                   </div>
                 </TableCell>
               </TableRow>
@@ -501,7 +555,9 @@ export default function OrganizationsPage() {
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-12">
                   <Building2 className="h-8 w-8 mx-auto text-slate-300 mb-2" />
-                  <p className="text-slate-500">No organizations found</p>
+                  <p className="text-slate-500">
+                    {organizations.length === 0 ? "No organizations yet" : "No organizations match your filters"}
+                  </p>
                   {hasActiveFilters && (
                     <button
                       onClick={() => {
@@ -514,19 +570,30 @@ export default function OrganizationsPage() {
                       Clear filters
                     </button>
                   )}
+                  {organizations.length === 0 && (
+                    <button
+                      onClick={() => router.push("/organizations/new")}
+                      className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Add your first organization
+                    </button>
+                  )}
                 </TableCell>
               </TableRow>
             ) : (
               filteredOrgs.map((org) => (
                 <TableRow
                   key={org.id}
-                  className="cursor-pointer hover:bg-slate-50/50 transition-colors group"
+                  className="cursor-pointer hover:bg-slate-50 transition-colors group"
                   onClick={() => router.push(`/organizations/${org.id}`)}
                 >
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-slate-200 transition-colors">
-                        <Building2 className="h-4 w-4 text-slate-500" />
+                      <div className={cn(
+                        "h-9 w-9 rounded-lg flex items-center justify-center transition-colors",
+                        `bg-gradient-to-br ${theme?.gradient || "from-blue-500 to-blue-600"}`
+                      )}>
+                        <Building2 className="h-4 w-4 text-white" />
                       </div>
                       <div>
                         <div className="font-medium text-slate-900">{org.name}</div>
@@ -595,8 +662,10 @@ export default function OrganizationsPage() {
                 </TableRow>
               ))
             )}
-          </TableBody>
-        </Table>
+            </TableBody>
+          </Table>
+          </div>
+        </div>
       </div>
     </div>
   );

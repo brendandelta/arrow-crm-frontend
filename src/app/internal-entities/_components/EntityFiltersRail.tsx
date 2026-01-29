@@ -107,14 +107,17 @@ export function EntityFiltersRail({
         newFilters.hasDocuments = undefined;
       } else if (scope.filters.hasBankAccounts !== undefined) {
         newFilters.hasBankAccounts = scope.filters.hasBankAccounts;
+        newFilters.status = undefined;
         newFilters.hasSigners = undefined;
         newFilters.hasDocuments = undefined;
       } else if (scope.filters.hasSigners !== undefined) {
         newFilters.hasSigners = scope.filters.hasSigners;
+        newFilters.status = undefined;
         newFilters.hasBankAccounts = undefined;
         newFilters.hasDocuments = undefined;
       } else if (scope.filters.hasDocuments !== undefined) {
         newFilters.hasDocuments = scope.filters.hasDocuments;
+        newFilters.status = undefined;
         newFilters.hasBankAccounts = undefined;
         newFilters.hasSigners = undefined;
       }

@@ -27,6 +27,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { TasksSlideOut } from "./_components/TasksSlideOut";
 import { useAuth } from "@/contexts/AuthContext";
+import { getPageIdentity } from "@/lib/page-registry";
+import { cn } from "@/lib/utils";
+
+// Get page identity for theming
+const pageIdentity = getPageIdentity("tasks");
+const theme = pageIdentity?.theme;
+const PageIcon = pageIdentity?.icon || CheckSquare;
 
 interface Owner {
   id: number;
@@ -1700,88 +1707,127 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-8rem)]">
-      {/* Left Sidebar */}
-      <div className="w-48 flex-shrink-0 space-y-5">
-        {/* Views */}
-        <div className="space-y-1">
-          {VIEWS.map((view) => {
-            const Icon = view.icon;
-            const count = view.id === "my"
-              ? myTasksCount
-              : stats
-                ? view.countKey
-                  ? stats[view.countKey as keyof TaskStats]
-                  : 0
-                : 0;
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
+      {/* Premium Header */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg",
+                theme && `bg-gradient-to-br ${theme.gradient} ${theme.shadow}`
+              )}>
+                <PageIcon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  Tasks
+                </h1>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {loading ? (
+                    <span className="inline-block w-32 h-4 bg-slate-100 rounded animate-pulse" />
+                  ) : stats ? (
+                    <span className="flex items-center gap-2">
+                      <span>{stats.open} open</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-red-600">{stats.overdue} overdue</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-amber-600">{stats.dueToday} due today</span>
+                    </span>
+                  ) : (
+                    <span>Manage your action items</span>
+                  )}
+                </p>
+              </div>
+            </div>
 
-            return (
-              <button
-                key={view.id}
-                onClick={() => {
-                  setCurrentView(view.id);
-                  setAttachmentFilter("all");
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
-                  currentView === view.id && attachmentFilter === "all"
-                    ? "bg-slate-900 text-white"
-                    : "hover:bg-slate-100"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Icon className={`h-4 w-4 ${view.color || ""}`} />
-                  <span>{view.label}</span>
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {/* Search */}
+              <div className="relative group">
+                <div className={cn(
+                  "absolute inset-0 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity",
+                  theme && `bg-gradient-to-r ${theme.gradient}`
+                )} style={{ opacity: 0.15 }} />
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search tasks..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={cn(
+                      "w-72 h-11 pl-11 pr-4 text-sm rounded-xl transition-all duration-200",
+                      "bg-slate-50 border border-slate-200/80",
+                      "placeholder:text-slate-400",
+                      "focus:outline-none focus:bg-white focus:border-amber-300 focus:ring-4 focus:ring-amber-500/10"
+                    )}
+                  />
                 </div>
-                {typeof count === "number" && count > 0 && (
-                  <span
-                    className={`text-xs ${
-                      currentView === view.id && attachmentFilter === "all"
-                        ? "text-slate-300"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+              </div>
 
-        {/* Type Views */}
-        <div>
-          <div className="h-px bg-slate-200 mb-3" />
+              {/* New Task Button */}
+              <button
+                onClick={handleCreateTask}
+                className={cn(
+                  "group relative flex items-center gap-2.5 h-11 px-5",
+                  "text-white text-sm font-medium rounded-xl",
+                  "shadow-lg active:scale-[0.98] transition-all duration-200",
+                  theme && `bg-gradient-to-b ${theme.gradient} ${theme.shadow}`,
+                  theme && "hover:shadow-xl"
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                <span>New Task</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Layout with Sidebar */}
+      <div className="flex-1 overflow-hidden flex">
+        {/* Left Sidebar */}
+        <div className="w-52 flex-shrink-0 border-r border-slate-200/80 bg-white p-4 space-y-5 overflow-y-auto">
+          {/* Views */}
           <div className="space-y-1">
-            {ATTACHMENT_FILTERS.filter(f => f.id !== "all").map((filter) => {
-              const Icon = filter.icon;
-              const count = stats?.byAttachment
-                ? stats.byAttachment[filter.id as keyof typeof stats.byAttachment]
-                : 0;
+            {VIEWS.map((view) => {
+              const Icon = view.icon;
+              const count = view.id === "my"
+                ? myTasksCount
+                : stats
+                  ? view.countKey
+                    ? stats[view.countKey as keyof TaskStats]
+                    : 0
+                  : 0;
 
               return (
                 <button
-                  key={filter.id}
+                  key={view.id}
                   onClick={() => {
-                    setAttachmentFilter(filter.id);
-                    setCurrentView("all");
+                    setCurrentView(view.id);
+                    setAttachmentFilter("all");
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-colors ${
-                    attachmentFilter === filter.id
-                      ? "bg-slate-900 text-white"
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors",
+                    currentView === view.id && attachmentFilter === "all"
+                      ? theme ? `bg-gradient-to-r ${theme.gradient} text-white` : "bg-slate-900 text-white"
                       : "hover:bg-slate-100"
-                  }`}
+                  )}
                 >
                   <div className="flex items-center gap-2">
-                    <Icon className="h-4 w-4" />
-                    <span>{filter.label}</span>
+                    <Icon className={cn("h-4 w-4", currentView !== view.id && view.color)} />
+                    <span>{view.label}</span>
                   </div>
                   {typeof count === "number" && count > 0 && (
                     <span
-                      className={`text-xs ${
-                        attachmentFilter === filter.id
-                          ? "text-slate-300"
+                      className={cn(
+                        "text-xs",
+                        currentView === view.id && attachmentFilter === "all"
+                          ? "text-white/70"
                           : "text-muted-foreground"
-                      }`}
+                      )}
                     >
                       {count}
                     </span>
@@ -1790,41 +1836,57 @@ export default function TasksPage() {
               );
             })}
           </div>
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+          {/* Type Views */}
           <div>
-            <h1 className="text-xl font-semibold">Tasks</h1>
-            <p className="text-sm text-muted-foreground">
-              {attachmentFilter !== "all"
-                ? ATTACHMENT_FILTERS.find((f) => f.id === attachmentFilter)?.label
-                : VIEWS.find((v) => v.id === currentView)?.label}
-            </p>
+            <div className="h-px bg-slate-200 mb-3" />
+            <div className="space-y-1">
+              {ATTACHMENT_FILTERS.filter(f => f.id !== "all").map((filter) => {
+                const Icon = filter.icon;
+                const count = stats?.byAttachment
+                  ? stats.byAttachment[filter.id as keyof typeof stats.byAttachment]
+                  : 0;
+
+                return (
+                  <button
+                    key={filter.id}
+                    onClick={() => {
+                      setAttachmentFilter(filter.id);
+                      setCurrentView("all");
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors",
+                      attachmentFilter === filter.id
+                        ? theme ? `bg-gradient-to-r ${theme.gradient} text-white` : "bg-slate-900 text-white"
+                        : "hover:bg-slate-100"
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-4 w-4" />
+                      <span>{filter.label}</span>
+                    </div>
+                    {typeof count === "number" && count > 0 && (
+                      <span
+                        className={cn(
+                          "text-xs",
+                          attachmentFilter === filter.id
+                            ? "text-white/70"
+                            : "text-muted-foreground"
+                        )}
+                      >
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <button
-            onClick={handleCreateTask}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
-          >
-            <Plus className="h-4 w-4" />
-            New Task
-          </button>
         </div>
 
-        {/* Search */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search tasks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400"
-          />
-        </div>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-6">
 
         {/* Filter Bar */}
         <div className="flex items-center gap-2 mb-4 flex-wrap">
@@ -2024,40 +2086,45 @@ export default function TasksPage() {
           )}
         </div>
 
-        {/* Task List */}
-        <div className="flex-1 overflow-y-auto space-y-4">
-          {loading ? (
-            <div className="flex items-center justify-center h-64 text-muted-foreground">
-              Loading...
+            {/* Task List */}
+            <div className="space-y-4">
+              {loading ? (
+                <div className="flex items-center justify-center h-64 text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" />
+                    Loading tasks...
+                  </div>
+                </div>
+              ) : filteredTasks.length === 0 ? (
+                <div className="flex flex-col items-center pt-12 text-muted-foreground">
+                  <CheckSquare className="h-10 w-10 mb-3 opacity-50" />
+                  <p className="text-sm">No tasks found</p>
+                  <button
+                    onClick={handleCreateTask}
+                    className="mt-2 text-sm text-amber-600 hover:text-amber-700 font-medium"
+                  >
+                    Create your first task
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {taskGroups.map((group) => (
+                    <TaskGroup
+                      key={group.title}
+                      title={group.title}
+                      tasks={group.tasks}
+                      users={users}
+                      onToggleComplete={handleToggleComplete}
+                      onTaskClick={handleTaskClick}
+                      onAssigneeChange={handleAssigneeChange}
+                      onRefresh={handleRefresh}
+                      variant={group.variant}
+                    />
+                  ))}
+                </>
+              )}
             </div>
-          ) : filteredTasks.length === 0 ? (
-            <div className="flex flex-col items-center pt-12 text-muted-foreground">
-              <CheckSquare className="h-10 w-10 mb-3 opacity-50" />
-              <p className="text-sm">No tasks found</p>
-              <button
-                onClick={handleCreateTask}
-                className="mt-2 text-sm text-slate-600 hover:text-slate-900 underline"
-              >
-                Create your first task
-              </button>
-            </div>
-          ) : (
-            <>
-              {taskGroups.map((group) => (
-                <TaskGroup
-                  key={group.title}
-                  title={group.title}
-                  tasks={group.tasks}
-                  users={users}
-                  onToggleComplete={handleToggleComplete}
-                  onTaskClick={handleTaskClick}
-                  onAssigneeChange={handleAssigneeChange}
-                  onRefresh={handleRefresh}
-                  variant={group.variant}
-                />
-              ))}
-            </>
-          )}
+          </div>
         </div>
       </div>
 

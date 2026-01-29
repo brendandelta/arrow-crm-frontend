@@ -19,8 +19,9 @@ import {
   Search,
   Columns3,
   ChevronDown,
-  Filter,
   Plus,
+  Users,
+  SlidersHorizontal,
 } from "lucide-react";
 import { ContactSlideOut } from "./_components/ContactSlideOut";
 import { LinkedInIcon, TwitterIcon, InstagramIcon } from "@/components/icons/SocialIcons";
@@ -53,6 +54,12 @@ import type {
   SmartSearchResult,
   ParsedPerson,
 } from "@/lib/smart-search";
+import { getPageIdentity } from "@/lib/page-registry";
+import { cn } from "@/lib/utils";
+
+// Get page identity for theming
+const pageIdentity = getPageIdentity("people");
+const theme = pageIdentity?.theme;
 
 // Column definitions
 const ALL_COLUMNS = [
@@ -789,714 +796,773 @@ export default function PeoplePage() {
 
   const visibleColumnCount = visibleColumns.size + 1; // +1 for checkbox column
 
+  const Icon = pageIdentity?.icon || Users;
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold">People</h1>
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <span>{people.length} total</span>
-            <span>·</span>
-            <span className="text-blue-600">{newThisWeek} new this week</span>
-            <span>·</span>
-            <span className="text-green-600">{championsCount} champions</span>
-            <span>·</span>
-            <span className="text-orange-600">{hotCount} hot</span>
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
+      {/* Premium Header */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className={cn(
+                "h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg",
+                theme && `bg-gradient-to-br ${theme.gradient} ${theme.shadow}`
+              )}>
+                <Icon className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  People
+                </h1>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {loading ? (
+                    <span className="inline-block w-32 h-4 bg-slate-100 rounded animate-pulse" />
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <span>{people.length} contacts</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-violet-600">{newThisWeek} new this week</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-red-500">{championsCount} champions</span>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-orange-500">{hotCount} hot</span>
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {/* Smart Search */}
+              <div className="relative group">
+                <div className={cn(
+                  "absolute inset-0 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity",
+                  theme && `bg-gradient-to-r ${theme.gradient}`
+                )} style={{ opacity: 0.15 }} />
+                <div className="relative">
+                  {useSmartSearch ? (
+                    <SmartSearchBar
+                      people={parsedPeople}
+                      knownOrgs={knownOrgs}
+                      knownSources={knownSources}
+                      onResults={handleSmartSearchResults}
+                    />
+                  ) : (
+                    <div className="relative">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search people..."
+                        className={cn(
+                          "w-72 h-11 pl-11 pr-4 text-sm rounded-xl transition-all duration-200",
+                          "bg-slate-50 border border-slate-200/80",
+                          "placeholder:text-slate-400",
+                          "focus:outline-none focus:bg-white focus:border-violet-300 focus:ring-4 focus:ring-violet-500/10"
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* New Contact Button */}
+              <button
+                onClick={() => setShowContactSlideOut(true)}
+                className={cn(
+                  "group relative flex items-center gap-2.5 h-11 px-5",
+                  "text-white text-sm font-medium rounded-xl",
+                  "shadow-lg active:scale-[0.98] transition-all duration-200",
+                  theme && `bg-gradient-to-b ${theme.gradient} ${theme.shadow}`,
+                  theme && `hover:shadow-xl`
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                <span>New Contact</span>
+              </button>
+            </div>
           </div>
         </div>
-        <button
-          onClick={() => setShowContactSlideOut(true)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          New Contact
-        </button>
-      </div>
 
-      {/* Top Sources Analytics */}
-      {topSources.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Top Sources:</span>
-          {topSources.map(([name, count]) => {
-            const resolved = resolveSource(name);
-            const config = resolved
-              ? SOURCE_CATEGORIES.find((c) => c.value === resolved.category)
-              : null;
-            return (
+        {/* Secondary toolbar */}
+        <div className="px-8 pb-4">
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Top Sources Analytics */}
+            {topSources.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Top Sources:</span>
+                {topSources.slice(0, 4).map(([name, count]) => {
+                  const resolved = resolveSource(name);
+                  const config = resolved
+                    ? SOURCE_CATEGORIES.find((c) => c.value === resolved.category)
+                    : null;
+                  return (
+                    <button
+                      key={name}
+                      onClick={() => {
+                        setSourceFilter(name);
+                        setShowFilterDropdown(false);
+                      }}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full border transition-colors ${
+                        sourceFilter === name
+                          ? "border-violet-400 bg-violet-50 text-violet-700"
+                          : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      {config && (
+                        <span className={`h-1.5 w-1.5 rounded-full ${config.color}`} />
+                      )}
+                      <span>{name}</span>
+                      <span className="text-slate-400">{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="flex-1" />
+
+            {/* Columns Dropdown */}
+            <div ref={columnDropdownRef} className="relative">
               <button
-                key={name}
-                onClick={() => {
-                  setSourceFilter(name);
-                  setShowFilterDropdown(false);
-                }}
-                className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs rounded-full border transition-colors ${
-                  sourceFilter === name
-                    ? "border-blue-400 bg-blue-50 text-blue-700"
-                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                onClick={() => setShowColumnDropdown(!showColumnDropdown)}
+                className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <Columns3 className="h-4 w-4" />
+                <span>Columns</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${showColumnDropdown ? "rotate-180" : ""}`} />
+              </button>
+
+              {showColumnDropdown && (
+                <div className="absolute z-50 top-full right-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
+                  <div className="p-2">
+                    <div className="text-xs font-medium text-slate-500 uppercase tracking-wide px-2 py-1">
+                      Show Columns
+                    </div>
+                    {ALL_COLUMNS.map((column) => (
+                      <div
+                        key={column.id}
+                        onClick={() => !column.required && toggleColumn(column.id)}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded transition-colors ${
+                          column.required ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 cursor-pointer"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={visibleColumns.has(column.id)}
+                          disabled={column.required}
+                          onCheckedChange={() => !column.required && toggleColumn(column.id)}
+                        />
+                        <span>{column.label}</span>
+                        {column.required && (
+                          <span className="text-xs text-slate-400 ml-auto">Required</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Filters Dropdown */}
+            <div ref={filterDropdownRef} className="relative">
+              <button
+                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${
+                  activeFiltersCount > 0
+                    ? "border-violet-500 bg-violet-50 text-violet-700"
+                    : "border-slate-200 text-slate-700 hover:bg-slate-50"
                 }`}
               >
-                {config && (
-                  <span className={`h-1.5 w-1.5 rounded-full ${config.color}`} />
+                <SlidersHorizontal className="h-4 w-4" />
+                <span>Filters</span>
+                {activeFiltersCount > 0 && (
+                  <span className="flex items-center justify-center h-5 w-5 bg-violet-600 text-white text-xs rounded-full">
+                    {activeFiltersCount}
+                  </span>
                 )}
-                <span>{name}</span>
-                <span className="text-slate-400">{count}</span>
               </button>
-            );
-          })}
-        </div>
-      )}
 
-      {/* Toolbar */}
-      <div className="flex items-center gap-3 flex-wrap">
-        {/* Smart Search */}
-        <div className="flex-1 min-w-[200px] max-w-lg">
-          {useSmartSearch ? (
-            <SmartSearchBar
-              people={parsedPeople}
-              knownOrgs={knownOrgs}
-              knownSources={knownSources}
-              onResults={handleSmartSearchResults}
-            />
-          ) : (
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search people..."
-                className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+              {showFilterDropdown && (
+                <div className="absolute z-50 top-full right-0 mt-1 w-64 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
+                  <div className="p-3 space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                        Warmth
+                      </label>
+                      <select
+                        value={warmthFilter}
+                        onChange={(e) => setWarmthFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      >
+                        {WARMTH_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-        {/* Columns Dropdown */}
-        <div ref={columnDropdownRef} className="relative">
-          <button
-            onClick={() => setShowColumnDropdown(!showColumnDropdown)}
-            className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-          >
-            <Columns3 className="h-4 w-4" />
-            <span>Columns</span>
-            <ChevronDown className={`h-4 w-4 transition-transform ${showColumnDropdown ? "rotate-180" : ""}`} />
-          </button>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                        Organization Type
+                      </label>
+                      <select
+                        value={orgKindFilter}
+                        onChange={(e) => setOrgKindFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      >
+                        {ORG_KIND_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-          {showColumnDropdown && (
-            <div className="absolute z-50 top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg overflow-hidden">
-              <div className="p-2">
-                <div className="text-xs font-medium text-slate-500 uppercase tracking-wide px-2 py-1">
-                  Show Columns
-                </div>
-                {ALL_COLUMNS.map((column) => (
-                  <div
-                    key={column.id}
-                    onClick={() => !column.required && toggleColumn(column.id)}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded transition-colors ${
-                      column.required ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 cursor-pointer"
-                    }`}
-                  >
-                    <Checkbox
-                      checked={visibleColumns.has(column.id)}
-                      disabled={column.required}
-                      onCheckedChange={() => !column.required && toggleColumn(column.id)}
-                    />
-                    <span>{column.label}</span>
-                    {column.required && (
-                      <span className="text-xs text-slate-400 ml-auto">Required</span>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                        Source
+                      </label>
+                      <select
+                        value={sourceFilter}
+                        onChange={(e) => setSourceFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      >
+                        {sourceFilterOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                        Source Category
+                      </label>
+                      <select
+                        value={sourceCategoryFilter}
+                        onChange={(e) => setSourceCategoryFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      >
+                        {SOURCE_CATEGORY_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {activeFiltersCount > 0 && (
+                      <button
+                        onClick={resetFilters}
+                        className="w-full text-sm text-violet-600 hover:text-violet-800 py-1.5"
+                      >
+                        Clear all filters
+                      </button>
                     )}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Filters Dropdown */}
-        <div ref={filterDropdownRef} className="relative">
-          <button
-            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${
-              activeFiltersCount > 0
-                ? "border-blue-500 bg-blue-50 text-blue-700"
-                : "border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            <Filter className="h-4 w-4" />
-            <span>Filters</span>
-            {activeFiltersCount > 0 && (
-              <span className="flex items-center justify-center h-5 w-5 bg-blue-600 text-white text-xs rounded-full">
-                {activeFiltersCount}
-              </span>
-            )}
-            <ChevronDown className={`h-4 w-4 transition-transform ${showFilterDropdown ? "rotate-180" : ""}`} />
-          </button>
-
-          {showFilterDropdown && (
-            <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-white border border-slate-200 rounded-lg overflow-hidden">
-              <div className="p-3 space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
-                    Warmth
-                  </label>
-                  <select
-                    value={warmthFilter}
-                    onChange={(e) => setWarmthFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {WARMTH_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
-                    Organization Type
-                  </label>
-                  <select
-                    value={orgKindFilter}
-                    onChange={(e) => setOrgKindFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {ORG_KIND_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
-                    Source
-                  </label>
-                  <select
-                    value={sourceFilter}
-                    onChange={(e) => setSourceFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {sourceFilterOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
-                    Source Category
-                  </label>
-                  <select
-                    value={sourceCategoryFilter}
-                    onChange={(e) => setSourceCategoryFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {SOURCE_CATEGORY_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {activeFiltersCount > 0 && (
-                  <button
-                    onClick={resetFilters}
-                    className="w-full text-sm text-blue-600 hover:text-blue-800 py-1.5"
-                  >
-                    Clear all filters
-                  </button>
+            {/* Results count when filtered */}
+            {(searchQuery || smartSearchResults !== null || activeFiltersCount > 0 || columnFiltersCount > 0) && (
+              <div className="text-sm text-slate-500">
+                {smartSearchResults !== null ? (
+                  <span>
+                    <span className="text-violet-600 font-medium">{sortedPeople.length}</span>
+                    {searchSource === "llm" ? " AI-powered results" : " results ranked by relevance"}
+                  </span>
+                ) : (
+                  <>Showing {sortedPeople.length} of {people.length}</>
                 )}
               </div>
-            </div>
-          )}
-        </div>
+            )}
 
-        {/* Results count when filtered */}
-        {(searchQuery || smartSearchResults !== null || activeFiltersCount > 0 || columnFiltersCount > 0) && (
-          <div className="text-sm text-slate-500">
-            {smartSearchResults !== null ? (
-              <span>
-                <span className="text-indigo-600 font-medium">{sortedPeople.length}</span>
-                {searchSource === "llm" ? " AI-powered results" : " results ranked by relevance"}
-              </span>
-            ) : (
-              <>Showing {sortedPeople.length} of {people.length} people</>
+            {/* Active column filters indicator */}
+            {columnFiltersCount > 0 && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {Object.entries(columnFilters).map(([columnId, filter]) => {
+                  const column = ALL_COLUMNS.find((c) => c.id === columnId);
+                  const operatorLabel = OPERATORS_BY_TYPE[COLUMN_TYPES[columnId]]?.find(
+                    (o) => o.value === filter.operator
+                  )?.label;
+                  return (
+                    <span
+                      key={columnId}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-violet-50 text-violet-700 text-xs rounded-full border border-violet-200"
+                    >
+                      <span className="font-medium">{column?.label}:</span>
+                      <span>{operatorLabel}</span>
+                      <button
+                        onClick={() => handleColumnFilterChange(columnId, undefined)}
+                        className="ml-1 hover:text-violet-900"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  );
+                })}
+                <button
+                  onClick={() => setColumnFilters({})}
+                  className="text-xs text-violet-600 hover:text-violet-800"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
+
+            {/* Actions Dropdown - only show when contacts are selected */}
+            {selectedIds.size > 0 && (
+              <ActionsDropdown
+                selectedPeople={selectedPeople}
+                onClearSelection={clearSelection}
+                onBulkUpdate={handleBulkUpdate}
+              />
             )}
           </div>
-        )}
-
-        {/* Active column filters indicator */}
-        {columnFiltersCount > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            {Object.entries(columnFilters).map(([columnId, filter]) => {
-              const column = ALL_COLUMNS.find((c) => c.id === columnId);
-              const operatorLabel = OPERATORS_BY_TYPE[COLUMN_TYPES[columnId]]?.find(
-                (o) => o.value === filter.operator
-              )?.label;
-              return (
-                <span
-                  key={columnId}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-200"
-                >
-                  <span className="font-medium">{column?.label}:</span>
-                  <span>{operatorLabel}</span>
-                  {filter.values && filter.values.length > 0 && (
-                    <span>({filter.values.length})</span>
-                  )}
-                  {filter.value && !filter.values && (
-                    <span className="truncate max-w-[100px]">{filter.value}</span>
-                  )}
-                  <button
-                    onClick={() => handleColumnFilterChange(columnId, undefined)}
-                    className="ml-1 hover:text-blue-900"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              );
-            })}
-            <button
-              onClick={() => setColumnFilters({})}
-              className="text-xs text-blue-600 hover:text-blue-800"
-            >
-              Clear all
-            </button>
-          </div>
-        )}
-
-        {/* Spacer to push Actions to the right */}
-        <div className="flex-1" />
-
-        {/* Actions Dropdown - only show when contacts are selected */}
-        {selectedIds.size > 0 && (
-          <ActionsDropdown
-            selectedPeople={selectedPeople}
-            onClearSelection={clearSelection}
-            onBulkUpdate={handleBulkUpdate}
-          />
-        )}
+        </div>
       </div>
 
-      <div className="rounded-md border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[50px]">
-                <Checkbox
-                  checked={allSelected}
-                  ref={(el) => {
-                    if (el) {
-                      (el as HTMLButtonElement & { indeterminate: boolean }).indeterminate = someSelected;
-                    }
-                  }}
-                  onCheckedChange={toggleSelectAll}
-                  aria-label="Select all"
-                />
-              </TableHead>
-              {visibleColumns.has("name") && (
-                <TableHead className="w-[200px]">
-                  <FilterableColumnHeader
-                    label="Name"
-                    columnId="name"
-                    columnType={COLUMN_TYPES.name}
-                    values={getColumnValues("name")}
-                    filter={columnFilters.name}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "name" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("organization") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="Organization"
-                    columnId="organization"
-                    columnType={COLUMN_TYPES.organization}
-                    values={getColumnValues("organization")}
-                    filter={columnFilters.organization}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "organization" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("title") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="Title"
-                    columnId="title"
-                    columnType={COLUMN_TYPES.title}
-                    values={getColumnValues("title")}
-                    filter={columnFilters.title}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "title" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("email") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="Email"
-                    columnId="email"
-                    columnType={COLUMN_TYPES.email}
-                    values={getColumnValues("email")}
-                    filter={columnFilters.email}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "email" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("phone") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="Phone"
-                    columnId="phone"
-                    columnType={COLUMN_TYPES.phone}
-                    values={[]}
-                    filter={columnFilters.phone}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "phone" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("location") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="Location"
-                    columnId="location"
-                    columnType={COLUMN_TYPES.location}
-                    values={getColumnValues("location")}
-                    filter={columnFilters.location}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "location" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("warmth") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="Warmth"
-                    columnId="warmth"
-                    columnType={COLUMN_TYPES.warmth}
-                    values={[]}
-                    filter={columnFilters.warmth}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "warmth" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("tags") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="Tags"
-                    columnId="tags"
-                    columnType={COLUMN_TYPES.tags}
-                    values={getColumnValues("tags")}
-                    filter={columnFilters.tags}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "tags" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("source") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="Source"
-                    columnId="source"
-                    columnType={COLUMN_TYPES.source}
-                    values={getColumnValues("source")}
-                    filter={columnFilters.source}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "source" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("lastContact") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="Last Contact"
-                    columnId="lastContact"
-                    columnType={COLUMN_TYPES.lastContact}
-                    values={[]}
-                    filter={columnFilters.lastContact}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "lastContact" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("nextFollowUp") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="Next Follow-up"
-                    columnId="nextFollowUp"
-                    columnType={COLUMN_TYPES.nextFollowUp}
-                    values={[]}
-                    filter={columnFilters.nextFollowUp}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "nextFollowUp" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("contactCount") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="# Contacts"
-                    columnId="contactCount"
-                    columnType={COLUMN_TYPES.contactCount}
-                    values={[]}
-                    filter={columnFilters.contactCount}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "contactCount" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-              {visibleColumns.has("links") && <TableHead className="text-xs uppercase tracking-wide text-slate-500">Links</TableHead>}
-              {visibleColumns.has("createdAt") && (
-                <TableHead>
-                  <FilterableColumnHeader
-                    label="Created"
-                    columnId="createdAt"
-                    columnType={COLUMN_TYPES.createdAt}
-                    values={[]}
-                    filter={columnFilters.createdAt}
-                    onFilterChange={handleColumnFilterChange}
-                    sortDirection={sortConfig?.columnId === "createdAt" ? sortConfig.direction : null}
-                    onSortChange={handleSortChange}
-                  />
-                </TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={visibleColumnCount} className="text-center text-muted-foreground">
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : sortedPeople.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={visibleColumnCount} className="text-center text-muted-foreground">
-                  {people.length === 0 ? "No people found" : "No results match your filters"}
-                </TableCell>
-              </TableRow>
-            ) : (
-              sortedPeople.map((person) => (
-                <TableRow
-                  key={person.id}
-                  className={`cursor-pointer ${selectedIds.has(person.id) ? "bg-blue-50" : ""}`}
-                  onClick={() => router.push(`/people/${person.id}`)}
-                >
-                  <TableCell onClick={(e) => e.stopPropagation()}>
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        <div className="px-8 py-6">
+          <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-slate-50/50">
+                  <TableHead className="w-[50px]">
                     <Checkbox
-                      checked={selectedIds.has(person.id)}
-                      onCheckedChange={() => toggleSelect(person.id)}
-                      aria-label={`Select ${person.firstName} ${person.lastName}`}
+                      checked={allSelected}
+                      ref={(el) => {
+                        if (el) {
+                          (el as HTMLButtonElement & { indeterminate: boolean }).indeterminate = someSelected;
+                        }
+                      }}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all"
                     />
-                  </TableCell>
+                  </TableHead>
                   {visibleColumns.has("name") && (
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">
-                          {getInitials(person.firstName, person.lastName)}
-                        </div>
-                        <div className="font-medium">{person.firstName} {person.lastName}</div>
-                        {/* Smart search explainability */}
-                        {smartResultMap?.has(person.id) && (
-                          <ExplainTooltip
-                            explanations={smartResultMap.get(person.id)!.explanations}
-                          />
-                        )}
-                      </div>
-                    </TableCell>
+                    <TableHead className="w-[200px]">
+                      <FilterableColumnHeader
+                        label="Name"
+                        columnId="name"
+                        columnType={COLUMN_TYPES.name}
+                        values={getColumnValues("name")}
+                        filter={columnFilters.name}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "name" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
                   )}
                   {visibleColumns.has("organization") && (
-                    <TableCell>
-                      {person.org ? (
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span>{person.org}</span>
-                          <OrgKindBadge kind={person.orgKind} />
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="Organization"
+                        columnId="organization"
+                        columnType={COLUMN_TYPES.organization}
+                        values={getColumnValues("organization")}
+                        filter={columnFilters.organization}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "organization" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
                   )}
                   {visibleColumns.has("title") && (
-                    <TableCell className="text-sm">
-                      {person.title || <span className="text-muted-foreground">—</span>}
-                    </TableCell>
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="Title"
+                        columnId="title"
+                        columnType={COLUMN_TYPES.title}
+                        values={getColumnValues("title")}
+                        filter={columnFilters.title}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "title" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
                   )}
                   {visibleColumns.has("email") && (
-                    <TableCell>
-                      {person.email ? (
-                        <a
-                          href={`mailto:${person.email}`}
-                          className="text-sm text-blue-600 hover:underline flex items-center gap-1.5"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Mail className="h-3.5 w-3.5" />
-                          {person.email}
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="Email"
+                        columnId="email"
+                        columnType={COLUMN_TYPES.email}
+                        values={getColumnValues("email")}
+                        filter={columnFilters.email}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "email" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
                   )}
                   {visibleColumns.has("phone") && (
-                    <TableCell>
-                      <PhoneCell phone={person.phone} />
-                    </TableCell>
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="Phone"
+                        columnId="phone"
+                        columnType={COLUMN_TYPES.phone}
+                        values={[]}
+                        filter={columnFilters.phone}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "phone" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
                   )}
                   {visibleColumns.has("location") && (
-                    <TableCell className="text-muted-foreground text-sm">
-                      {person.city && person.country
-                        ? `${person.city}, ${person.country}`
-                        : person.city || person.state || person.country || "—"}
-                    </TableCell>
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="Location"
+                        columnId="location"
+                        columnType={COLUMN_TYPES.location}
+                        values={getColumnValues("location")}
+                        filter={columnFilters.location}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "location" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
                   )}
                   {visibleColumns.has("warmth") && (
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <InlineWarmthSelector
-                        warmth={person.warmth}
-                        personId={person.id}
-                        onUpdate={updatePersonWarmth}
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="Warmth"
+                        columnId="warmth"
+                        columnType={COLUMN_TYPES.warmth}
+                        values={[]}
+                        filter={columnFilters.warmth}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "warmth" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
                       />
-                    </TableCell>
+                    </TableHead>
                   )}
                   {visibleColumns.has("tags") && (
-                    <TableCell>
-                      {person.tags && person.tags.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {person.tags.slice(0, 2).map((tag) => (
-                            <span
-                              key={tag}
-                              className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                          {person.tags.length > 2 && (
-                            <span className="text-xs text-muted-foreground">
-                              +{person.tags.length - 2}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="Tags"
+                        columnId="tags"
+                        columnType={COLUMN_TYPES.tags}
+                        values={getColumnValues("tags")}
+                        filter={columnFilters.tags}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "tags" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
                   )}
                   {visibleColumns.has("source") && (
-                    <TableCell className="text-sm">
-                      {person.source ? (
-                        <SourceBadge source={person.source} />
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="Source"
+                        columnId="source"
+                        columnType={COLUMN_TYPES.source}
+                        values={getColumnValues("source")}
+                        filter={columnFilters.source}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "source" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
                   )}
                   {visibleColumns.has("lastContact") && (
-                    <TableCell className="text-muted-foreground text-sm">
-                      {formatDate(person.lastContactedAt)}
-                    </TableCell>
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="Last Contact"
+                        columnId="lastContact"
+                        columnType={COLUMN_TYPES.lastContact}
+                        values={[]}
+                        filter={columnFilters.lastContact}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "lastContact" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
                   )}
                   {visibleColumns.has("nextFollowUp") && (
-                    <TableCell className="text-sm">
-                      {person.nextFollowUpAt ? (
-                        <span className={new Date(person.nextFollowUpAt) < new Date() ? "text-red-600" : "text-muted-foreground"}>
-                          {formatDate(person.nextFollowUpAt)}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="Next Follow-up"
+                        columnId="nextFollowUp"
+                        columnType={COLUMN_TYPES.nextFollowUp}
+                        values={[]}
+                        filter={columnFilters.nextFollowUp}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "nextFollowUp" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
                   )}
                   {visibleColumns.has("contactCount") && (
-                    <TableCell className="text-sm text-muted-foreground text-center">
-                      {person.contactCount || 0}
-                    </TableCell>
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="# Contacts"
+                        columnId="contactCount"
+                        columnType={COLUMN_TYPES.contactCount}
+                        values={[]}
+                        filter={columnFilters.contactCount}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "contactCount" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
                   )}
-                  {visibleColumns.has("links") && (
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {person.linkedin && (
-                          <a
-                            href={person.linkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#0A66C2] hover:text-[#004182]"
-                            onClick={(e) => e.stopPropagation()}
-                            title="LinkedIn"
+                  {visibleColumns.has("links") && <TableHead className="text-xs uppercase tracking-wide text-slate-500">Links</TableHead>}
+                  {visibleColumns.has("createdAt") && (
+                    <TableHead>
+                      <FilterableColumnHeader
+                        label="Created"
+                        columnId="createdAt"
+                        columnType={COLUMN_TYPES.createdAt}
+                        values={[]}
+                        filter={columnFilters.createdAt}
+                        onFilterChange={handleColumnFilterChange}
+                        sortDirection={sortConfig?.columnId === "createdAt" ? sortConfig.direction : null}
+                        onSortChange={handleSortChange}
+                      />
+                    </TableHead>
+                  )}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumnCount} className="text-center py-12 text-muted-foreground">
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
+                        Loading contacts...
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : sortedPeople.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={visibleColumnCount} className="text-center py-12">
+                      <div className="flex flex-col items-center gap-2">
+                        <Users className="h-8 w-8 text-slate-300" />
+                        <p className="text-muted-foreground">
+                          {people.length === 0 ? "No contacts yet" : "No results match your filters"}
+                        </p>
+                        {people.length === 0 && (
+                          <button
+                            onClick={() => setShowContactSlideOut(true)}
+                            className="mt-2 text-sm text-violet-600 hover:text-violet-700 font-medium"
                           >
-                            <LinkedInIcon className="h-4 w-4" />
-                          </a>
-                        )}
-                        {person.twitter && (
-                          <a
-                            href={person.twitter}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-slate-800 hover:text-black"
-                            onClick={(e) => e.stopPropagation()}
-                            title="X (Twitter)"
-                          >
-                            <TwitterIcon className="h-4 w-4" />
-                          </a>
-                        )}
-                        {person.instagram && (
-                          <a
-                            href={person.instagram}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[#E4405F] hover:text-[#C13584]"
-                            onClick={(e) => e.stopPropagation()}
-                            title="Instagram"
-                          >
-                            <InstagramIcon className="h-4 w-4" />
-                          </a>
-                        )}
-                        {!person.linkedin && !person.twitter && !person.instagram && (
-                          <span className="text-muted-foreground">—</span>
+                            Add your first contact
+                          </button>
                         )}
                       </div>
                     </TableCell>
-                  )}
-                  {visibleColumns.has("createdAt") && (
-                    <TableCell className="text-muted-foreground text-sm">
-                      {formatDate(person.createdAt)}
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                  </TableRow>
+                ) : (
+                  sortedPeople.map((person) => (
+                    <TableRow
+                      key={person.id}
+                      className={cn(
+                        "cursor-pointer transition-colors",
+                        selectedIds.has(person.id) ? "bg-violet-50" : "hover:bg-slate-50"
+                      )}
+                      onClick={() => router.push(`/people/${person.id}`)}
+                    >
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={selectedIds.has(person.id)}
+                          onCheckedChange={() => toggleSelect(person.id)}
+                          aria-label={`Select ${person.firstName} ${person.lastName}`}
+                        />
+                      </TableCell>
+                      {visibleColumns.has("name") && (
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className={cn(
+                              "h-9 w-9 rounded-full flex items-center justify-center text-xs font-medium text-white",
+                              `bg-gradient-to-br ${theme?.gradient || "from-violet-500 to-purple-600"}`
+                            )}>
+                              {getInitials(person.firstName, person.lastName)}
+                            </div>
+                            <div className="font-medium text-slate-900">{person.firstName} {person.lastName}</div>
+                            {/* Smart search explainability */}
+                            {smartResultMap?.has(person.id) && (
+                              <ExplainTooltip
+                                explanations={smartResultMap.get(person.id)!.explanations}
+                              />
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("organization") && (
+                        <TableCell>
+                          {person.org ? (
+                            <div className="flex items-center gap-2">
+                              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span className="text-slate-700">{person.org}</span>
+                              <OrgKindBadge kind={person.orgKind} />
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("title") && (
+                        <TableCell className="text-sm text-slate-600">
+                          {person.title || <span className="text-muted-foreground">—</span>}
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("email") && (
+                        <TableCell>
+                          {person.email ? (
+                            <a
+                              href={`mailto:${person.email}`}
+                              className="text-sm text-violet-600 hover:underline flex items-center gap-1.5"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Mail className="h-3.5 w-3.5" />
+                              {person.email}
+                            </a>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("phone") && (
+                        <TableCell>
+                          <PhoneCell phone={person.phone} />
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("location") && (
+                        <TableCell className="text-muted-foreground text-sm">
+                          {person.city && person.country
+                            ? `${person.city}, ${person.country}`
+                            : person.city || person.state || person.country || "—"}
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("warmth") && (
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <InlineWarmthSelector
+                            warmth={person.warmth}
+                            personId={person.id}
+                            onUpdate={updatePersonWarmth}
+                          />
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("tags") && (
+                        <TableCell>
+                          {person.tags && person.tags.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {person.tags.slice(0, 2).map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                              {person.tags.length > 2 && (
+                                <span className="text-xs text-muted-foreground">
+                                  +{person.tags.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("source") && (
+                        <TableCell className="text-sm">
+                          {person.source ? (
+                            <SourceBadge source={person.source} />
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("lastContact") && (
+                        <TableCell className="text-muted-foreground text-sm">
+                          {formatDate(person.lastContactedAt)}
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("nextFollowUp") && (
+                        <TableCell className="text-sm">
+                          {person.nextFollowUpAt ? (
+                            <span className={new Date(person.nextFollowUpAt) < new Date() ? "text-red-600" : "text-muted-foreground"}>
+                              {formatDate(person.nextFollowUpAt)}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("contactCount") && (
+                        <TableCell className="text-sm text-muted-foreground text-center">
+                          {person.contactCount || 0}
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("links") && (
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {person.linkedin && (
+                              <a
+                                href={person.linkedin}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#0A66C2] hover:text-[#004182]"
+                                onClick={(e) => e.stopPropagation()}
+                                title="LinkedIn"
+                              >
+                                <LinkedInIcon className="h-4 w-4" />
+                              </a>
+                            )}
+                            {person.twitter && (
+                              <a
+                                href={person.twitter}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-slate-800 hover:text-black"
+                                onClick={(e) => e.stopPropagation()}
+                                title="X (Twitter)"
+                              >
+                                <TwitterIcon className="h-4 w-4" />
+                              </a>
+                            )}
+                            {person.instagram && (
+                              <a
+                                href={person.instagram}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#E4405F] hover:text-[#C13584]"
+                                onClick={(e) => e.stopPropagation()}
+                                title="Instagram"
+                              >
+                                <InstagramIcon className="h-4 w-4" />
+                              </a>
+                            )}
+                            {!person.linkedin && !person.twitter && !person.instagram && (
+                              <span className="text-muted-foreground">—</span>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
+                      {visibleColumns.has("createdAt") && (
+                        <TableCell className="text-muted-foreground text-sm">
+                          {formatDate(person.createdAt)}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </div>
 
       {selectedPeople.length > 0 && (

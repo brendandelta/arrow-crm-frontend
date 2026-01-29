@@ -1,20 +1,20 @@
 "use client";
 
-import { AppSidebar } from "@/components/Sidebar/app-sidebar";
+import { CustomizableSidebar } from "@/components/Sidebar/CustomizableSidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <CustomizableSidebar />
       <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <span className="font-medium">Arrow CRM</span>
-        </header>
-        <main className="flex-1 p-4 pt-4">
+        {/* Minimal floating sidebar trigger */}
+        <div className="fixed top-4 left-4 z-50 md:hidden">
+          <SidebarTrigger className="h-9 w-9 rounded-lg bg-white shadow-md border border-slate-200" />
+        </div>
+
+        {/* Main content - pages handle their own headers */}
+        <main className="flex-1 min-h-screen">
           {children}
         </main>
       </SidebarInset>

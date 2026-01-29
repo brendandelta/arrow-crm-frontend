@@ -658,7 +658,7 @@ export function EntityDetailPanel({
         )}
 
         {/* Linked Objects Section */}
-        <LinkedObjectsSection entityId={entity.id} onRefresh={onRefresh} />
+        <LinkedObjectsSection entityId={entity.id} entityName={entity.displayName} onRefresh={onRefresh} />
 
         {/* Notes Section */}
         <CollapsibleSection
