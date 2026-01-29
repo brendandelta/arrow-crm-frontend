@@ -708,7 +708,11 @@ export async function fetchLinksForObject(
     linked_object_id: linkedObjectId.toString(),
   });
   const res = await authFetch(`${API_BASE}/api/entity_links?${params.toString()}`);
-  if (!res.ok) throw new Error('Failed to fetch links for object');
+  // Return empty array for 404 (no links found) or other non-ok responses
+  if (!res.ok) {
+    if (res.status === 404) return [];
+    throw new Error('Failed to fetch links for object');
+  }
   return res.json();
 }
 
