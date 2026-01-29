@@ -409,6 +409,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userData);
       setAttemptsRemaining(MAX_ATTEMPTS);
 
+      // Set initial session (will be updated with backendUserId when resolved)
+      const expiry = Date.now() + 24 * 60 * 60 * 1000;
+      localStorage.setItem(SESSION_KEY, JSON.stringify({
+        userId: foundUser.id,
+        expiry,
+      }));
+
       // Resolve backend user ID and update session
       resolveBackendUserId(foundUser.email).then((backendId) => {
         if (backendId) {
@@ -416,17 +423,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Update session with backend ID
           localStorage.setItem(SESSION_KEY, JSON.stringify({
             userId: foundUser.id,
-            expiry: Date.now() + 24 * 60 * 60 * 1000,
+            expiry,
             backendUserId: backendId,
           }));
         }
       });
-
-      // Set session (24 hours)
-      localStorage.setItem(SESSION_KEY, JSON.stringify({
-        userId: foundUser.id,
-        expiry: Date.now() + 24 * 60 * 60 * 1000,
-      }));
 
       // Show random quote or joke based on mode
       const storedAltMode = localStorage.getItem(ALT_MODE_KEY) === "true";

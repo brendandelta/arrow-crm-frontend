@@ -152,15 +152,19 @@ function getAuthHeaders(): Record<string, string> {
   if (typeof window === 'undefined') return {};
 
   const session = localStorage.getItem('arrow_session');
-  if (!session) return {};
+  if (!session) {
+    console.warn('[Internal Entities API] No session found');
+    return {};
+  }
 
   try {
     const data = JSON.parse(session);
     if (data.backendUserId) {
       return { 'X-User-Id': data.backendUserId.toString() };
     }
+    console.warn('[Internal Entities API] Session missing backendUserId - try logging out and back in');
   } catch {
-    // Invalid session data
+    console.error('[Internal Entities API] Invalid session data');
   }
   return {};
 }
@@ -247,7 +251,10 @@ export async function createInternalEntity(data: CreateEntityData): Promise<Inte
   });
   if (!res.ok) {
     const error = await res.json();
-    throw new Error(error.errors?.join(', ') || 'Failed to create internal entity');
+    if (res.status === 403) {
+      throw new Error('Permission denied - please log out and log back in to refresh your session');
+    }
+    throw new Error(error.error || error.errors?.join(', ') || 'Failed to create internal entity');
   }
   return res.json();
 }
