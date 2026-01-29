@@ -1,5 +1,43 @@
 // Internal Entities API types and helpers
 
+// ==================== Entity Links Types ====================
+
+export type LinkedObjectType = 'Deal' | 'Block' | 'Interest' | 'Allocation' | 'Task' | 'Note';
+export type RelationshipType = 'owner' | 'holder' | 'issuer' | 'allocator' | 'advisor' | 'manager' | 'gp' | 'lp';
+export type EconomicRole = 'receives_capital' | 'deploys_capital' | 'holds_asset' | 'earns_fees' | null;
+export type LinkPriority = 'primary' | 'secondary';
+
+export interface EntityLink {
+  id: number;
+  internalEntityId: number;
+  internalEntity?: { id: number; displayName: string; entityType: string };
+  linkedObjectType: LinkedObjectType;
+  linkedObjectId: number;
+  linkedObjectLabel?: string;
+  relationshipType: RelationshipType;
+  relationshipTypeLabel: string;
+  economicRole: EconomicRole;
+  economicRoleLabel: string | null;
+  ownershipPct: number | null;
+  priority: LinkPriority;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateEntityLinkData {
+  internalEntityId: number;
+  linkedObjectType: LinkedObjectType;
+  linkedObjectId: number;
+  relationshipType: RelationshipType;
+  economicRole?: EconomicRole;
+  ownershipPct?: number | null;
+  priority?: LinkPriority;
+  notes?: string | null;
+}
+
+// ==================== Entity Stats ====================
+
 export interface EntityStats {
   bankAccountsCount: number;
   signersCount: number;
@@ -100,11 +138,20 @@ export interface InternalEntityDetail {
   mailingAddress: string | null;
   notes: string | null;
   metadata: Record<string, unknown>;
+  // Entity hierarchy and fund defaults
+  parentEntityId: number | null;
+  parentEntity?: { id: number; displayName: string; entityType: string } | null;
+  defaultFundId: number | null;
+  isSeriesLlc: boolean;
+  // Related data
   bankAccounts: BankAccountMasked[];
   signers: EntitySigner[];
   documents: EntityDocument[];
   documentsCount: number;
   linkedDeals: LinkedDeal[];
+  // Entity links (junction table relationships)
+  entityLinks: EntityLink[];
+  entityLinksCount: number;
   createdBy: { id: number; name: string } | null;
   updatedBy: { id: number; name: string } | null;
   createdAt: string;
@@ -269,6 +316,9 @@ export async function updateInternalEntity(
     mailingAddress?: string;
     notes?: string;
     sCorpEffectiveDate?: string;
+    parentEntityId?: number | null;
+    defaultFundId?: number | null;
+    isSeriesLlc?: boolean;
   }
 ): Promise<InternalEntityDetail> {
   const payload: Record<string, unknown> = {};
@@ -288,6 +338,9 @@ export async function updateInternalEntity(
   if (data.mailingAddress !== undefined) payload.mailing_address = data.mailingAddress;
   if (data.notes !== undefined) payload.notes = data.notes;
   if (data.sCorpEffectiveDate !== undefined) payload.s_corp_effective_date = data.sCorpEffectiveDate;
+  if (data.parentEntityId !== undefined) payload.parent_entity_id = data.parentEntityId;
+  if (data.defaultFundId !== undefined) payload.default_fund_id = data.defaultFundId;
+  if (data.isSeriesLlc !== undefined) payload.is_series_llc = data.isSeriesLlc;
 
   const res = await authFetch(`${API_BASE}/api/internal_entities/${id}`, {
     method: 'PATCH',
@@ -605,4 +658,151 @@ export function formatEinWithDash(ein: string | null): string | null {
     return `••-•••${cleaned.slice(-4)}`;
   }
   return ein;
+}
+
+// ==================== Entity Links Constants ====================
+
+export const RELATIONSHIP_TYPES = [
+  { value: 'owner', label: 'Owner', description: 'Entity that owns the asset/position' },
+  { value: 'holder', label: 'Holder', description: 'Entity holding the position' },
+  { value: 'issuer', label: 'Issuer', description: 'Entity that issued the security' },
+  { value: 'allocator', label: 'Allocator', description: 'Entity deploying capital' },
+  { value: 'advisor', label: 'Advisor', description: 'Advisory role' },
+  { value: 'manager', label: 'Manager', description: 'Managing entity' },
+  { value: 'gp', label: 'General Partner', description: 'GP of the fund/vehicle' },
+  { value: 'lp', label: 'Limited Partner', description: 'LP investor' },
+] as const;
+
+export const ECONOMIC_ROLES = [
+  { value: 'receives_capital', label: 'Receives Capital' },
+  { value: 'deploys_capital', label: 'Deploys Capital' },
+  { value: 'holds_asset', label: 'Holds Asset' },
+  { value: 'earns_fees', label: 'Earns Fees' },
+] as const;
+
+export const LINKED_OBJECT_TYPES = [
+  { value: 'Deal', label: 'Deal' },
+  { value: 'Block', label: 'Block' },
+  { value: 'Interest', label: 'Interest' },
+  { value: 'Allocation', label: 'Allocation' },
+  { value: 'Task', label: 'Task' },
+  { value: 'Note', label: 'Note' },
+] as const;
+
+// ==================== Entity Links CRUD Functions ====================
+
+// Fetch entity links for a specific entity
+export async function fetchEntityLinks(entityId: number): Promise<EntityLink[]> {
+  const res = await authFetch(`${API_BASE}/api/internal_entities/${entityId}/entity_links`);
+  if (!res.ok) throw new Error('Failed to fetch entity links');
+  return res.json();
+}
+
+// Fetch links for a specific object (e.g., all entities linked to a Deal)
+export async function fetchLinksForObject(
+  linkedObjectType: LinkedObjectType,
+  linkedObjectId: number
+): Promise<EntityLink[]> {
+  const params = new URLSearchParams({
+    linked_object_type: linkedObjectType,
+    linked_object_id: linkedObjectId.toString(),
+  });
+  const res = await authFetch(`${API_BASE}/api/entity_links?${params.toString()}`);
+  if (!res.ok) throw new Error('Failed to fetch links for object');
+  return res.json();
+}
+
+// Create a new entity link
+export async function createEntityLink(data: CreateEntityLinkData): Promise<EntityLink> {
+  const res = await authFetch(`${API_BASE}/api/entity_links`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      internal_entity_id: data.internalEntityId,
+      linked_object_type: data.linkedObjectType,
+      linked_object_id: data.linkedObjectId,
+      relationship_type: data.relationshipType,
+      economic_role: data.economicRole || null,
+      ownership_pct: data.ownershipPct ?? null,
+      priority: data.priority || 'primary',
+      notes: data.notes || null,
+    }),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || error.errors?.join(', ') || 'Failed to create entity link');
+  }
+  return res.json();
+}
+
+// Update an existing entity link
+export async function updateEntityLink(
+  linkId: number,
+  data: Partial<CreateEntityLinkData>
+): Promise<EntityLink> {
+  const payload: Record<string, unknown> = {};
+
+  if (data.relationshipType !== undefined) payload.relationship_type = data.relationshipType;
+  if (data.economicRole !== undefined) payload.economic_role = data.economicRole;
+  if (data.ownershipPct !== undefined) payload.ownership_pct = data.ownershipPct;
+  if (data.priority !== undefined) payload.priority = data.priority;
+  if (data.notes !== undefined) payload.notes = data.notes;
+
+  const res = await authFetch(`${API_BASE}/api/entity_links/${linkId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error('Failed to update entity link');
+  return res.json();
+}
+
+// Delete an entity link
+export async function deleteEntityLink(linkId: number): Promise<void> {
+  const res = await authFetch(`${API_BASE}/api/entity_links/${linkId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete entity link');
+}
+
+// ==================== Entity Link Helpers ====================
+
+// Get relationship type label
+export function getRelationshipTypeLabel(relationshipType: string): string {
+  const type = RELATIONSHIP_TYPES.find(t => t.value === relationshipType);
+  return type?.label || relationshipType;
+}
+
+// Get economic role label
+export function getEconomicRoleLabel(economicRole: string | null): string | null {
+  if (!economicRole) return null;
+  const role = ECONOMIC_ROLES.find(r => r.value === economicRole);
+  return role?.label || economicRole;
+}
+
+// Get color for relationship type badge
+export function getRelationshipTypeColor(relationshipType: string): string {
+  const colors: Record<string, string> = {
+    owner: 'bg-purple-100 text-purple-700 border-purple-200',
+    holder: 'bg-blue-100 text-blue-700 border-blue-200',
+    issuer: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+    allocator: 'bg-green-100 text-green-700 border-green-200',
+    advisor: 'bg-amber-100 text-amber-700 border-amber-200',
+    manager: 'bg-slate-100 text-slate-700 border-slate-200',
+    gp: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    lp: 'bg-teal-100 text-teal-700 border-teal-200',
+  };
+  return colors[relationshipType] || 'bg-muted text-muted-foreground border-border';
+}
+
+// Get color for economic role badge
+export function getEconomicRoleColor(economicRole: string | null): string {
+  if (!economicRole) return '';
+  const colors: Record<string, string> = {
+    receives_capital: 'bg-green-50 text-green-600 border-green-200',
+    deploys_capital: 'bg-blue-50 text-blue-600 border-blue-200',
+    holds_asset: 'bg-purple-50 text-purple-600 border-purple-200',
+    earns_fees: 'bg-amber-50 text-amber-600 border-amber-200',
+  };
+  return colors[economicRole] || 'bg-muted text-muted-foreground border-border';
 }

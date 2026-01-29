@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   X,
   Landmark,
@@ -21,9 +21,15 @@ import {
   ChevronRight,
   Copy,
   Shield,
+  Search,
+  Loader2,
+  GitBranch,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { LinkedObjectsSection } from "./LinkedObjectsSection";
 import {
   type InternalEntityDetail,
   type BankAccountMasked,
@@ -333,6 +339,72 @@ export function EntityDetailPanel({
           </div>
         </CollapsibleSection>
 
+        {/* Entity Hierarchy Section */}
+        <CollapsibleSection
+          title="Entity Hierarchy"
+          icon={<GitBranch className="h-4 w-4" />}
+          isExpanded={expandedSections.has("hierarchy")}
+          onToggle={() => toggleSection("hierarchy")}
+        >
+          <div className="space-y-4">
+            {/* Parent Entity */}
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
+                Parent Entity
+              </label>
+              <ParentEntitySelector
+                entityId={entity.id}
+                currentParentId={entity.parentEntityId}
+                currentParent={entity.parentEntity}
+                onUpdate={onUpdate}
+              />
+            </div>
+
+            {/* Series LLC Toggle */}
+            {(entity.entityType === 'series_llc' || entity.entityType === 'llc') && (
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <div>
+                  <label className="text-sm font-medium text-foreground">Series LLC</label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    This entity is a Series LLC structure
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    try {
+                      const updated = await updateInternalEntity(entity.id, { isSeriesLlc: !entity.isSeriesLlc });
+                      onUpdate(updated);
+                      toast.success(updated.isSeriesLlc ? "Marked as Series LLC" : "Unmarked as Series LLC");
+                    } catch {
+                      toast.error("Failed to update");
+                    }
+                  }}
+                  className={`p-1 rounded-lg transition-colors ${
+                    entity.isSeriesLlc
+                      ? "text-indigo-600 hover:bg-indigo-50"
+                      : "text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {entity.isSeriesLlc ? (
+                    <ToggleRight className="h-8 w-8" />
+                  ) : (
+                    <ToggleLeft className="h-8 w-8" />
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Default Fund Info */}
+            {entity.defaultFundId && (
+              <InfoField
+                label="Default Fund"
+                icon={<Building2 className="h-3.5 w-3.5" />}
+                value={`Fund #${entity.defaultFundId}`}
+              />
+            )}
+          </div>
+        </CollapsibleSection>
+
         {/* Tax & Compliance Section */}
         <CollapsibleSection
           title="Tax & Compliance"
@@ -584,6 +656,9 @@ export function EntityDetailPanel({
             </div>
           </CollapsibleSection>
         )}
+
+        {/* Linked Objects Section */}
+        <LinkedObjectsSection entityId={entity.id} onRefresh={onRefresh} />
 
         {/* Notes Section */}
         <CollapsibleSection
@@ -876,6 +951,163 @@ function BankAccountCard({
 
       {account.nickname && (
         <p className="mt-3 text-xs text-muted-foreground pt-3 border-t border-border">{account.nickname}</p>
+      )}
+    </div>
+  );
+}
+
+// Parent Entity Selector Component
+interface ParentEntitySelectorProps {
+  entityId: number;
+  currentParentId: number | null;
+  currentParent?: { id: number; displayName: string; entityType: string } | null;
+  onUpdate: (entity: InternalEntityDetail) => void;
+}
+
+function ParentEntitySelector({
+  entityId,
+  currentParentId,
+  currentParent,
+  onUpdate,
+}: ParentEntitySelectorProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [results, setResults] = useState<{ id: number; displayName: string; entityType: string }[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const search = (q: string) => {
+    setSearchQuery(q);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (q.length < 2) {
+      setResults([]);
+      setOpen(false);
+      return;
+    }
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const session = localStorage.getItem("arrow_session");
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (session) {
+          try {
+            const data = JSON.parse(session);
+            if (data.backendUserId) {
+              headers["X-User-Id"] = data.backendUserId.toString();
+            }
+          } catch {
+            // Invalid session
+          }
+        }
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/internal_entities?q=${encodeURIComponent(q)}&per_page=10`,
+          { headers }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          // Filter out current entity
+          const entities = (data.internalEntities || []).filter(
+            (e: { id: number }) => e.id !== entityId
+          );
+          setResults(entities);
+          setOpen(true);
+        }
+      } catch {
+        // Ignore
+      }
+      setSearching(false);
+    }, 300);
+  };
+
+  const handleSelect = async (parent: { id: number; displayName: string } | null) => {
+    setSaving(true);
+    try {
+      const updated = await updateInternalEntity(entityId, { parentEntityId: parent?.id || null });
+      onUpdate(updated);
+      toast.success(parent ? `Parent set to ${parent.displayName}` : "Parent removed");
+      setSearchQuery("");
+      setOpen(false);
+    } catch {
+      toast.error("Failed to update parent entity");
+    }
+    setSaving(false);
+  };
+
+  if (currentParentId && currentParent) {
+    return (
+      <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-lg group">
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center">
+            <Landmark className="h-4 w-4 text-indigo-600" />
+          </div>
+          <div>
+            <Link
+              href={`/internal-entities?id=${currentParent.id}`}
+              className="font-medium text-sm text-foreground hover:text-indigo-600 transition-colors"
+            >
+              {currentParent.displayName}
+            </Link>
+            <p className="text-xs text-muted-foreground">{currentParent.entityType}</p>
+          </div>
+        </div>
+        <button
+          onClick={() => handleSelect(null)}
+          disabled={saving}
+          className="text-xs text-indigo-600 hover:text-indigo-800 font-medium disabled:opacity-50"
+        >
+          {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Remove"}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => search(e.target.value)}
+          onFocus={() => searchQuery.length >= 2 && setOpen(true)}
+          className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-border bg-card focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+          placeholder="Search for parent entity..."
+        />
+        {searching && (
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+        )}
+      </div>
+      {open && results.length > 0 && (
+        <div className="absolute z-20 mt-1 w-full bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          {results.map((entity) => (
+            <button
+              key={entity.id}
+              onClick={() => handleSelect(entity)}
+              disabled={saving}
+              className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-3 disabled:opacity-50"
+            >
+              <div className="h-7 w-7 rounded-lg bg-muted flex items-center justify-center">
+                <Landmark className="h-3.5 w-3.5 text-muted-foreground" />
+              </div>
+              <div>
+                <span className="font-medium">{entity.displayName}</span>
+                <span className="text-muted-foreground ml-2 text-xs">{entity.entityType}</span>
+              </div>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );

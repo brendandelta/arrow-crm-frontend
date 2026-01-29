@@ -21,7 +21,11 @@ import {
   Search,
   Users,
   UserPlus,
+  Landmark,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
+import { EntityLinksSection } from "./EntityLinksSection";
 
 interface Person {
   id: number;
@@ -809,6 +813,20 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
                 />
               </div>
             </div>
+
+            {/* Linked Entities */}
+            {!isNew && block && (
+              <div className="py-3 border-t">
+                <EntityLinksSection
+                  linkedObjectType="Block"
+                  linkedObjectId={block.id}
+                  linkedObjectLabel={block.seller?.name || `Block #${block.id}`}
+                  collapsible
+                  defaultExpanded={false}
+                  compact
+                />
+              </div>
+            )}
 
             {/* Share Class */}
             <div className="py-2 border-t">

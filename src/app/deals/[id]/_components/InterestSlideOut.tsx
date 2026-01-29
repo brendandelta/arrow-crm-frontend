@@ -15,6 +15,7 @@ import {
   Target,
   Link2,
 } from "lucide-react";
+import { EntityLinksSection } from "./EntityLinksSection";
 
 interface Person {
   id: number;
@@ -437,6 +438,20 @@ export function InterestSlideOut({
                 placeholder="Notes visible only to your team..."
               />
             </div>
+
+            {/* Linked Entities */}
+            {!isNew && interest && (
+              <div className="py-3 border-t mt-2">
+                <EntityLinksSection
+                  linkedObjectType="Interest"
+                  linkedObjectId={interest.id}
+                  linkedObjectLabel={interest.investor?.name || `Interest #${interest.id}`}
+                  collapsible
+                  defaultExpanded={false}
+                  compact
+                />
+              </div>
+            )}
 
             {/* Contact Info (read-only) */}
             {interest?.contact && (

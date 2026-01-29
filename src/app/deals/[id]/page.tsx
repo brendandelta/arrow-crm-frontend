@@ -20,6 +20,7 @@ import { TaskSlideOut } from "./_components/TaskSlideOut";
 import { EdgeSlideOut } from "./_components/EdgeSlideOut";
 import { OutreachTargetModal } from "./_components/OutreachTargetModal";
 import { EditableDealDetails } from "./_components/EditableDealDetails";
+import { EntityLinksSection } from "./_components/EntityLinksSection";
 // Import shared components
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
 import { useLPMode } from "@/contexts/LPModeContext";
@@ -776,6 +777,22 @@ export default function DealDetailPage() {
               </CardHeader>
               <CardContent>
                 <RiskFlagsPanel riskFlags={deal.riskFlags} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Linked Entities */}
+          {!lpMode && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Linked Entities</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <EntityLinksSection
+                  linkedObjectType="Deal"
+                  linkedObjectId={deal.id}
+                  linkedObjectLabel={deal.name}
+                />
               </CardContent>
             </Card>
           )}
