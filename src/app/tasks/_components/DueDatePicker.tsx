@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Calendar as CalendarIcon, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
@@ -35,14 +35,12 @@ export function DueDatePicker({
 }: DueDatePickerProps) {
   const [open, setOpen] = useState(false);
 
-  const selectedDate = value ? new Date(value) : undefined;
   const displayDate = value ? formatDueDate(value) : null;
 
-  const handleSelect = (date: Date | undefined) => {
-    if (date) {
-      // Format as YYYY-MM-DD
-      const formatted = date.toISOString().split("T")[0];
-      onChange(formatted);
+  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    if (newValue) {
+      onChange(newValue);
     }
     setOpen(false);
   };
@@ -95,8 +93,9 @@ export function DueDatePicker({
           ) : null}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <div className="p-2 border-b border-slate-100">
+      <PopoverContent className="w-auto p-3" align="start">
+        <div className="space-y-3">
+          {/* Quick date buttons */}
           <div className="flex gap-1">
             <Button
               variant="ghost"
@@ -122,25 +121,31 @@ export function DueDatePicker({
             >
               Next Week
             </Button>
-            {showClear && value && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 ml-auto"
-                onClick={() => handleQuickDate(null)}
-              >
-                Clear
-              </Button>
-            )}
           </div>
+
+          {/* Date input */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-slate-500">Pick a date</label>
+            <Input
+              type="date"
+              value={value || ""}
+              onChange={handleDateInputChange}
+              className="h-9"
+            />
+          </div>
+
+          {/* Clear button */}
+          {showClear && value && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+              onClick={() => handleQuickDate(null)}
+            >
+              Clear date
+            </Button>
+          )}
         </div>
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={handleSelect}
-          initialFocus
-          className="rounded-md"
-        />
       </PopoverContent>
     </Popover>
   );
