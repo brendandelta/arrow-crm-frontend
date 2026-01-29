@@ -494,7 +494,7 @@ function LinkItem({
       >
         {icon}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-700 truncate">{link.linkableLabel || link.label}</p>
+          <p className="text-sm font-medium text-slate-700 truncate">{link.label}</p>
           <p className="text-xs text-slate-500">{link.linkableType}</p>
         </div>
         <ExternalLink className="h-3.5 w-3.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
