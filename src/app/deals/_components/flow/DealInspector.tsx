@@ -183,7 +183,7 @@ export function DealInspector({
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => onNavigate(deal.id)}
-              className="h-7 px-2.5 rounded-md text-xs font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors flex items-center gap-1.5"
+              className="h-7 px-2.5 rounded-md text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-1.5"
             >
               <ExternalLink className="h-3 w-3" />
               Open Deal
@@ -194,7 +194,7 @@ export function DealInspector({
                   `${window.location.origin}/deals/${deal.id}`
                 );
               }}
-              className="h-7 px-2 rounded-md text-xs bg-card border border-border text-muted-foreground hover:bg-muted transition-colors flex items-center gap-1"
+              className="h-7 px-2 rounded-md text-xs bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-1"
             >
               <Copy className="h-3 w-3" />
               Link
@@ -220,7 +220,7 @@ export function DealInspector({
                     value={deal.status}
                     onValueChange={(v) => onStatusChange(deal.id, v)}
                   >
-                    <SelectTrigger size="sm" className="h-8 text-xs bg-card">
+                    <SelectTrigger size="sm" className="h-8 text-xs bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -244,7 +244,7 @@ export function DealInspector({
                       onPriorityChange(deal.id, Number(v))
                     }
                   >
-                    <SelectTrigger size="sm" className="h-8 text-xs bg-card">
+                    <SelectTrigger size="sm" className="h-8 text-xs bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -262,7 +262,7 @@ export function DealInspector({
                   <label className="text-[11px] text-muted-foreground block mb-1">
                     Owner
                   </label>
-                  <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-card">
+                  <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-white">
                     {deal.owner
                       ? `${deal.owner.firstName} ${deal.owner.lastName}`
                       : "Unassigned"}
@@ -275,7 +275,7 @@ export function DealInspector({
                     Close Date
                   </label>
                   <div
-                    className={`h-8 flex items-center gap-1.5 text-xs border rounded-md px-2.5 bg-card ${
+                    className={`h-8 flex items-center gap-1.5 text-xs border rounded-md px-2.5 bg-white ${
                       isPastDue
                         ? "text-red-600"
                         : isUrgent
@@ -306,7 +306,7 @@ export function DealInspector({
                   <label className="text-[11px] text-muted-foreground block mb-1">
                     Best Price
                   </label>
-                  <div className="h-8 flex items-center text-xs font-medium tabular-nums border rounded-md px-2.5 bg-card">
+                  <div className="h-8 flex items-center text-xs font-medium tabular-nums border rounded-md px-2.5 bg-white">
                     {deal.bestPrice
                       ? formatCurrency(deal.bestPrice)
                       : "—"}
@@ -316,7 +316,7 @@ export function DealInspector({
                   <label className="text-[11px] text-muted-foreground block mb-1">
                     Deal Value
                   </label>
-                  <div className="h-8 flex items-center text-xs font-medium tabular-nums border rounded-md px-2.5 bg-card">
+                  <div className="h-8 flex items-center text-xs font-medium tabular-nums border rounded-md px-2.5 bg-white">
                     {formatCurrency(deal.blocksValue)}
                   </div>
                 </div>
@@ -379,7 +379,7 @@ export function DealInspector({
                   {[1, 2, 3].map((i) => (
                     <div
                       key={i}
-                      className="h-10 bg-muted rounded animate-pulse"
+                      className="h-10 bg-slate-100 rounded animate-pulse"
                     />
                   ))}
                 </div>
@@ -388,7 +388,7 @@ export function DealInspector({
                   {expanded.topBlocks.map((block) => (
                     <div
                       key={block.id}
-                      className="flex items-center justify-between p-2 rounded-md border bg-card text-xs"
+                      className="flex items-center justify-between p-2 rounded-md border bg-white text-xs"
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <Blocks className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -431,7 +431,7 @@ export function DealInspector({
                   {[1, 2].map((i) => (
                     <div
                       key={i}
-                      className="h-8 bg-muted rounded animate-pulse"
+                      className="h-8 bg-slate-100 rounded animate-pulse"
                     />
                   ))}
                 </div>
@@ -443,7 +443,7 @@ export function DealInspector({
                       className={`flex items-start gap-2 p-2 rounded-md border text-xs ${
                         task.overdue
                           ? "bg-red-50 border-red-200"
-                          : "bg-card"
+                          : "bg-white"
                       }`}
                     >
                       {task.overdue ? (
@@ -495,7 +495,7 @@ export function DealInspector({
                   {[1, 2].map((i) => (
                     <div
                       key={i}
-                      className="h-8 bg-muted rounded animate-pulse"
+                      className="h-8 bg-slate-100 rounded animate-pulse"
                     />
                   ))}
                 </div>
@@ -505,7 +505,7 @@ export function DealInspector({
                   {expanded.nextFollowups.map((fu) => (
                     <div
                       key={fu.id}
-                      className="flex items-center justify-between p-2 rounded-md border bg-card text-xs"
+                      className="flex items-center justify-between p-2 rounded-md border bg-white text-xs"
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <Users className="h-3 w-3 text-muted-foreground shrink-0" />

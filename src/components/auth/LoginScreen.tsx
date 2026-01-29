@@ -114,7 +114,7 @@ export function LoginScreen() {
         </div>
 
         {/* PIN Entry Card */}
-        <div className="border border-emerald-200 rounded-lg p-6 bg-card/80 backdrop-blur-sm">
+        <div className="border border-emerald-200 rounded-lg p-6 bg-white/80 backdrop-blur-sm">
           {isLocked ? (
             <div className="text-center py-4">
               <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
@@ -123,7 +123,7 @@ export function LoginScreen() {
               <h2 className="text-base font-medium text-foreground mb-1">Access Locked</h2>
               <p className="text-sm text-muted-foreground mb-4">Too many failed attempts</p>
               {timeRemaining && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-border rounded-md bg-muted">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-md bg-slate-50">
                   <span className="text-sm text-muted-foreground">Try again in</span>
                   <span className="text-sm font-mono font-medium text-foreground">{timeRemaining}</span>
                 </div>

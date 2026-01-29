@@ -177,7 +177,7 @@ export function UploadDocumentDialog({
                 ? "border-indigo-400 bg-indigo-50"
                 : file
                 ? "border-green-300 bg-green-50"
-                : "border-border hover:border-border hover:bg-muted"
+                : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
             }`}
           >
             <input
@@ -191,34 +191,34 @@ export function UploadDocumentDialog({
               <div className="flex items-center gap-3">
                 <FileText className="h-10 w-10 text-green-600" />
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground truncate">{file.name}</p>
-                  <p className="text-sm text-muted-foreground">{formatFileSize(file.size)}</p>
+                  <p className="font-medium text-slate-900 truncate">{file.name}</p>
+                  <p className="text-sm text-slate-500">{formatFileSize(file.size)}</p>
                 </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setFile(null);
                   }}
-                  className="p-1 rounded hover:bg-red-100 text-muted-foreground hover:text-red-600 transition-colors"
+                  className="p-1 rounded hover:bg-red-100 text-slate-400 hover:text-red-600 transition-colors"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
             ) : (
               <div className="text-center">
-                <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">
+                <Upload className="h-10 w-10 text-slate-400 mx-auto mb-3" />
+                <p className="text-sm text-slate-600">
                   <span className="font-medium text-indigo-600">Click to upload</span> or drag and
                   drop
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">PDF, DOC, XLS, images up to 50MB</p>
+                <p className="text-xs text-slate-400 mt-1">PDF, DOC, XLS, images up to 50MB</p>
               </div>
             )}
           </div>
 
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Title</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Title</label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -228,22 +228,22 @@ export function UploadDocumentDialog({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1">
-              Description <span className="text-muted-foreground font-normal">(optional)</span>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Description <span className="text-slate-400 font-normal">(optional)</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief description..."
               rows={2}
-              className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
             />
           </div>
 
           {/* Metadata Grid */}
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Category</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Select..." />
@@ -259,7 +259,7 @@ export function UploadDocumentDialog({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Status</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Select..." />
@@ -275,7 +275,7 @@ export function UploadDocumentDialog({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Sensitivity</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Sensitivity</label>
               <Select value={sensitivity} onValueChange={setSensitivity}>
                 <SelectTrigger className="h-9">
                   <SelectValue placeholder="Select..." />
@@ -294,8 +294,8 @@ export function UploadDocumentDialog({
           {/* Links Section */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-foreground">
-                Link to <span className="text-muted-foreground font-normal">(optional)</span>
+              <label className="block text-sm font-medium text-slate-700">
+                Link to <span className="text-slate-400 font-normal">(optional)</span>
               </label>
               <div className="flex items-center gap-1">
                 {LINKABLE_TYPES.map((type) => (
@@ -314,14 +314,14 @@ export function UploadDocumentDialog({
             </div>
 
             {pendingLinks.length > 0 && (
-              <div className="space-y-2 border border-border rounded-lg p-2">
+              <div className="space-y-2 border border-slate-200 rounded-lg p-2">
                 {pendingLinks.map((link) => (
                   <div
                     key={link.id}
-                    className="flex items-center gap-2 bg-muted rounded px-2 py-1.5"
+                    className="flex items-center gap-2 bg-slate-50 rounded px-2 py-1.5"
                   >
-                    <span className="text-xs text-muted-foreground">{link.linkableType}:</span>
-                    <span className="flex-1 text-sm text-foreground truncate">
+                    <span className="text-xs text-slate-500">{link.linkableType}:</span>
+                    <span className="flex-1 text-sm text-slate-700 truncate">
                       {link.linkableLabel}
                     </span>
                     <Select
@@ -347,7 +347,7 @@ export function UploadDocumentDialog({
                     </Select>
                     <button
                       onClick={() => handleRemoveLink(link.id)}
-                      className="p-1 text-muted-foreground hover:text-red-600 transition-colors"
+                      className="p-1 text-slate-400 hover:text-red-600 transition-colors"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>

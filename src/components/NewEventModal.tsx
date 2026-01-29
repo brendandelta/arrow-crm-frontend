@@ -33,7 +33,7 @@ const EVENT_KINDS = [
     label: "Meeting",
     icon: Calendar,
     colors: {
-      base: "border-border text-muted-foreground bg-card",
+      base: "border-slate-200 text-slate-600 bg-white",
       hover: "hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700",
       selected: "border-indigo-500 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-500"
     }
@@ -43,7 +43,7 @@ const EVENT_KINDS = [
     label: "Call",
     icon: Phone,
     colors: {
-      base: "border-border text-muted-foreground bg-card",
+      base: "border-slate-200 text-slate-600 bg-white",
       hover: "hover:border-green-300 hover:bg-green-50 hover:text-green-700",
       selected: "border-green-500 bg-green-50 text-green-700 ring-1 ring-green-500"
     }
@@ -53,7 +53,7 @@ const EVENT_KINDS = [
     label: "Video",
     icon: Video,
     colors: {
-      base: "border-border text-muted-foreground bg-card",
+      base: "border-slate-200 text-slate-600 bg-white",
       hover: "hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700",
       selected: "border-blue-500 bg-blue-50 text-blue-700 ring-1 ring-blue-500"
     }
@@ -63,7 +63,7 @@ const EVENT_KINDS = [
     label: "In Person",
     icon: Users,
     colors: {
-      base: "border-border text-muted-foreground bg-card",
+      base: "border-slate-200 text-slate-600 bg-white",
       hover: "hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700",
       selected: "border-purple-500 bg-purple-50 text-purple-700 ring-1 ring-purple-500"
     }
@@ -73,7 +73,7 @@ const EVENT_KINDS = [
     label: "Email",
     icon: Mail,
     colors: {
-      base: "border-border text-muted-foreground bg-card",
+      base: "border-slate-200 text-slate-600 bg-white",
       hover: "hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700",
       selected: "border-amber-500 bg-amber-50 text-amber-700 ring-1 ring-amber-500"
     }
@@ -83,7 +83,7 @@ const EVENT_KINDS = [
     label: "WhatsApp",
     icon: MessageSquare,
     colors: {
-      base: "border-border text-muted-foreground bg-card",
+      base: "border-slate-200 text-slate-600 bg-white",
       hover: "hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700",
       selected: "border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-500"
     }
@@ -93,7 +93,7 @@ const EVENT_KINDS = [
     label: "LinkedIn",
     icon: MessageSquare,
     colors: {
-      base: "border-border text-muted-foreground bg-card",
+      base: "border-slate-200 text-slate-600 bg-white",
       hover: "hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700",
       selected: "border-sky-500 bg-sky-50 text-sky-700 ring-1 ring-sky-500"
     }
@@ -103,9 +103,9 @@ const EVENT_KINDS = [
     label: "Note",
     icon: FileText,
     colors: {
-      base: "border-border text-muted-foreground bg-card",
-      hover: "hover:border-muted-foreground hover:bg-muted hover:text-foreground",
-      selected: "border-muted-foreground bg-muted text-foreground ring-1 ring-muted-foreground"
+      base: "border-slate-200 text-slate-600 bg-white",
+      hover: "hover:border-slate-400 hover:bg-slate-100 hover:text-slate-700",
+      selected: "border-slate-500 bg-slate-100 text-slate-700 ring-1 ring-slate-500"
     }
   },
 ];
@@ -236,7 +236,7 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
       case "email": return { bg: "bg-amber-100", text: "text-amber-600" };
       case "whatsapp": return { bg: "bg-emerald-100", text: "text-emerald-600" };
       case "linkedin_message": return { bg: "bg-sky-100", text: "text-sky-600" };
-      case "note": return { bg: "bg-muted", text: "text-muted-foreground" };
+      case "note": return { bg: "bg-slate-100", text: "text-slate-600" };
       default: return { bg: "bg-blue-100", text: "text-blue-600" };
     }
   };
@@ -251,23 +251,23 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
       />
 
       {/* Modal */}
-      <div className="relative bg-card rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <div className="flex items-center gap-3">
             <div className={`h-10 w-10 ${headerColors.bg} rounded-xl flex items-center justify-center transition-colors`}>
               <KindIcon className={`h-5 w-5 ${headerColors.text} transition-colors`} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-foreground">New Event</h2>
-              <p className="text-xs text-muted-foreground">{selectedKind?.label || 'Meeting'}</p>
+              <h2 className="text-lg font-semibold text-slate-900">New Event</h2>
+              <p className="text-xs text-slate-500">{selectedKind?.label || 'Meeting'}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-muted rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
           >
-            <X className="h-5 w-5 text-muted-foreground" />
+            <X className="h-5 w-5 text-slate-500" />
           </button>
         </div>
 
@@ -283,7 +283,7 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
 
             {/* Event Type */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-3">
+              <label className="block text-sm font-medium text-slate-700 mb-3">
                 Event Type
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -312,7 +312,7 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
 
             {/* Subject */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Subject
               </label>
               <input
@@ -320,14 +320,14 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Meeting with..."
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             {/* Date & Time */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
                   <Calendar className="inline h-4 w-4 mr-1" />
                   Date
                 </label>
@@ -335,11 +335,11 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
                   type="date"
                   value={startsAt}
                   onChange={(e) => setStartsAt(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
                   <Clock className="inline h-4 w-4 mr-1" />
                   Time
                 </label>
@@ -347,20 +347,20 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
                   type="time"
                   value={startsAtTime}
                   onChange={(e) => setStartsAtTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
 
             {/* Duration */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Duration
               </label>
               <select
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="15">15 minutes</option>
                 <option value="30">30 minutes</option>
@@ -375,7 +375,7 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
             {(kind === "meeting" || kind === "in_person_meeting" || kind === "video_call") && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
                     <MapPin className="inline h-4 w-4 mr-1" />
                     Location
                   </label>
@@ -384,11 +384,11 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="Office, Coffee shop..."
-                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
                     <Video className="inline h-4 w-4 mr-1" />
                     Meeting URL
                   </label>
@@ -397,7 +397,7 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
                     value={meetingUrl}
                     onChange={(e) => setMeetingUrl(e.target.value)}
                     placeholder="https://zoom.us/..."
-                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -405,14 +405,14 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
 
             {/* Deal */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 <Briefcase className="inline h-4 w-4 mr-1" />
                 Related Deal (optional)
               </label>
               <select
                 value={dealId}
                 onChange={(e) => setDealId(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={loadingDeals}
               >
                 <option value="">No deal</option>
@@ -426,13 +426,13 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
 
             {/* Outcome */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 Outcome
               </label>
               <select
                 value={outcome}
                 onChange={(e) => setOutcome(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {OUTCOMES.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -444,7 +444,7 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
                 <FileText className="inline h-4 w-4 mr-1" />
                 Notes
               </label>
@@ -453,17 +453,17 @@ export default function NewEventModal({ onClose, onSuccess }: NewEventModalProps
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="Add notes about this event..."
                 rows={3}
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-muted">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 bg-slate-50">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-foreground hover:bg-muted rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
             >
               Cancel
             </button>

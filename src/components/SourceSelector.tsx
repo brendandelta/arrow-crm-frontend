@@ -111,7 +111,7 @@ export function SourceSelector({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-2 px-2.5 py-1.5 border border-border rounded-lg text-sm bg-card hover:bg-muted transition-colors text-left"
+        className="w-full flex items-center gap-2 px-2.5 py-1.5 border border-slate-200 rounded-lg text-sm bg-white hover:bg-slate-50 transition-colors text-left"
       >
         {value && categoryConfig ? (
           <span className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -119,7 +119,7 @@ export function SourceSelector({
             <span className="truncate">{resolved?.name ?? value}</span>
           </span>
         ) : (
-          <span className="text-muted-foreground flex-1">{placeholder}</span>
+          <span className="text-slate-400 flex-1">{placeholder}</span>
         )}
         <div className="flex items-center gap-1 shrink-0">
           {value && (
@@ -129,31 +129,31 @@ export function SourceSelector({
                 e.stopPropagation();
                 handleClear();
               }}
-              className="p-0.5 hover:bg-muted rounded"
+              className="p-0.5 hover:bg-slate-200 rounded"
             >
-              <X className="h-3 w-3 text-muted-foreground" />
+              <X className="h-3 w-3 text-slate-400" />
             </span>
           )}
           <ChevronDown
-            className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
+            className={`h-3.5 w-3.5 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
           />
         </div>
       </button>
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 top-full left-0 mt-1 w-full min-w-[260px] bg-card border border-border rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute z-50 top-full left-0 mt-1 w-full min-w-[260px] bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
           {/* Search input */}
-          <div className="p-2 border-b border-border">
+          <div className="p-2 border-b border-slate-100">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
               <input
                 ref={inputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search sources..."
-                className="w-full pl-8 pr-3 py-1.5 text-sm bg-muted border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300"
+                className="w-full pl-8 pr-3 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300"
                 onKeyDown={(e) => {
                   if (e.key === "Escape") {
                     setIsOpen(false);
@@ -166,7 +166,7 @@ export function SourceSelector({
           {/* Create form */}
           {showCreate ? (
             <div className="p-3 space-y-2">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                 New Source
               </div>
               <input
@@ -174,13 +174,13 @@ export function SourceSelector({
                 value={newSourceName}
                 onChange={(e) => setNewSourceName(e.target.value)}
                 placeholder="Source name"
-                className="w-full px-2.5 py-1.5 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full px-2.5 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
                 autoFocus
               />
               <select
                 value={newSourceCategory}
                 onChange={(e) => setNewSourceCategory(e.target.value as SourceCategory)}
-                className="w-full px-2.5 py-1.5 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full px-2.5 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
                 {SOURCE_CATEGORIES.map((cat) => (
                   <option key={cat.value} value={cat.value}>
@@ -192,13 +192,13 @@ export function SourceSelector({
                 <button
                   onClick={handleCreate}
                   disabled={!newSourceName.trim()}
-                  className="flex-1 px-3 py-1.5 text-xs font-medium text-background bg-foreground rounded-md hover:bg-foreground/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 rounded-md hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   Create
                 </button>
                 <button
                   onClick={() => setShowCreate(false)}
-                  className="px-3 py-1.5 text-xs font-medium text-muted-foreground border border-border rounded-md hover:bg-muted transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
@@ -214,15 +214,15 @@ export function SourceSelector({
                     if (!items || items.length === 0) return null;
                     return (
                       <div key={cat.value}>
-                        <div className="px-3 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        <div className="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                           {cat.label}
                         </div>
                         {items.map((src) => (
                           <button
                             key={src.name}
                             onClick={() => handleSelect(src)}
-                            className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-muted transition-colors text-left ${
-                              value === src.name ? "bg-blue-50 text-blue-700" : "text-foreground"
+                            className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-slate-50 transition-colors text-left ${
+                              value === src.name ? "bg-blue-50 text-blue-700" : "text-slate-700"
                             }`}
                           >
                             <span className={`h-2 w-2 rounded-full shrink-0 ${cat.color}`} />
@@ -236,13 +236,13 @@ export function SourceSelector({
                     );
                   })
                 ) : (
-                  <div className="px-3 py-2 text-sm text-muted-foreground">No sources found</div>
+                  <div className="px-3 py-2 text-sm text-slate-400">No sources found</div>
                 )}
               </div>
 
               {/* Create new option */}
               {searchQuery.trim() && !exactMatch && (
-                <div className="border-t border-border">
+                <div className="border-t border-slate-100">
                   <button
                     onClick={handleQuickCreate}
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
@@ -257,13 +257,13 @@ export function SourceSelector({
 
               {/* Always show create option at the bottom */}
               {(!searchQuery.trim() || exactMatch) && (
-                <div className="border-t border-border">
+                <div className="border-t border-slate-100">
                   <button
                     onClick={() => {
                       setNewSourceName("");
                       setShowCreate(true);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:bg-muted transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-500 hover:bg-slate-50 transition-colors"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     <span>Create new source</span>

@@ -37,7 +37,7 @@ export function ViewToggle({
   availableViews = ["table", "flow", "mindmap"],
 }: ViewToggleProps) {
   return (
-    <div className="inline-flex items-center rounded-lg border border-border p-1 bg-card">
+    <div className="inline-flex items-center rounded-lg border border-slate-200 p-1 bg-white">
       {availableViews.map((view) => {
         const config = viewConfig[view];
         const Icon = config.icon;
@@ -51,8 +51,8 @@ export function ViewToggle({
               flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-all
               ${
                 isActive
-                  ? "bg-foreground text-background shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               }
             `}
             title={config.description}
@@ -77,7 +77,7 @@ export function ViewToggleCompact({
   const views: ViewMode[] = ["table", "flow", "mindmap"];
 
   return (
-    <div className="inline-flex items-center rounded-md border border-border bg-card">
+    <div className="inline-flex items-center rounded-md border border-slate-200 bg-white">
       {views.map((view) => {
         const config = viewConfig[view];
         const Icon = config.icon;
@@ -91,8 +91,8 @@ export function ViewToggleCompact({
               p-2 transition-colors
               ${
                 isActive
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "bg-slate-100 text-slate-900"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
               }
               ${view === "table" ? "rounded-l-md" : ""}
               ${view === "mindmap" ? "rounded-r-md" : ""}

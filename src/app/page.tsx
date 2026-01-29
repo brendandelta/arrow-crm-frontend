@@ -102,7 +102,7 @@ export default function Home() {
     <div className="space-y-4">
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="cursor-pointer hover:bg-muted transition-colors" onClick={() => router.push("/deals")}>
+        <Card className="cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => router.push("/deals")}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Active Deals</CardTitle>
             <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
@@ -115,7 +115,7 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:bg-muted transition-colors" onClick={() => router.push("/organizations")}>
+        <Card className="cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => router.push("/organizations")}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Organizations</CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -128,7 +128,7 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:bg-muted transition-colors" onClick={() => router.push("/people")}>
+        <Card className="cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => router.push("/people")}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Contacts</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -174,7 +174,7 @@ export default function Home() {
                 liveDeals.map((deal) => (
                   <div
                     key={deal.id}
-                    className="flex items-center justify-between cursor-pointer hover:bg-muted -mx-2 px-2 py-1 rounded transition-colors"
+                    className="flex items-center justify-between cursor-pointer hover:bg-slate-50 -mx-2 px-2 py-1 rounded transition-colors"
                     onClick={() => router.push(`/deals/${deal.id}`)}
                   >
                     <div className="space-y-1">
@@ -210,7 +210,7 @@ export default function Home() {
                 recentActivities.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex items-center justify-between cursor-pointer hover:bg-muted -mx-2 px-2 py-1 rounded transition-colors"
+                    className="flex items-center justify-between cursor-pointer hover:bg-slate-50 -mx-2 px-2 py-1 rounded transition-colors"
                     onClick={() => router.push(`/events`)}
                   >
                     <div className="space-y-1">

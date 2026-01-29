@@ -50,7 +50,7 @@ function SortableCard({
       {isDragging ? (
         /* Placeholder — keeps layout height via invisible card, shows a
            clean dashed outline so the user sees the "slot" */
-        <div className="rounded-lg border-2 border-dashed border-border bg-muted/80">
+        <div className="rounded-lg border-2 border-dashed border-slate-300 bg-slate-50/80">
           <div className="invisible">
             <FlowDealCard deal={deal} onClick={() => {}} />
           </div>
@@ -109,7 +109,7 @@ export function StageColumn({
     return (
       <button
         onClick={onToggleCollapse}
-        className={`flex flex-col items-center gap-2 rounded-lg border ${cfg.borderColor} px-2 py-4 bg-card hover:bg-muted transition-colors min-w-[44px]`}
+        className={`flex flex-col items-center gap-2 rounded-lg border ${cfg.borderColor} px-2 py-4 bg-white hover:bg-slate-50 transition-colors min-w-[44px]`}
       >
         <div className={`h-2 w-2 rounded-full ${cfg.dotColor}`} />
         <span
@@ -139,7 +139,7 @@ export function StageColumn({
           <span className={`text-sm font-semibold ${cfg.color}`}>
             {cfg.label}
           </span>
-          <span className="text-xs tabular-nums text-muted-foreground bg-card/70 rounded px-1.5 py-0.5 font-medium">
+          <span className="text-xs tabular-nums text-muted-foreground bg-white/70 rounded px-1.5 py-0.5 font-medium">
             {deals.length}
           </span>
         </div>
@@ -160,8 +160,8 @@ export function StageColumn({
         ref={setNodeRef}
         className={`flex-1 rounded-b-lg border border-t-0 transition-all duration-200 ${
           highlighted
-            ? "bg-muted ring-2 ring-inset ring-slate-300 shadow-inner"
-            : "bg-muted/50"
+            ? "bg-slate-100 ring-2 ring-inset ring-slate-300 shadow-inner"
+            : "bg-slate-50/50"
         } ${cfg.borderColor}`}
       >
         <ScrollArea className="h-[calc(100vh-340px)]">

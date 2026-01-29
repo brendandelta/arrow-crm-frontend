@@ -3,7 +3,7 @@
 
 const STATUS_STYLES: Record<string, string> = {
   // Deal statuses
-  sourcing: "bg-muted text-foreground",
+  sourcing: "bg-slate-100 text-slate-700",
   live: "bg-blue-100 text-blue-700",
   closing: "bg-amber-100 text-amber-700",
   closed: "bg-green-100 text-green-700",
@@ -11,10 +11,10 @@ const STATUS_STYLES: Record<string, string> = {
   // Block statuses
   available: "bg-green-100 text-green-700",
   reserved: "bg-amber-100 text-amber-700",
-  sold: "bg-muted text-foreground",
-  withdrawn: "bg-muted text-muted-foreground",
+  sold: "bg-slate-100 text-slate-700",
+  withdrawn: "bg-slate-100 text-slate-500",
   // Interest statuses
-  prospecting: "bg-muted text-foreground",
+  prospecting: "bg-slate-100 text-slate-700",
   pending: "bg-yellow-100 text-yellow-700",
   approved: "bg-blue-100 text-blue-700",
   committed: "bg-purple-100 text-purple-700",
@@ -28,7 +28,7 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
-  const style = STATUS_STYLES[status] || "bg-muted text-foreground";
+  const style = STATUS_STYLES[status] || "bg-slate-100 text-slate-700";
   const displayText = status.charAt(0).toUpperCase() + status.slice(1);
 
   return (

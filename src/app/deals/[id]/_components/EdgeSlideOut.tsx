@@ -73,8 +73,8 @@ const EDGE_TYPES = [
 ] as const;
 
 // Notion-style input classes
-const inputClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-muted hover:border-border focus:bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text";
-const textareaClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-muted hover:border-border focus:bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text resize-none min-h-[100px]";
+const inputClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text";
+const textareaClass = "w-full px-3 py-2 text-sm rounded-md border border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200 focus:bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50 transition-all cursor-text resize-none min-h-[100px]";
 
 function ScoreSelector({
   label,
@@ -92,8 +92,8 @@ function ScoreSelector({
   return (
     <div className="py-2">
       <div className="flex items-center justify-between mb-2 px-3">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
-        <span className="text-xs text-muted-foreground">{labels[value - 1]}</span>
+        <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">{label}</span>
+        <span className="text-xs text-slate-500">{labels[value - 1]}</span>
       </div>
       <div className="flex items-center gap-2 px-3">
         {[1, 2, 3, 4, 5].map((n) => (
@@ -103,7 +103,7 @@ function ScoreSelector({
             className={`w-10 h-10 rounded-lg border-2 text-sm font-semibold transition-all ${
               n <= value
                 ? `${color} border-current`
-                : "text-muted-foreground/60 border-border hover:border-border"
+                : "text-slate-300 border-slate-200 hover:border-slate-300"
             }`}
           >
             {n}
@@ -310,9 +310,9 @@ export function EdgeSlideOut({
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative w-full max-w-xl bg-card shadow-xl flex flex-col">
+      <div className="relative w-full max-w-xl bg-white shadow-xl flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 bg-card border-b px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${selectedType.color.split(" ").slice(1).join(" ")}`}>
               <Shield className={`h-5 w-5 ${selectedType.color.split(" ")[0]}`} />
@@ -321,10 +321,10 @@ export function EdgeSlideOut({
               <h2 className="text-lg font-semibold">
                 {isNew ? "New Edge" : "Edit Edge"}
               </h2>
-              <p className="text-xs text-muted-foreground">Unique insight or advantage</p>
+              <p className="text-xs text-slate-500">Unique insight or advantage</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-muted rounded">
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -335,8 +335,8 @@ export function EdgeSlideOut({
             {/* Edge Type */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-2 px-3">
-                <Layers className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Edge Type</span>
+                <Layers className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Edge Type</span>
               </div>
               <div className="grid grid-cols-2 gap-2 px-3">
                 {EDGE_TYPES.map((type) => {
@@ -349,7 +349,7 @@ export function EdgeSlideOut({
                       className={`flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg border-2 transition-all ${
                         isSelected
                           ? `${type.color} border-current`
-                          : "text-muted-foreground border-border hover:border-border bg-card"
+                          : "text-slate-600 border-slate-200 hover:border-slate-300 bg-white"
                       }`}
                     >
                       <Icon className="h-4 w-4" />
@@ -363,8 +363,8 @@ export function EdgeSlideOut({
             {/* Title */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <TypeIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Title</span>
+                <TypeIcon className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Title</span>
               </div>
               <input
                 type="text"
@@ -397,8 +397,8 @@ export function EdgeSlideOut({
             {/* Notes */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-1 px-3">
-                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Notes</span>
+                <FileText className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Notes</span>
               </div>
               <textarea
                 value={formData.notes}
@@ -411,14 +411,14 @@ export function EdgeSlideOut({
             {/* Linked People */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-2 px-3">
-                <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Linked People</span>
+                <Users className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Linked People</span>
               </div>
 
               {/* Person Search */}
               <div ref={searchRef} className="relative px-3 mb-2">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
                     type="text"
                     value={personSearch}
@@ -428,36 +428,36 @@ export function EdgeSlideOut({
                     }}
                     onFocus={() => setShowPersonSearch(true)}
                     placeholder="Search people to link..."
-                    className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-border focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50"
+                    className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50"
                   />
                   {searchingPeople && (
-                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 animate-spin" />
                   )}
                 </div>
 
                 {/* Search Results */}
                 {showPersonSearch && personResults.length > 0 && (
-                  <div className="absolute left-3 right-3 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+                  <div className="absolute left-3 right-3 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
                     {personResults.map((person) => (
                       <button
                         key={person.id}
                         onClick={() => addPerson(person)}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted transition-colors"
+                        className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 transition-colors"
                       >
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">
                           {person.firstName[0]}{person.lastName[0]}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
+                          <p className="text-sm font-medium text-slate-900 truncate">
                             {person.firstName} {person.lastName}
                           </p>
                           {(person.title || person.org) && (
-                            <p className="text-xs text-muted-foreground truncate">
+                            <p className="text-xs text-slate-500 truncate">
                               {person.title}{person.title && person.org && " at "}{person.org}
                             </p>
                           )}
                         </div>
-                        <Plus className="h-4 w-4 text-muted-foreground" />
+                        <Plus className="h-4 w-4 text-slate-400" />
                       </button>
                     ))}
                   </div>
@@ -470,17 +470,17 @@ export function EdgeSlideOut({
                   {linkedPeople.map((person) => (
                     <div
                       key={person.personId}
-                      className="flex items-center gap-3 p-2.5 bg-muted rounded-lg border border-border"
+                      className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-lg border border-slate-200"
                     >
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium text-slate-600 shrink-0">
                         {person.firstName[0]}{person.lastName[0]}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
+                        <p className="text-sm font-medium text-slate-900 truncate">
                           {person.firstName} {person.lastName}
                         </p>
                         {(person.title || person.organization) && (
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs text-slate-500 truncate">
                             {person.title}{person.title && person.organization && " at "}{person.organization}
                           </p>
                         )}
@@ -490,19 +490,19 @@ export function EdgeSlideOut({
                         <select
                           value={person.role || ""}
                           onChange={(e) => updatePersonRole(person.personId, e.target.value || null)}
-                          className="appearance-none text-xs px-2 py-1 pr-6 bg-card border border-border rounded text-foreground cursor-pointer focus:outline-none focus:ring-1 focus:ring-slate-400"
+                          className="appearance-none text-xs px-2 py-1 pr-6 bg-white border border-slate-200 rounded text-slate-700 cursor-pointer focus:outline-none focus:ring-1 focus:ring-slate-400"
                         >
                           <option value="">Role...</option>
                           {PERSON_ROLES.map((r) => (
                             <option key={r.value} value={r.value}>{r.label}</option>
                           ))}
                         </select>
-                        <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                        <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400 pointer-events-none" />
                       </div>
                       {/* Remove */}
                       <button
                         onClick={() => removePerson(person.personId)}
-                        className="p-1 text-muted-foreground hover:text-red-500 transition-colors"
+                        className="p-1 text-slate-400 hover:text-red-500 transition-colors"
                       >
                         <X className="h-4 w-4" />
                       </button>
@@ -512,7 +512,7 @@ export function EdgeSlideOut({
               )}
 
               {linkedPeople.length === 0 && (
-                <p className="text-xs text-muted-foreground px-3">
+                <p className="text-xs text-slate-400 px-3">
                   Link people to track who knows what in this deal
                 </p>
               )}
@@ -520,14 +520,14 @@ export function EdgeSlideOut({
 
             {/* Score Preview */}
             <div className="py-4 px-3">
-              <div className="p-4 bg-muted rounded-lg">
+              <div className="p-4 bg-slate-50 rounded-lg">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Edge Score</span>
-                  <span className="text-2xl font-bold text-foreground">
+                  <span className="text-sm text-slate-600">Edge Score</span>
+                  <span className="text-2xl font-bold text-slate-900">
                     {formData.confidence * formData.timeliness}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Confidence ({formData.confidence}) × Freshness ({formData.timeliness})
                 </p>
               </div>
@@ -536,7 +536,7 @@ export function EdgeSlideOut({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-card border-t px-6 py-4 flex items-center justify-between">
+        <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex items-center justify-between">
           {!isNew && onDelete && (
             <>
               {!showDeleteConfirm ? (
@@ -559,7 +559,7 @@ export function EdgeSlideOut({
                   </button>
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-3 py-1 text-sm text-muted-foreground hover:bg-muted rounded"
+                    className="px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 rounded"
                   >
                     No
                   </button>
@@ -572,7 +572,7 @@ export function EdgeSlideOut({
               <button
                 onClick={handleSave}
                 disabled={saving || !formData.title.trim()}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md disabled:opacity-50 transition-colors"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 {isNew ? "Create Edge" : "Save"}

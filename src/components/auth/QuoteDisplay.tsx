@@ -588,7 +588,7 @@ export function QuoteDisplay() {
 
       {/* Strobe overlay */}
       {tweakMode && strobe && (
-        <div className="absolute inset-0 bg-card/30 pointer-events-none z-15" />
+        <div className="absolute inset-0 bg-white/30 pointer-events-none z-15" />
       )}
 
       {/* Glitch layers */}
@@ -661,8 +661,8 @@ export function QuoteDisplay() {
             tweakMode
               ? "bg-black/50 backdrop-blur-md border-white"
               : alternativeMode
-                ? "bg-card/80 backdrop-blur-sm border-amber-200"
-                : "bg-card/80 backdrop-blur-sm border-emerald-200"
+                ? "bg-white/80 backdrop-blur-sm border-amber-200"
+                : "bg-white/80 backdrop-blur-sm border-emerald-200"
           }`}
           style={tweakMode ? {
             boxShadow: `0 0 60px hsl(${bgHue}, 100%, 50%), 0 0 120px hsl(${(bgHue + 180) % 360}, 100%, 50%), inset 0 0 60px hsl(${bgHue}, 100%, 50%, 0.3)`,
@@ -737,7 +737,7 @@ export function QuoteDisplay() {
                 className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs border transition-colors ${
                   alternativeMode
                     ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
-                    : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+                    : "border-border bg-background text-muted-foreground hover:bg-slate-50 hover:text-foreground"
                 }`}
               >
                 {alternativeMode ? (

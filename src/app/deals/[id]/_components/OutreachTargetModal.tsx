@@ -57,7 +57,7 @@ interface OutreachTargetModalProps {
 }
 
 const STATUSES = [
-  { value: "not_started", label: "Not Started", color: "bg-muted text-muted-foreground border-border" },
+  { value: "not_started", label: "Not Started", color: "bg-slate-100 text-slate-600 border-slate-200" },
   { value: "contacted", label: "Contacted", color: "bg-blue-50 text-blue-700 border-blue-200" },
   { value: "engaged", label: "Engaged", color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
   { value: "negotiating", label: "Negotiating", color: "bg-purple-50 text-purple-700 border-purple-200" },
@@ -166,27 +166,27 @@ function TargetSearchInput({ targetType, onSelect }: {
   return (
     <div ref={ref} className="relative">
       <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
         <input
           type="text"
           value={query}
           onChange={(e) => search(e.target.value)}
           onFocus={() => query.length >= 2 && setOpen(true)}
-          className="w-full pl-8 pr-3 py-2 text-sm rounded-md border border-border bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50"
+          className="w-full pl-8 pr-3 py-2 text-sm rounded-md border border-slate-200 bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50"
           placeholder={`Search ${targetType === "Organization" ? "organizations" : "people"}...`}
         />
-        {loading && <Loader2 className="absolute right-2.5 top-2.5 h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+        {loading && <Loader2 className="absolute right-2.5 top-2.5 h-3.5 w-3.5 animate-spin text-slate-400" />}
       </div>
       {open && (
-        <div className="absolute z-20 mt-1 w-full bg-card border border-border rounded-md shadow-lg max-h-64 overflow-y-auto">
+        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-lg max-h-64 overflow-y-auto">
           {results.map((r) => (
             <button
               key={r.id}
               onClick={() => { onSelect(r); reset(); }}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center justify-between"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center justify-between"
             >
               <span className="font-medium">{r.name}</span>
-              <span className="text-xs text-muted-foreground">{r.kind || r.org || ""}</span>
+              <span className="text-xs text-slate-400">{r.kind || r.org || ""}</span>
             </button>
           ))}
           {!creating && (
@@ -197,7 +197,7 @@ function TargetSearchInput({ targetType, onSelect }: {
                 setNewName(parts[0] || "");
                 setNewLastName(targetType === "Person" ? parts.slice(1).join(" ") : "");
               }}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-center gap-2 text-blue-600 border-t"
+              className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 text-blue-600 border-t"
             >
               <Plus className="h-3.5 w-3.5" />
               Create new {targetType === "Organization" ? "organization" : "contact"}{query.length >= 2 ? `: "${query}"` : ""}
@@ -210,7 +210,7 @@ function TargetSearchInput({ targetType, onSelect }: {
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full px-2.5 py-1.5 text-sm rounded border border-border focus:border-border focus:outline-none"
+                  className="w-full px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
                   placeholder="Organization name"
                   autoFocus
                 />
@@ -220,7 +220,7 @@ function TargetSearchInput({ targetType, onSelect }: {
                     type="text"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    className="flex-1 px-2.5 py-1.5 text-sm rounded border border-border focus:border-border focus:outline-none"
+                    className="flex-1 px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
                     placeholder="First name"
                     autoFocus
                   />
@@ -228,7 +228,7 @@ function TargetSearchInput({ targetType, onSelect }: {
                     type="text"
                     value={newLastName}
                     onChange={(e) => setNewLastName(e.target.value)}
-                    className="flex-1 px-2.5 py-1.5 text-sm rounded border border-border focus:border-border focus:outline-none"
+                    className="flex-1 px-2.5 py-1.5 text-sm rounded border border-slate-200 focus:border-slate-300 focus:outline-none"
                     placeholder="Last name"
                   />
                 </div>
@@ -237,11 +237,11 @@ function TargetSearchInput({ targetType, onSelect }: {
                 <button
                   onClick={handleCreate}
                   disabled={saving || !newName.trim() || (targetType === "Person" && !newLastName.trim())}
-                  className="flex-1 px-3 py-1.5 text-xs font-medium text-background bg-foreground hover:bg-foreground/90 rounded disabled:opacity-50"
+                  className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded disabled:opacity-50"
                 >
                   {saving ? "Creating..." : "Create"}
                 </button>
-                <button onClick={() => setCreating(false)} className="px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted rounded">
+                <button onClick={() => setCreating(false)} className="px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-100 rounded">
                   Cancel
                 </button>
               </div>
@@ -328,18 +328,18 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
     }
   };
 
-  const inputClass = "w-full px-3 py-2 text-sm rounded-md border border-border bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-slate-400/50";
+  const inputClass = "w-full px-3 py-2 text-sm rounded-md border border-slate-200 bg-white focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400/50";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-card rounded-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden flex flex-col shadow-xl">
+      <div className="relative bg-white rounded-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-hidden flex flex-col shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b">
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-base font-semibold text-slate-900">
             {isEdit ? "Edit Outreach Target" : "Add Outreach Target"}
           </h2>
-          <button onClick={onClose} className="p-1 text-muted-foreground hover:text-muted-foreground rounded">
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -349,7 +349,7 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
           {/* Target Selection */}
           {!isEdit && (
             <div>
-              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+              <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
                 Target Type
               </label>
               <div className="flex gap-2 mb-3">
@@ -360,8 +360,8 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
                     onClick={() => { setTargetType(type); setSelectedTarget(null); }}
                     className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors ${
                       targetType === type
-                        ? "bg-foreground text-background border-foreground"
-                        : "bg-card text-muted-foreground border-border hover:bg-muted"
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                     }`}
                   >
                     {type}
@@ -369,10 +369,10 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
                 ))}
               </div>
               {selectedTarget ? (
-                <div className="flex items-center justify-between p-2.5 bg-muted rounded-lg">
+                <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg">
                   <span className="text-sm font-medium">{selectedTarget.name}</span>
-                  <button onClick={() => setSelectedTarget(null)} className="p-1 hover:bg-muted rounded">
-                    <X className="h-3.5 w-3.5 text-muted-foreground" />
+                  <button onClick={() => setSelectedTarget(null)} className="p-1 hover:bg-slate-200 rounded">
+                    <X className="h-3.5 w-3.5 text-slate-400" />
                   </button>
                 </div>
               ) : (
@@ -386,25 +386,25 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
 
           {isEdit && (
             <div>
-              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
+              <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
                 Target
               </label>
               <Link
                 href={target.targetType === "Organization" ? `/organizations/${target.targetId}` : `/people/${target.targetId}`}
-                className="group/link flex items-center justify-between p-2.5 bg-muted hover:bg-indigo-50/60 rounded-lg transition-colors"
+                className="group/link flex items-center justify-between p-2.5 bg-slate-50 hover:bg-indigo-50/60 rounded-lg transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground group-hover/link:text-indigo-700 transition-colors">
+                  <span className="text-sm font-semibold text-slate-900 group-hover/link:text-indigo-700 transition-colors">
                     {target.targetName}
                   </span>
-                  <span className="text-xs text-muted-foreground group-hover/link:text-indigo-400 transition-colors">
+                  <span className="text-xs text-slate-400 group-hover/link:text-indigo-400 transition-colors">
                     {target.targetType}
                   </span>
                 </div>
-                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/60 group-hover/link:text-indigo-500 transition-colors" />
+                <ExternalLink className="h-3.5 w-3.5 text-slate-300 group-hover/link:text-indigo-500 transition-colors" />
               </Link>
               {target.activityCount !== undefined && target.activityCount > 0 && (
-                <div className="mt-1.5 text-xs text-muted-foreground">
+                <div className="mt-1.5 text-xs text-slate-400">
                   {target.activityCount} activities · First contact: {target.firstContactedAt ? new Date(target.firstContactedAt).toLocaleDateString() : "—"}
                   {target.lastContactedAt && ` · Last: ${new Date(target.lastContactedAt).toLocaleDateString()}`}
                 </div>
@@ -414,7 +414,7 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
 
           {/* Status */}
           <div>
-            <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
               Status
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -424,7 +424,7 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
                   type="button"
                   onClick={() => setStatus(s.value)}
                   className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
-                    status === s.value ? s.color : "bg-card text-muted-foreground border-border hover:bg-muted"
+                    status === s.value ? s.color : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"
                   }`}
                 >
                   {s.label}
@@ -435,7 +435,7 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
 
           {/* Priority */}
           <div>
-            <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
               Priority
             </label>
             <div className="flex gap-1.5">
@@ -445,7 +445,7 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
                   type="button"
                   onClick={() => setPriority(p.value)}
                   className={`flex-1 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
-                    priority === p.value ? p.color : "bg-card text-muted-foreground border-border hover:bg-muted"
+                    priority === p.value ? p.color : "bg-white text-slate-400 border-slate-200 hover:bg-slate-50"
                   }`}
                 >
                   {p.label}
@@ -456,7 +456,7 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
 
           {/* Role */}
           <div>
-            <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
               Role
             </label>
             <select
@@ -473,7 +473,7 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
 
           {/* Owner */}
           <div>
-            <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
               Owner
             </label>
             <select
@@ -492,7 +492,7 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
           {isEdit && target.id && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide">
                   Target Tasks
                 </label>
                 {!showAddTask && (
@@ -527,14 +527,14 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
                   onSaved();
                 }} />
               ) : !showAddTask ? (
-                <p className="text-[12px] text-muted-foreground/60 italic py-2">No tasks yet</p>
+                <p className="text-[12px] text-slate-300 italic py-2">No tasks yet</p>
               ) : null}
             </div>
           )}
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+            <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
               Notes
             </label>
             <textarea
@@ -556,7 +556,7 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
                 <ArrowRight className="h-4 w-4" />
                 Convert to Interest
               </button>
-              <p className="text-xs text-muted-foreground mt-1.5 text-center">
+              <p className="text-xs text-slate-400 mt-1.5 text-center">
                 Creates an interest record from this committed target
               </p>
             </div>
@@ -568,14 +568,14 @@ export function OutreachTargetModal({ dealId, target, onClose, onSaved, onConver
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving || !selectedTarget}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-lg disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg disabled:opacity-50 transition-colors"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             {isEdit ? "Save" : "Add Target"}
@@ -601,7 +601,7 @@ function ModalTaskList({ tasks, onTaskCompleted }: { tasks: TaskInfo[]; onTaskCo
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-muted-foreground ml-6 mt-1 transition-colors"
+          className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600 ml-6 mt-1 transition-colors"
         >
           {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
           {expanded ? "Show less" : `${tasks.length - 1} more task${tasks.length - 1 > 1 ? "s" : ""}`}
@@ -632,11 +632,11 @@ function ModalTaskItem({ task, onComplete }: { task: TaskInfo; onComplete: () =>
 
   if (completed) {
     return (
-      <div className="flex items-center gap-2 py-1.5 px-2 rounded-md bg-muted/50">
+      <div className="flex items-center gap-2 py-1.5 px-2 rounded-md bg-slate-50/50">
         <div className="w-[18px] h-[18px] rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
           <Check className="h-3 w-3 text-white" />
         </div>
-        <span className="text-[12px] text-muted-foreground line-through truncate">{task.subject}</span>
+        <span className="text-[12px] text-slate-400 line-through truncate">{task.subject}</span>
       </div>
     );
   }
@@ -647,27 +647,27 @@ function ModalTaskItem({ task, onComplete }: { task: TaskInfo; onComplete: () =>
   };
 
   return (
-    <div className="flex items-start gap-2 py-1.5 px-2 rounded-md group/task hover:bg-muted transition-colors">
+    <div className="flex items-start gap-2 py-1.5 px-2 rounded-md group/task hover:bg-slate-50 transition-colors">
       <button
         type="button"
         onClick={handleComplete}
         disabled={completing}
-        className="mt-[1px] w-[18px] h-[18px] rounded-full border-[1.5px] border-border group-hover/task:border-emerald-400 flex items-center justify-center shrink-0 transition-all hover:bg-emerald-50 disabled:opacity-50"
+        className="mt-[1px] w-[18px] h-[18px] rounded-full border-[1.5px] border-slate-300 group-hover/task:border-emerald-400 flex items-center justify-center shrink-0 transition-all hover:bg-emerald-50 disabled:opacity-50"
       >
         <Check className="h-3 w-3 text-emerald-500 opacity-0 group-hover/task:opacity-60 transition-opacity" />
       </button>
       <div className="flex-1 min-w-0">
-        <div className={`text-[13px] leading-tight truncate ${task.overdue ? "text-rose-600 font-medium" : "text-foreground"}`}>
+        <div className={`text-[13px] leading-tight truncate ${task.overdue ? "text-rose-600 font-medium" : "text-slate-700"}`}>
           {task.subject}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           {task.dueAt && (
-            <span className={`text-[11px] ${task.overdue ? "text-rose-500 font-medium" : "text-muted-foreground"}`}>
+            <span className={`text-[11px] ${task.overdue ? "text-rose-500 font-medium" : "text-slate-400"}`}>
               {formatTaskDate(task.dueAt)}
             </span>
           )}
           {task.assignedTo && (
-            <span className="text-[11px] text-muted-foreground/60">
+            <span className="text-[11px] text-slate-300">
               {task.assignedTo.firstName}
             </span>
           )}
@@ -733,30 +733,30 @@ function ModalAddTaskForm({ dealId, targetId, users, onCancel, onSuccess }: {
   };
 
   return (
-    <div className="mb-3 p-3 bg-muted/80 rounded-lg border border-border space-y-2">
+    <div className="mb-3 p-3 bg-slate-50/80 rounded-lg border border-slate-200 space-y-2">
       <input
         type="text"
         placeholder="What needs to be done?"
         value={subject}
         onChange={(e) => setSubject(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="w-full text-[13px] px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 placeholder:text-muted-foreground/60"
+        className="w-full text-[13px] px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 placeholder:text-slate-300"
         autoFocus
       />
       <div className="flex items-center gap-2 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <CalendarClock className="h-3 w-3 text-muted-foreground/60" />
+          <CalendarClock className="h-3 w-3 text-slate-300" />
           <input
             type="date"
             value={dueAt}
             onChange={(e) => setDueAt(e.target.value)}
-            className="text-[11px] bg-card border border-border rounded-md px-2 py-1 text-muted-foreground"
+            className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
           />
         </div>
         <select
           value={taskPriority}
           onChange={(e) => setTaskPriority(e.target.value)}
-          className="text-[11px] bg-card border border-border rounded-md px-2 py-1 text-muted-foreground"
+          className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
         >
           <option value="low">Low</option>
           <option value="normal">Normal</option>
@@ -765,7 +765,7 @@ function ModalAddTaskForm({ dealId, targetId, users, onCancel, onSuccess }: {
         <select
           value={assignedToId}
           onChange={(e) => setAssignedToId(e.target.value)}
-          className="text-[11px] bg-card border border-border rounded-md px-2 py-1 text-muted-foreground"
+          className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
         >
           <option value="">Assign to...</option>
           {users.map((u) => (
@@ -780,11 +780,11 @@ function ModalAddTaskForm({ dealId, targetId, users, onCancel, onSuccess }: {
           type="button"
           onClick={handleSubmit}
           disabled={!subject.trim() || submitting}
-          className="px-3 py-1.5 text-[12px] font-medium text-background bg-foreground rounded-md hover:bg-foreground/80 disabled:opacity-40 transition-colors shadow-sm"
+          className="px-3 py-1.5 text-[12px] font-medium text-white bg-slate-800 rounded-md hover:bg-slate-700 disabled:opacity-40 transition-colors shadow-sm"
         >
           {submitting ? "Saving..." : "Add Task"}
         </button>
-        <button type="button" onClick={onCancel} className="px-3 py-1.5 text-[12px] text-muted-foreground hover:text-muted-foreground transition-colors">
+        <button type="button" onClick={onCancel} className="px-3 py-1.5 text-[12px] text-slate-400 hover:text-slate-600 transition-colors">
           Cancel
         </button>
       </div>

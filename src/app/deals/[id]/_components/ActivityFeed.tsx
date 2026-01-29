@@ -56,13 +56,13 @@ const kindConfig: Record<
   in_person_meeting: { icon: Users, label: "In-Person", color: "text-green-600", bgColor: "bg-green-100" },
   video_call: { icon: Video, label: "Video Call", color: "text-indigo-600", bgColor: "bg-indigo-100" },
   whatsapp: { icon: MessageSquare, label: "WhatsApp", color: "text-green-600", bgColor: "bg-green-100" },
-  sms: { icon: MessageSquare, label: "SMS", color: "text-muted-foreground", bgColor: "bg-muted" },
+  sms: { icon: MessageSquare, label: "SMS", color: "text-slate-600", bgColor: "bg-slate-100" },
   linkedin_message: { icon: Linkedin, label: "LinkedIn", color: "text-blue-700", bgColor: "bg-blue-100" },
   linkedin_connection: { icon: Linkedin, label: "LinkedIn", color: "text-blue-700", bgColor: "bg-blue-100" },
   note: { icon: StickyNote, label: "Note", color: "text-yellow-600", bgColor: "bg-yellow-100" },
   task: { icon: CheckSquare, label: "Task", color: "text-orange-600", bgColor: "bg-orange-100" },
-  stage_change: { icon: RefreshCw, label: "Stage Change", color: "text-muted-foreground", bgColor: "bg-muted" },
-  doc_upload: { icon: Upload, label: "Document", color: "text-muted-foreground", bgColor: "bg-muted" },
+  stage_change: { icon: RefreshCw, label: "Stage Change", color: "text-slate-600", bgColor: "bg-slate-100" },
+  doc_upload: { icon: Upload, label: "Document", color: "text-slate-600", bgColor: "bg-slate-100" },
 };
 
 type FilterType = "all" | "outreach" | "stage_changes" | "tasks" | "documents";
@@ -117,8 +117,8 @@ export function ActivityFeed({ activities, onActivityClick }: ActivityFeedProps)
             onClick={() => setFilter(f.key)}
             className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
               filter === f.key
-                ? "bg-foreground text-background"
-                : "text-muted-foreground hover:bg-muted"
+                ? "bg-slate-900 text-white"
+                : "text-slate-600 hover:bg-slate-100"
             }`}
           >
             {f.label}
@@ -134,7 +134,7 @@ export function ActivityFeed({ activities, onActivityClick }: ActivityFeedProps)
       ) : (
         <div className="relative">
           {/* Timeline line */}
-          <div className="absolute left-5 top-0 bottom-0 w-px bg-muted" />
+          <div className="absolute left-5 top-0 bottom-0 w-px bg-slate-200" />
 
           <div className="space-y-1">
             {filteredActivities.map((activity) => (
@@ -164,7 +164,7 @@ function ActivityItem({
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-start gap-3 p-3 hover:bg-muted rounded-lg transition-colors text-left relative"
+      className="w-full flex items-start gap-3 p-3 hover:bg-slate-50 rounded-lg transition-colors text-left relative"
     >
       {/* Icon */}
       <div className={`relative z-10 p-2 rounded-lg ${config.bgColor}`}>

@@ -84,7 +84,7 @@ function formatCurrency(cents: number | null | undefined) {
 
 function HeatBadge({ heat, label }: { heat: number; label: string }) {
   const styles: Record<number, string> = {
-    0: "bg-muted text-muted-foreground",
+    0: "bg-slate-100 text-slate-600",
     1: "bg-yellow-100 text-yellow-700",
     2: "bg-orange-100 text-orange-700",
     3: "bg-red-100 text-red-700",
@@ -103,7 +103,7 @@ function BlockStatusBadge({ status }: { status: string }) {
     available: "bg-green-100 text-green-700",
     reserved: "bg-yellow-100 text-yellow-700",
     sold: "bg-purple-100 text-purple-700",
-    withdrawn: "bg-muted text-muted-foreground",
+    withdrawn: "bg-slate-100 text-slate-600",
   };
   return (
     <Badge className={styles[s] || styles.available}>
@@ -116,11 +116,11 @@ const BLOCK_STATUS_OPTIONS = [
   { value: "available", label: "Available", color: "bg-green-100 text-green-700" },
   { value: "reserved", label: "Reserved", color: "bg-yellow-100 text-yellow-700" },
   { value: "sold", label: "Sold", color: "bg-purple-100 text-purple-700" },
-  { value: "withdrawn", label: "Withdrawn", color: "bg-muted text-muted-foreground" },
+  { value: "withdrawn", label: "Withdrawn", color: "bg-slate-100 text-slate-600" },
 ];
 
 const HEAT_OPTIONS = [
-  { value: "0", label: "Cold", color: "bg-muted text-muted-foreground" },
+  { value: "0", label: "Cold", color: "bg-slate-100 text-slate-600" },
   { value: "1", label: "Warm", color: "bg-yellow-100 text-yellow-700" },
   { value: "2", label: "Hot", color: "bg-orange-100 text-orange-700" },
   { value: "3", label: "Very Hot", color: "bg-red-100 text-red-700" },
@@ -237,20 +237,20 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
           <div className="flex items-center border rounded-md overflow-hidden">
             <button
               onClick={() => setViewMode("card")}
-              className={`p-1.5 ${viewMode === "card" ? "bg-muted" : "hover:bg-muted"}`}
+              className={`p-1.5 ${viewMode === "card" ? "bg-slate-100" : "hover:bg-slate-50"}`}
             >
               <LayoutGrid className="h-4 w-4" />
             </button>
             <button
               onClick={() => setViewMode("table")}
-              className={`p-1.5 ${viewMode === "table" ? "bg-muted" : "hover:bg-muted"}`}
+              className={`p-1.5 ${viewMode === "table" ? "bg-slate-100" : "hover:bg-slate-50"}`}
             >
               <LayoutList className="h-4 w-4" />
             </button>
           </div>
           <button
             onClick={onAddBlock}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md transition-colors shadow-sm"
           >
             <Plus className="h-3.5 w-3.5" />
             Add Block
@@ -293,7 +293,7 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
               {filteredData.length === 0 && hasActiveFilters ? (
                 <TableRow>
                   <TableCell colSpan={BLOCK_COLUMNS.length + 1} className="text-center py-8">
-                    <div className="text-sm text-muted-foreground">No results match your filters</div>
+                    <div className="text-sm text-slate-400">No results match your filters</div>
                     <button
                       onClick={clearAllFilters}
                       className="text-xs text-blue-600 hover:text-blue-800 mt-1"
@@ -306,19 +306,19 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
               filteredData.map((block) => (
                 <Fragment key={block.id}>
                   <TableRow
-                    className="cursor-pointer hover:bg-muted"
+                    className="cursor-pointer hover:bg-slate-50"
                     onClick={() => onBlockClick(block)}
                   >
                     <TableCell>
                       {block.mappedInterests && block.mappedInterests.length > 0 && (
                         <button
                           onClick={(e) => toggleExpand(block.id, e)}
-                          className="p-1 hover:bg-muted rounded"
+                          className="p-1 hover:bg-slate-100 rounded"
                         >
                           {expandedBlockId === block.id ? (
-                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            <ChevronDown className="h-4 w-4 text-slate-400" />
                           ) : (
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            <ChevronRight className="h-4 w-4 text-slate-400" />
                           )}
                         </button>
                       )}
@@ -391,7 +391,7 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
                   {/* Expanded Row - Mapped Interests */}
                   {expandedBlockId === block.id && block.mappedInterests && (
                     <TableRow>
-                      <TableCell colSpan={10} className="bg-muted p-0">
+                      <TableCell colSpan={10} className="bg-slate-50 p-0">
                         <div className="p-3 pl-10">
                           <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
                             Mapped Interests
@@ -400,12 +400,12 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
                             {block.mappedInterests.map((interest) => (
                               <div
                                 key={interest.id}
-                                className="flex items-center justify-between p-2 bg-card rounded border text-sm"
+                                className="flex items-center justify-between p-2 bg-white rounded border text-sm"
                               >
                                 <span className="font-medium">{interest.investor || "—"}</span>
                                 <div className="flex items-center gap-2">
                                   <span>{formatCurrency(interest.committedCents)}</span>
-                                  <Badge className="text-xs bg-muted">
+                                  <Badge className="text-xs bg-slate-100">
                                     {interest.status.replace("_", " ")}
                                   </Badge>
                                 </div>
@@ -429,7 +429,7 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
             <div
               key={block.id}
               onClick={() => onBlockClick(block)}
-              className="p-4 border rounded-lg cursor-pointer hover:border-border hover:bg-muted transition-colors"
+              className="p-4 border rounded-lg cursor-pointer hover:border-slate-300 hover:bg-slate-50 transition-colors"
             >
               <div className="flex items-start justify-between mb-3">
                 <div>

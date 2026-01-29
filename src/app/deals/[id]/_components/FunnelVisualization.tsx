@@ -16,8 +16,8 @@ interface FunnelVisualizationProps {
 }
 
 const stageConfig = [
-  { key: "prospecting", label: "Prospecting", color: "bg-muted-foreground/30", hoverColor: "bg-muted-foreground/50" },
-  { key: "contacted", label: "Contacted", color: "bg-muted-foreground/50", hoverColor: "bg-muted0" },
+  { key: "prospecting", label: "Prospecting", color: "bg-slate-300", hoverColor: "bg-slate-400" },
+  { key: "contacted", label: "Contacted", color: "bg-slate-400", hoverColor: "bg-slate-500" },
   { key: "softCircled", label: "Soft Circled", color: "bg-blue-400", hoverColor: "bg-blue-500" },
   { key: "committed", label: "Committed", color: "bg-purple-500", hoverColor: "bg-purple-600" },
   { key: "allocated", label: "Allocated", color: "bg-indigo-500", hoverColor: "bg-indigo-600" },
@@ -59,7 +59,7 @@ export function FunnelVisualization({
             >
               {/* Tooltip */}
               {isHovered && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-foreground text-background text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
                   {stage.label}: {count}
                 </div>
               )}
@@ -80,7 +80,7 @@ export function FunnelVisualization({
               onClick={() => onStageClick?.(stage.key)}
               className={`
                 flex-1 text-center py-2 rounded text-sm transition-colors
-                ${isActive ? "bg-muted font-medium" : "hover:bg-muted"}
+                ${isActive ? "bg-slate-100 font-medium" : "hover:bg-slate-50"}
               `}
             >
               <div className="text-xs text-muted-foreground">{stage.label}</div>
@@ -186,13 +186,13 @@ export function FunnelVertical({
             onClick={() => onStageClick?.(stage.key)}
             className={`
               w-full flex items-center gap-3 group
-              ${isActive ? "bg-muted rounded" : ""}
+              ${isActive ? "bg-slate-100 rounded" : ""}
             `}
           >
             <div className="w-20 text-xs text-right text-muted-foreground group-hover:text-foreground">
               {stage.label}
             </div>
-            <div className="flex-1 h-5 bg-muted rounded overflow-hidden">
+            <div className="flex-1 h-5 bg-slate-100 rounded overflow-hidden">
               <div
                 className={`h-full ${stage.color} transition-all group-hover:opacity-80`}
                 style={{ width: `${Math.max(widthPct, 3)}%` }}

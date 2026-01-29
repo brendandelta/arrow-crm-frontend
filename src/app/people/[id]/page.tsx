@@ -78,7 +78,7 @@ const ACTIVITY_TYPES = [
 
 const OUTCOMES = [
   { value: "completed", label: "Completed", color: "text-emerald-600 bg-emerald-50" },
-  { value: "no_answer", label: "No Answer", color: "text-muted-foreground bg-muted" },
+  { value: "no_answer", label: "No Answer", color: "text-slate-600 bg-slate-100" },
   { value: "left_voicemail", label: "Left Voicemail", color: "text-blue-600 bg-blue-50" },
   { value: "scheduled_followup", label: "Scheduled Follow-up", color: "text-purple-600 bg-purple-50" },
   { value: "interested", label: "Interested", color: "text-emerald-600 bg-emerald-50" },
@@ -161,14 +161,14 @@ function QuickActivityLogger({ personId, onActivityLogged }: QuickActivityLogger
   const showOutcome = selectedType && ["call", "meeting", "video_call"].includes(selectedType);
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-white border border-border rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
       {!expanded ? (
         <div className="p-4">
           <div className="flex items-center gap-2 mb-3">
             <div className="h-6 w-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
               <Zap className="h-3 w-3 text-white" />
             </div>
-            <span className="text-sm font-semibold text-foreground">Quick Log</span>
+            <span className="text-sm font-semibold text-slate-900">Quick Log</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {ACTIVITY_TYPES.map((type) => {
@@ -196,10 +196,10 @@ function QuickActivityLogger({ personId, onActivityLogged }: QuickActivityLogger
                   <typeConfig.icon className={`h-5 w-5 ${typeConfig.color}`} />
                 </div>
               )}
-              <span className="font-semibold text-foreground">Log {typeConfig?.label}</span>
+              <span className="font-semibold text-slate-900">Log {typeConfig?.label}</span>
             </div>
-            <button onClick={handleCancel} className="p-1 hover:bg-muted rounded-lg transition-colors">
-              <X className="h-4 w-4 text-muted-foreground" />
+            <button onClick={handleCancel} className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
+              <X className="h-4 w-4 text-slate-400" />
             </button>
           </div>
 
@@ -210,13 +210,13 @@ function QuickActivityLogger({ personId, onActivityLogged }: QuickActivityLogger
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Brief description..."
-            className="w-full px-4 py-3 text-sm bg-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+            className="w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
           />
 
           {/* Direction */}
           {showDirection && (
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Direction</span>
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Direction</span>
               <div className="flex gap-1">
                 {(["outbound", "inbound"] as const).map((d) => (
                   <button
@@ -224,8 +224,8 @@ function QuickActivityLogger({ personId, onActivityLogged }: QuickActivityLogger
                     onClick={() => setDirection(d)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
                       direction === d
-                        ? "bg-foreground text-background border-foreground"
-                        : "bg-card text-muted-foreground border-border hover:bg-muted"
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                     }`}
                   >
                     {d === "outbound" ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
@@ -239,7 +239,7 @@ function QuickActivityLogger({ personId, onActivityLogged }: QuickActivityLogger
           {/* Outcome */}
           {showOutcome && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Outcome</span>
+              <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Outcome</span>
               <div className="flex flex-wrap gap-1">
                 {OUTCOMES.map((o) => (
                   <button
@@ -248,7 +248,7 @@ function QuickActivityLogger({ personId, onActivityLogged }: QuickActivityLogger
                     className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all ${
                       outcome === o.value
                         ? `${o.color} ring-2 ring-offset-1 ring-current`
-                        : "bg-muted text-muted-foreground hover:bg-muted"
+                        : "bg-slate-50 text-slate-600 hover:bg-slate-100"
                     }`}
                   >
                     {o.label}
@@ -264,14 +264,14 @@ function QuickActivityLogger({ personId, onActivityLogged }: QuickActivityLogger
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Add notes (optional)..."
             rows={2}
-            className="w-full px-4 py-3 text-sm bg-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"
+            className="w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"
           />
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-2">
             <button
               onClick={handleCancel}
-              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-xl transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
             >
               Cancel
             </button>
@@ -321,7 +321,7 @@ function ActivityTimeline({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -329,11 +329,11 @@ function ActivityTimeline({
   if (activities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
-          <Clock className="h-6 w-6 text-muted-foreground" />
+        <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
+          <Clock className="h-6 w-6 text-slate-400" />
         </div>
-        <p className="text-sm font-medium text-muted-foreground">No activities yet</p>
-        <p className="text-xs text-muted-foreground mt-1">Log your first interaction above</p>
+        <p className="text-sm font-medium text-slate-600">No activities yet</p>
+        <p className="text-xs text-slate-400 mt-1">Log your first interaction above</p>
       </div>
     );
   }
@@ -353,7 +353,7 @@ function ActivityTimeline({
             <button
               key={activity.id}
               onClick={() => onActivityClick(activity)}
-              className={`group relative w-full flex items-start gap-4 px-3 py-3 rounded-xl text-left transition-all hover:bg-muted ${isFirst ? "bg-muted/50" : ""}`}
+              className={`group relative w-full flex items-start gap-4 px-3 py-3 rounded-xl text-left transition-all hover:bg-slate-50 ${isFirst ? "bg-slate-50/50" : ""}`}
             >
               {/* Timeline dot */}
               <div className={`relative z-10 flex-shrink-0 h-10 w-10 rounded-xl ${typeConfig.bgColor} flex items-center justify-center shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform`}>
@@ -363,21 +363,21 @@ function ActivityTimeline({
               {/* Content */}
               <div className="flex-1 min-w-0 pt-0.5">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-sm font-medium text-foreground truncate">
+                  <span className="text-sm font-medium text-slate-900 truncate">
                     {activity.subject || typeConfig.label}
                   </span>
                   {activity.direction && (
-                    <span className="flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground">
+                    <span className="flex items-center gap-0.5 text-[10px] font-medium text-slate-400">
                       {activity.direction === "outbound" ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
                     </span>
                   )}
                   {activity.outcome && (
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${OUTCOMES.find(o => o.value === activity.outcome)?.color || "bg-muted text-muted-foreground"}`}>
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${OUTCOMES.find(o => o.value === activity.outcome)?.color || "bg-slate-100 text-slate-600"}`}>
                       {OUTCOMES.find(o => o.value === activity.outcome)?.label || activity.outcome}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-slate-500">
                   <span>{formatRelativeTime(activity.occurredAt)}</span>
                   {activity.dealName && (
                     <>
@@ -399,7 +399,7 @@ function ActivityTimeline({
 
               {/* Hover indicator */}
               <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                <ExternalLink className="h-4 w-4 text-slate-400" />
               </div>
             </button>
           );
@@ -451,7 +451,7 @@ function RelationshipCard({
 
   return (
     <div
-      className="group relative bg-card border border-border rounded-2xl p-4 hover:shadow-lg hover:border-border transition-all duration-300"
+      className="group relative bg-white border border-slate-200 rounded-2xl p-4 hover:shadow-lg hover:border-slate-300 transition-all duration-300"
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
@@ -465,13 +465,13 @@ function RelationshipCard({
       <div className={`absolute top-3 right-3 flex items-center gap-1 transition-opacity ${showActions ? "opacity-100" : "opacity-0"}`}>
         <button
           onClick={(e) => { e.preventDefault(); onEdit(); }}
-          className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-muted-foreground transition-colors"
+          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
         >
           <Edit3 className="h-3.5 w-3.5" />
         </button>
         <button
           onClick={(e) => { e.preventDefault(); onDelete(); }}
-          className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
@@ -489,7 +489,7 @@ function RelationshipCard({
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-foreground truncate mb-0.5">
+            <div className="font-semibold text-slate-900 truncate mb-0.5">
               {relationship.otherEntityName || "Unknown"}
             </div>
             <div className="flex items-center gap-2">
@@ -499,16 +499,16 @@ function RelationshipCard({
               >
                 {relationship.relationshipTypeName}
               </span>
-              <span className="text-xs text-muted-foreground">{relationship.otherEntityType}</span>
+              <span className="text-xs text-slate-400">{relationship.otherEntityType}</span>
             </div>
           </div>
         </div>
 
         {/* Strength indicator */}
         {relationship.strength !== null && (
-          <div className="mt-3 pt-3 border-t border-border">
+          <div className="mt-3 pt-3 border-t border-slate-100">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Strength</span>
+              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Strength</span>
               <span className="text-xs font-semibold" style={{ color }}>
                 {relationship.strength}/5
               </span>
@@ -529,7 +529,7 @@ function RelationshipCard({
 
         {/* Notes preview */}
         {relationship.notes && (
-          <p className="mt-3 text-xs text-muted-foreground line-clamp-2 italic">
+          <p className="mt-3 text-xs text-slate-500 line-clamp-2 italic">
             "{relationship.notes}"
           </p>
         )}
@@ -543,7 +543,7 @@ function RelationshipCard({
 // ====================
 
 const WARMTH_CONFIG = [
-  { label: "Cold", color: "bg-muted-foreground", gradient: "from-muted-foreground to-muted-foreground" },
+  { label: "Cold", color: "bg-slate-400", gradient: "from-slate-400 to-slate-500" },
   { label: "Warm", color: "bg-yellow-500", gradient: "from-yellow-400 to-orange-500" },
   { label: "Hot", color: "bg-orange-500", gradient: "from-orange-500 to-red-500" },
   { label: "Champion", color: "bg-red-500", gradient: "from-red-500 to-pink-500" },
@@ -589,14 +589,14 @@ function InlineText({
         if (e.key === "Escape") { setDraft(value); setEditing(false); }
       }}
       placeholder={placeholder}
-      className={`bg-transparent border-b border-border outline-none py-0.5 ${inputClassName}`}
+      className={`bg-transparent border-b border-slate-300 outline-none py-0.5 ${inputClassName}`}
     />
   ) : (
     <button
       onClick={() => { setDraft(value); setEditing(true); }}
       className={`hover:text-indigo-600 transition-colors cursor-text text-left ${className}`}
     >
-      {value || <span className="text-muted-foreground/60 italic">{placeholder}</span>}
+      {value || <span className="text-slate-300 italic">{placeholder}</span>}
     </button>
   );
 }
@@ -615,7 +615,7 @@ function InlineWarmthSelector({ warmth, onSave }: { warmth: number; onSave: (val
             className={`px-3 py-1.5 text-xs font-semibold rounded-full border-2 transition-all ${
               i === warmth
                 ? `bg-gradient-to-r ${w.gradient} text-white border-transparent shadow-lg`
-                : `bg-card border-border text-muted-foreground hover:border-border`
+                : `bg-white border-slate-200 text-slate-600 hover:border-slate-300`
             }`}
           >
             {w.label}
@@ -640,7 +640,7 @@ function LinkChip({
   icon: Icon,
   url,
   onSave,
-  colors = "text-muted-foreground bg-muted hover:bg-muted",
+  colors = "text-slate-600 bg-slate-100 hover:bg-slate-200",
 }: {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -663,8 +663,8 @@ function LinkChip({
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-card border border-border rounded-xl shadow-sm">
-        <Icon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-xl shadow-sm">
+        <Icon className="h-4 w-4 text-slate-400 flex-shrink-0" />
         <input
           ref={ref}
           value={draft}
@@ -701,7 +701,7 @@ function LinkChip({
   return (
     <button
       onClick={() => { setDraft(""); setEditing(true); }}
-      className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground bg-muted hover:bg-muted rounded-xl transition-colors border border-dashed border-border"
+      className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-400 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors border border-dashed border-slate-200"
     >
       <Icon className="h-4 w-4" />
       Add {label}
@@ -723,11 +723,11 @@ function NotesEditor({ value, onSave }: { value: string | null; onSave: (val: st
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Add notes..."
           rows={4}
-          className="w-full px-4 py-3 text-sm text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none"
+          className="w-full px-4 py-3 text-sm text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none"
           autoFocus
         />
         <div className="flex justify-end gap-2">
-          <button onClick={() => { setDraft(value || ""); setEditing(false); }} className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">Cancel</button>
+          <button onClick={() => { setDraft(value || ""); setEditing(false); }} className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700">Cancel</button>
           <button onClick={commit} className="px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg">Save</button>
         </div>
       </div>
@@ -735,8 +735,8 @@ function NotesEditor({ value, onSave }: { value: string | null; onSave: (val: st
   }
 
   return (
-    <button onClick={() => { setDraft(value || ""); setEditing(true); }} className="w-full text-left text-sm text-foreground hover:text-indigo-600 transition-colors cursor-text">
-      {value ? <span className="whitespace-pre-wrap">{value}</span> : <span className="text-muted-foreground/60 italic">Click to add notes...</span>}
+    <button onClick={() => { setDraft(value || ""); setEditing(true); }} className="w-full text-left text-sm text-slate-700 hover:text-indigo-600 transition-colors cursor-text">
+      {value ? <span className="whitespace-pre-wrap">{value}</span> : <span className="text-slate-300 italic">Click to add notes...</span>}
     </button>
   );
 }
@@ -755,11 +755,11 @@ function BioEditor({ value, onSave }: { value: string | null; onSave: (val: stri
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Write a bio..."
           rows={3}
-          className="w-full px-4 py-3 text-sm text-foreground border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none leading-relaxed"
+          className="w-full px-4 py-3 text-sm text-slate-700 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none leading-relaxed"
           autoFocus
         />
         <div className="flex justify-end gap-2">
-          <button onClick={() => { setDraft(value || ""); setEditing(false); }} className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">Cancel</button>
+          <button onClick={() => { setDraft(value || ""); setEditing(false); }} className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700">Cancel</button>
           <button onClick={commit} className="px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg">Save</button>
         </div>
       </div>
@@ -767,8 +767,8 @@ function BioEditor({ value, onSave }: { value: string | null; onSave: (val: stri
   }
 
   return (
-    <button onClick={() => { setDraft(value || ""); setEditing(true); }} className="w-full text-left text-sm text-foreground leading-relaxed hover:text-indigo-600 transition-colors cursor-text">
-      {value ? <span>{value}</span> : <span className="text-muted-foreground/60 italic">Click to add bio...</span>}
+    <button onClick={() => { setDraft(value || ""); setEditing(true); }} className="w-full text-left text-sm text-slate-700 leading-relaxed hover:text-indigo-600 transition-colors cursor-text">
+      {value ? <span>{value}</span> : <span className="text-slate-300 italic">Click to add bio...</span>}
     </button>
   );
 }
@@ -790,9 +790,9 @@ function TagsEditor({ tags, onSave }: { tags: string[]; onSave: (val: string[]) 
   return (
     <div className="flex flex-wrap items-center gap-2">
       {tags.map((tag) => (
-        <span key={tag} className="group inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-slate-100 to-slate-50 text-foreground text-xs font-medium rounded-full border border-border">
+        <span key={tag} className="group inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-slate-100 to-slate-50 text-slate-700 text-xs font-medium rounded-full border border-slate-200">
           {tag}
-          <button onClick={() => onSave(tags.filter((t) => t !== tag))} className="text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onClick={() => onSave(tags.filter((t) => t !== tag))} className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
             <X className="h-3 w-3" />
           </button>
         </span>
@@ -806,14 +806,14 @@ function TagsEditor({ tags, onSave }: { tags: string[]; onSave: (val: string[]) 
             onBlur={() => { if (!newTag.trim()) setAdding(false); }}
             onKeyDown={(e) => { if (e.key === "Enter") addTag(); if (e.key === "Escape") { setNewTag(""); setAdding(false); } }}
             placeholder="New tag"
-            className="w-24 px-3 py-1 text-xs border border-border rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+            className="w-24 px-3 py-1 text-xs border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
           />
           <button onClick={addTag} className="p-1 text-indigo-600 hover:text-indigo-700">
             <Check className="h-4 w-4" />
           </button>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} className="inline-flex items-center gap-1 px-3 py-1 text-xs text-muted-foreground hover:text-muted-foreground border border-dashed border-border rounded-full hover:border-border transition-colors">
+        <button onClick={() => setAdding(true)} className="inline-flex items-center gap-1 px-3 py-1 text-xs text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-full hover:border-slate-300 transition-colors">
           <Plus className="h-3 w-3" />
           Add
         </button>
@@ -880,7 +880,7 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
         {/* Emails */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Email Addresses</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Email Addresses</span>
             <button onClick={addEmail} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
               <Plus className="h-3 w-3" /> Add
             </button>
@@ -891,14 +891,14 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
                 <button
                   onClick={() => setPrimaryEmail(idx)}
                   className={`flex-shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                    email.primary ? "border-indigo-500 bg-indigo-500" : "border-border hover:border-indigo-400"
+                    email.primary ? "border-indigo-500 bg-indigo-500" : "border-slate-300 hover:border-indigo-400"
                   }`}
                   title="Set as primary"
                 >
                   {email.primary && <Check className="h-3 w-3 text-white" />}
                 </button>
-                <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-card border border-border rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500">
-                  <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500">
+                  <Mail className="h-4 w-4 text-slate-400 flex-shrink-0" />
                   <input
                     type="email"
                     value={email.value}
@@ -909,7 +909,7 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
                   <select
                     value={email.label}
                     onChange={(e) => setFormEmails(formEmails.map((em, i) => i === idx ? { ...em, label: e.target.value as "work" | "personal" } : em))}
-                    className="text-xs text-muted-foreground bg-transparent outline-none cursor-pointer"
+                    className="text-xs text-slate-500 bg-transparent outline-none cursor-pointer"
                   >
                     <option value="work">Work</option>
                     <option value="personal">Personal</option>
@@ -917,14 +917,14 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
                 </div>
                 <button
                   onClick={() => removeEmail(idx)}
-                  className="p-1.5 text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="p-1.5 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
             ))}
             {formEmails.length === 0 && (
-              <button onClick={addEmail} className="w-full py-3 text-sm text-muted-foreground hover:text-muted-foreground border border-dashed border-border rounded-xl hover:border-border transition-colors">
+              <button onClick={addEmail} className="w-full py-3 text-sm text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
                 + Add email address
               </button>
             )}
@@ -934,7 +934,7 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
         {/* Phones */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Phone Numbers</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Phone Numbers</span>
             <button onClick={addPhone} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
               <Plus className="h-3 w-3" /> Add
             </button>
@@ -946,14 +946,14 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
                   <button
                     onClick={() => setPrimaryPhone(idx)}
                     className={`flex-shrink-0 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                      phone.primary ? "border-indigo-500 bg-indigo-500" : "border-border hover:border-indigo-400"
+                      phone.primary ? "border-indigo-500 bg-indigo-500" : "border-slate-300 hover:border-indigo-400"
                     }`}
                     title="Set as primary"
                   >
                     {phone.primary && <Check className="h-3 w-3 text-white" />}
                   </button>
-                  <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-card border border-border rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500">
-                    <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500">
+                    <Phone className="h-4 w-4 text-slate-400 flex-shrink-0" />
                     <input
                       type="tel"
                       value={phone.value}
@@ -964,7 +964,7 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
                     <select
                       value={phone.label}
                       onChange={(e) => setFormPhones(formPhones.map((ph, i) => i === idx ? { ...ph, label: e.target.value as "work" | "personal" } : ph))}
-                      className="text-xs text-muted-foreground bg-transparent outline-none cursor-pointer"
+                      className="text-xs text-slate-500 bg-transparent outline-none cursor-pointer"
                     >
                       <option value="work">Work</option>
                       <option value="personal">Personal</option>
@@ -972,7 +972,7 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
                   </div>
                   <button
                     onClick={() => removePhone(idx)}
-                    className="p-1.5 text-muted-foreground hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="p-1.5 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -983,14 +983,14 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
                     { key: "whatsapp", label: "WhatsApp", icon: WhatsAppIcon, color: "text-green-600 bg-green-50 border-green-200" },
                     { key: "telegram", label: "Telegram", icon: TelegramIcon, color: "text-blue-500 bg-blue-50 border-blue-200" },
                     { key: "signal", label: "Signal", icon: SignalIcon, color: "text-blue-600 bg-blue-50 border-blue-200" },
-                    { key: "text", label: "SMS", icon: MessageSquare, color: "text-muted-foreground bg-muted border-border" },
-                    { key: "call", label: "Call", icon: PhoneCall, color: "text-muted-foreground bg-muted border-border" },
+                    { key: "text", label: "SMS", icon: MessageSquare, color: "text-slate-600 bg-slate-50 border-slate-200" },
+                    { key: "call", label: "Call", icon: PhoneCall, color: "text-slate-600 bg-slate-50 border-slate-200" },
                   ].map(({ key, label, icon: Icon, color }) => (
                     <button
                       key={key}
                       onClick={() => setFormPhones(formPhones.map((ph, i) => i === idx ? { ...ph, [key]: !ph[key as keyof typeof ph] } : ph))}
                       className={`flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-lg border transition-all ${
-                        phone[key as keyof typeof phone] ? color : "text-muted-foreground bg-card border-border opacity-50"
+                        phone[key as keyof typeof phone] ? color : "text-slate-400 bg-white border-slate-200 opacity-50"
                       }`}
                     >
                       <Icon className="h-3 w-3" />
@@ -1001,7 +1001,7 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
               </div>
             ))}
             {formPhones.length === 0 && (
-              <button onClick={addPhone} className="w-full py-3 text-sm text-muted-foreground hover:text-muted-foreground border border-dashed border-border rounded-xl hover:border-border transition-colors">
+              <button onClick={addPhone} className="w-full py-3 text-sm text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
                 + Add phone number
               </button>
             )}
@@ -1010,7 +1010,7 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-2 pt-2">
-          <button onClick={() => setEditing(false)} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-xl transition-colors">
+          <button onClick={() => setEditing(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
             Cancel
           </button>
           <button
@@ -1039,24 +1039,24 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
             <button
               key={idx}
               onClick={startEditing}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-left bg-muted hover:bg-muted rounded-xl transition-colors group"
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-left bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors group"
             >
-              <div className={`h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 ${email.primary ? "bg-purple-100" : "bg-muted"}`}>
-                <Mail className={`h-4 w-4 ${email.primary ? "text-purple-600" : "text-muted-foreground"}`} />
+              <div className={`h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 ${email.primary ? "bg-purple-100" : "bg-slate-100"}`}>
+                <Mail className={`h-4 w-4 ${email.primary ? "text-purple-600" : "text-slate-500"}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-foreground truncate">{email.value}</div>
+                <div className="text-sm font-medium text-slate-900 truncate">{email.value}</div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-muted-foreground capitalize">{email.label || "work"}</span>
+                  <span className="text-[10px] text-slate-500 capitalize">{email.label || "work"}</span>
                   {email.primary && <span className="text-[10px] text-purple-600 font-medium">• Primary</span>}
                 </div>
               </div>
-              <Edit3 className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Edit3 className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
           ))}
         </div>
       ) : (
-        <button onClick={startEditing} className="w-full flex items-center gap-3 px-3 py-3 text-muted-foreground hover:text-muted-foreground border border-dashed border-border rounded-xl hover:border-border transition-colors">
+        <button onClick={startEditing} className="w-full flex items-center gap-3 px-3 py-3 text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
           <Mail className="h-4 w-4" />
           <span className="text-sm">Add email address</span>
         </button>
@@ -1069,25 +1069,25 @@ function ContactInfoEditor({ emails, phones, onSave, saving }: ContactInfoEditor
             <button
               key={idx}
               onClick={startEditing}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-left bg-muted hover:bg-muted rounded-xl transition-colors group"
+              className="w-full flex items-center gap-3 px-3 py-2.5 text-left bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors group"
             >
-              <div className={`h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 ${phone.primary ? "bg-blue-100" : "bg-muted"}`}>
-                <Phone className={`h-4 w-4 ${phone.primary ? "text-blue-600" : "text-muted-foreground"}`} />
+              <div className={`h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 ${phone.primary ? "bg-blue-100" : "bg-slate-100"}`}>
+                <Phone className={`h-4 w-4 ${phone.primary ? "text-blue-600" : "text-slate-500"}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-foreground truncate">{phone.value}</div>
+                <div className="text-sm font-medium text-slate-900 truncate">{phone.value}</div>
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] text-muted-foreground capitalize">{phone.label || "work"}</span>
+                  <span className="text-[10px] text-slate-500 capitalize">{phone.label || "work"}</span>
                   {phone.primary && <span className="text-[10px] text-blue-600 font-medium">• Primary</span>}
                   {phone.whatsapp && <span className="text-[10px] text-green-600">• WhatsApp</span>}
                 </div>
               </div>
-              <Edit3 className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Edit3 className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
           ))}
         </div>
       ) : (
-        <button onClick={startEditing} className="w-full flex items-center gap-3 px-3 py-3 text-muted-foreground hover:text-muted-foreground border border-dashed border-border rounded-xl hover:border-border transition-colors">
+        <button onClick={startEditing} className="w-full flex items-center gap-3 px-3 py-3 text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
           <Phone className="h-4 w-4" />
           <span className="text-sm">Add phone number</span>
         </button>
@@ -1156,7 +1156,7 @@ function ExperienceEditor({ employments, organizations, onOrganizationCreated, o
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Work Experience</span>
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Work Experience</span>
           <button onClick={addEmployment} className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
             <Plus className="h-3 w-3" /> Add
           </button>
@@ -1164,7 +1164,7 @@ function ExperienceEditor({ employments, organizations, onOrganizationCreated, o
 
         <div className="space-y-4">
           {formEmployments.map((emp, idx) => (
-            <div key={idx} className="relative p-4 bg-card border border-border rounded-xl space-y-3 group">
+            <div key={idx} className="relative p-4 bg-white border border-slate-200 rounded-xl space-y-3 group">
               {/* Primary badge and remove */}
               <div className="flex items-center justify-between">
                 <button
@@ -1172,7 +1172,7 @@ function ExperienceEditor({ employments, organizations, onOrganizationCreated, o
                   className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full transition-all ${
                     emp.isPrimary
                       ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
-                      : "bg-muted text-muted-foreground hover:bg-muted"
+                      : "bg-slate-100 text-slate-500 hover:bg-slate-200"
                   }`}
                 >
                   <Star className="h-3 w-3" />
@@ -1180,7 +1180,7 @@ function ExperienceEditor({ employments, organizations, onOrganizationCreated, o
                 </button>
                 <button
                   onClick={() => removeEmployment(idx)}
-                  className="p-1.5 text-muted-foreground hover:text-red-500 transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -1201,7 +1201,7 @@ function ExperienceEditor({ employments, organizations, onOrganizationCreated, o
                 value={emp.title}
                 onChange={(evt) => setFormEmployments(formEmployments.map((item, i) => i === idx ? { ...item, title: evt.target.value } : item))}
                 placeholder="Job title (e.g., Managing Director)"
-                className="w-full px-3 py-2.5 text-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               />
 
               {/* Department */}
@@ -1210,14 +1210,14 @@ function ExperienceEditor({ employments, organizations, onOrganizationCreated, o
                 value={emp.department}
                 onChange={(evt) => setFormEmployments(formEmployments.map((item, i) => i === idx ? { ...item, department: evt.target.value } : item))}
                 placeholder="Department (optional)"
-                className="w-full px-3 py-2.5 text-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               />
 
               {/* Current toggle */}
               <button
                 onClick={() => setFormEmployments(formEmployments.map((item, i) => i === idx ? { ...item, isCurrent: !item.isCurrent } : item))}
                 className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg transition-all ${
-                  emp.isCurrent ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-muted text-muted-foreground border border-border"
+                  emp.isCurrent ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-50 text-slate-500 border border-slate-200"
                 }`}
               >
                 {emp.isCurrent ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
@@ -1227,7 +1227,7 @@ function ExperienceEditor({ employments, organizations, onOrganizationCreated, o
           ))}
 
           {formEmployments.length === 0 && (
-            <button onClick={addEmployment} className="w-full py-4 text-sm text-muted-foreground hover:text-muted-foreground border border-dashed border-border rounded-xl hover:border-border transition-colors">
+            <button onClick={addEmployment} className="w-full py-4 text-sm text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
               + Add work experience
             </button>
           )}
@@ -1235,7 +1235,7 @@ function ExperienceEditor({ employments, organizations, onOrganizationCreated, o
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-2 pt-2">
-          <button onClick={() => setEditing(false)} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-xl transition-colors">
+          <button onClick={() => setEditing(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
             Cancel
           </button>
           <button
@@ -1254,7 +1254,7 @@ function ExperienceEditor({ employments, organizations, onOrganizationCreated, o
   // View mode
   if (employments.length === 0) {
     return (
-      <button onClick={startEditing} className="w-full flex items-center gap-3 px-3 py-4 text-muted-foreground hover:text-muted-foreground border border-dashed border-border rounded-xl hover:border-border transition-colors">
+      <button onClick={startEditing} className="w-full flex items-center gap-3 px-3 py-4 text-slate-400 hover:text-slate-600 border border-dashed border-slate-200 rounded-xl hover:border-slate-300 transition-colors">
         <Building2 className="h-5 w-5" />
         <span className="text-sm">Add work experience</span>
       </button>
@@ -1267,21 +1267,21 @@ function ExperienceEditor({ employments, organizations, onOrganizationCreated, o
         <button
           key={emp.id}
           onClick={startEditing}
-          className="w-full flex items-start gap-3 px-3 py-3 text-left bg-muted hover:bg-muted rounded-xl transition-colors group"
+          className="w-full flex items-start gap-3 px-3 py-3 text-left bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors group"
         >
-          <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${emp.isPrimary ? "bg-gradient-to-br from-indigo-500 to-purple-600" : "bg-muted"}`}>
-            <Building2 className={`h-5 w-5 ${emp.isPrimary ? "text-white" : "text-muted-foreground"}`} />
+          <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${emp.isPrimary ? "bg-gradient-to-br from-indigo-500 to-purple-600" : "bg-slate-200"}`}>
+            <Building2 className={`h-5 w-5 ${emp.isPrimary ? "text-white" : "text-slate-500"}`} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-foreground">{emp.organization.name}</div>
-            {emp.title && <div className="text-sm text-muted-foreground">{emp.title}</div>}
+            <div className="text-sm font-semibold text-slate-900">{emp.organization.name}</div>
+            {emp.title && <div className="text-sm text-slate-600">{emp.title}</div>}
             <div className="flex items-center gap-1.5 mt-1">
               {emp.isCurrent && <span className="text-[10px] font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Current</span>}
               {emp.isPrimary && <span className="text-[10px] font-medium text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">Primary</span>}
-              {emp.department && <span className="text-[10px] text-muted-foreground">{emp.department}</span>}
+              {emp.department && <span className="text-[10px] text-slate-500">{emp.department}</span>}
             </div>
           </div>
-          <Edit3 className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
+          <Edit3 className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
         </button>
       ))}
       <button onClick={startEditing} className="w-full text-center text-xs text-indigo-600 hover:text-indigo-700 font-medium py-2">
@@ -1681,7 +1681,7 @@ export default function PersonDetailPage() {
   if (!person) {
     return (
       <div className="flex items-center justify-center h-64">
-        <span className="text-muted-foreground">Person not found</span>
+        <span className="text-slate-400">Person not found</span>
       </div>
     );
   }
@@ -1700,9 +1700,9 @@ export default function PersonDetailPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-12">
       {/* Page Header */}
-      <div className="bg-gradient-to-br from-white to-slate-50 border border-border rounded-3xl shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-card/50">
-          <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100 bg-white/50">
+          <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors">
             <ArrowLeft className="h-4 w-4" />
             <span>Back</span>
           </button>
@@ -1733,12 +1733,12 @@ export default function PersonDetailPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <InlineText value={person.firstName} placeholder="First name" onSave={(val) => saveField("firstName", val)} className="text-2xl font-bold text-foreground" inputClassName="text-2xl font-bold text-foreground w-40" />
-                    <InlineText value={person.lastName} placeholder="Last name" onSave={(val) => saveField("lastName", val)} className="text-2xl font-bold text-foreground" inputClassName="text-2xl font-bold text-foreground w-40" />
+                    <InlineText value={person.firstName} placeholder="First name" onSave={(val) => saveField("firstName", val)} className="text-2xl font-bold text-slate-900" inputClassName="text-2xl font-bold text-slate-900 w-40" />
+                    <InlineText value={person.lastName} placeholder="Last name" onSave={(val) => saveField("lastName", val)} className="text-2xl font-bold text-slate-900" inputClassName="text-2xl font-bold text-slate-900 w-40" />
                   </div>
 
                   {person.currentEmployment && (
-                    <p className="text-sm text-muted-foreground mb-2">
+                    <p className="text-sm text-slate-600 mb-2">
                       {person.currentEmployment.title && <span className="font-medium">{person.currentEmployment.title}</span>}
                       {person.currentEmployment.title && " at "}
                       <Link href={`/organizations/${person.currentEmployment.organization.id}`} className="text-indigo-600 hover:text-indigo-700 font-medium hover:underline">
@@ -1747,11 +1747,11 @@ export default function PersonDetailPage() {
                     </p>
                   )}
 
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1.5 text-sm text-slate-500">
                     <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
-                    <InlineText value={person.address?.city || ""} placeholder="City" onSave={(val) => saveField("city", val)} className="text-muted-foreground" inputClassName="text-sm w-24" />
+                    <InlineText value={person.address?.city || ""} placeholder="City" onSave={(val) => saveField("city", val)} className="text-slate-500" inputClassName="text-sm w-24" />
                     <span>,</span>
-                    <InlineText value={person.address?.country || ""} placeholder="Country" onSave={(val) => saveField("country", val)} className="text-muted-foreground" inputClassName="text-sm w-28" />
+                    <InlineText value={person.address?.country || ""} placeholder="Country" onSave={(val) => saveField("country", val)} className="text-slate-500" inputClassName="text-sm w-28" />
                   </div>
                 </div>
 
@@ -1761,13 +1761,13 @@ export default function PersonDetailPage() {
               {/* Quick Actions */}
               <div className="flex items-center gap-2 mt-4 flex-wrap">
                 {primaryEmail && (
-                  <a href={`mailto:${primaryEmail}`} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-foreground bg-card hover:bg-muted rounded-xl border border-border shadow-sm transition-all hover:shadow-md">
+                  <a href={`mailto:${primaryEmail}`} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
                     <Mail className="h-4 w-4" />
                     Email
                   </a>
                 )}
                 {primaryPhone && (
-                  <a href={`tel:${primaryPhone}`} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-foreground bg-card hover:bg-muted rounded-xl border border-border shadow-sm transition-all hover:shadow-md">
+                  <a href={`tel:${primaryPhone}`} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
                     <Phone className="h-4 w-4" />
                     Call
                   </a>
@@ -1779,7 +1779,7 @@ export default function PersonDetailPage() {
                   </a>
                 )}
                 <LinkChip label="LinkedIn" icon={LinkedInIcon} url={person.linkedinUrl} onSave={(val) => saveField("linkedinUrl", val || null)} colors="text-[#0A66C2] bg-blue-50 hover:bg-blue-100 border border-blue-200" />
-                <LinkChip label="Twitter" icon={TwitterIcon} url={person.twitterUrl} onSave={(val) => saveField("twitterUrl", val || null)} colors="text-foreground bg-muted hover:bg-muted border border-border" />
+                <LinkChip label="Twitter" icon={TwitterIcon} url={person.twitterUrl} onSave={(val) => saveField("twitterUrl", val || null)} colors="text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200" />
                 <LinkChip label="Instagram" icon={InstagramIcon} url={person.instagramUrl} onSave={(val) => saveField("instagramUrl", val || null)} colors="text-[#E4405F] bg-pink-50 hover:bg-pink-100 border border-pink-200" />
               </div>
             </div>
@@ -1795,15 +1795,15 @@ export default function PersonDetailPage() {
           <QuickActivityLogger personId={person.id} onActivityLogged={fetchActivities} />
 
           {/* Activity Timeline */}
-          <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
                   <Clock className="h-4 w-4 text-white" />
                 </div>
-                <h2 className="text-sm font-semibold text-foreground">Activity Timeline</h2>
+                <h2 className="text-sm font-semibold text-slate-900">Activity Timeline</h2>
               </div>
-              <span className="text-xs font-medium text-muted-foreground">{activities.length} activities</span>
+              <span className="text-xs font-medium text-slate-400">{activities.length} activities</span>
             </div>
             <div className="p-4 max-h-[500px] overflow-y-auto">
               <ActivityTimeline activities={activities} onActivityClick={(a) => setSelectedActivityId(a.id)} loading={loadingActivities} />
@@ -1812,24 +1812,24 @@ export default function PersonDetailPage() {
 
           {/* Deals & Activity */}
           {(relatedDealsCount > 0 || relatedInterestsCount > 0 || relatedBlocksCount > 0) && (
-            <div className="bg-card border border-border rounded-2xl shadow-sm">
-              <div className="px-5 py-4 border-b border-border">
-                <h2 className="text-sm font-semibold text-foreground">Deal Involvement</h2>
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
+              <div className="px-5 py-4 border-b border-slate-100">
+                <h2 className="text-sm font-semibold text-slate-900">Deal Involvement</h2>
               </div>
               <div className="p-4 space-y-3">
                 {person.relatedDeals.map((deal) => (
-                  <Link key={deal.id} href={`/deals/${deal.id}`} className="flex items-center justify-between py-3 px-4 bg-muted rounded-xl hover:bg-muted transition-colors">
+                  <Link key={deal.id} href={`/deals/${deal.id}`} className="flex items-center justify-between py-3 px-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                         <Briefcase className="h-4 w-4 text-white" />
                       </div>
                       <div>
-                        <span className="text-sm font-semibold text-foreground">{deal.name}</span>
-                        {deal.company && <span className="text-xs text-muted-foreground block">{deal.company}</span>}
+                        <span className="text-sm font-semibold text-slate-900">{deal.name}</span>
+                        {deal.company && <span className="text-xs text-slate-500 block">{deal.company}</span>}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-muted-foreground bg-card px-2 py-1 rounded-lg">{deal.role}</span>
+                      <span className="text-xs font-medium text-slate-500 bg-white px-2 py-1 rounded-lg">{deal.role}</span>
                       <StatusBadge status={deal.status} />
                     </div>
                   </Link>
@@ -1841,8 +1841,8 @@ export default function PersonDetailPage() {
                         <Users className="h-4 w-4 text-white" />
                       </div>
                       <div>
-                        <span className="text-sm font-semibold text-foreground">{interest.dealName}</span>
-                        {interest.investor && <span className="text-xs text-muted-foreground block">via {interest.investor}</span>}
+                        <span className="text-sm font-semibold text-slate-900">{interest.dealName}</span>
+                        {interest.investor && <span className="text-xs text-slate-500 block">via {interest.investor}</span>}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1858,8 +1858,8 @@ export default function PersonDetailPage() {
                         <DollarSign className="h-4 w-4 text-white" />
                       </div>
                       <div>
-                        <span className="text-sm font-semibold text-foreground">{block.dealName}</span>
-                        {block.seller && <span className="text-xs text-muted-foreground block">from {block.seller}</span>}
+                        <span className="text-sm font-semibold text-slate-900">{block.dealName}</span>
+                        {block.seller && <span className="text-xs text-slate-500 block">from {block.seller}</span>}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -1876,13 +1876,13 @@ export default function PersonDetailPage() {
         {/* Right Sidebar */}
         <div className="space-y-6">
           {/* Relationships - Always Visible */}
-          <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center">
                   <Heart className="h-4 w-4 text-white" />
                 </div>
-                <h2 className="text-sm font-semibold text-foreground">Relationships</h2>
+                <h2 className="text-sm font-semibold text-slate-900">Relationships</h2>
               </div>
               <button
                 onClick={() => { setNewRelationship(createEmptyRelationship()); setAddingRelationship(true); }}
@@ -1901,19 +1901,19 @@ export default function PersonDetailPage() {
                     <span className="text-xs font-semibold text-indigo-900 uppercase tracking-wide">
                       {editingRelationshipId ? "Edit Relationship" : "New Relationship"}
                     </span>
-                    <button onClick={() => { setAddingRelationship(false); setEditingRelationshipId(null); setNewRelationship(null); }} className="p-1 hover:bg-card/50 rounded">
-                      <X className="h-4 w-4 text-muted-foreground" />
+                    <button onClick={() => { setAddingRelationship(false); setEditingRelationshipId(null); setNewRelationship(null); }} className="p-1 hover:bg-white/50 rounded">
+                      <X className="h-4 w-4 text-slate-400" />
                     </button>
                   </div>
 
                   {/* Entity Type Toggle */}
-                  <div className="flex gap-1 p-1 bg-card rounded-lg">
+                  <div className="flex gap-1 p-1 bg-white rounded-lg">
                     {(["Person", "Organization"] as const).map((type) => (
                       <button
                         key={type}
                         onClick={() => setNewRelationship({ ...newRelationship, otherEntityType: type, otherEntityId: null, otherEntityName: "", relationshipTypeId: null })}
                         className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md transition-all ${
-                          newRelationship.otherEntityType === type ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:bg-muted"
+                          newRelationship.otherEntityType === type ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:bg-slate-50"
                         }`}
                       >
                         {type === "Person" ? <Users className="h-3.5 w-3.5" /> : <Building2 className="h-3.5 w-3.5" />}
@@ -1944,14 +1944,14 @@ export default function PersonDetailPage() {
                   {/* Strength */}
                   {newRelationship.relationshipTypeId && (
                     <div>
-                      <span className="text-xs font-medium text-muted-foreground block mb-2">Strength</span>
+                      <span className="text-xs font-medium text-slate-600 block mb-2">Strength</span>
                       <div className="flex gap-1">
                         {[1, 2, 3, 4, 5].map((level) => (
                           <button
                             key={level}
                             onClick={() => setNewRelationship({ ...newRelationship, strength: newRelationship.strength === level ? null : level })}
                             className={`flex-1 h-3 rounded-full transition-all ${
-                              level <= (newRelationship.strength || 0) ? "bg-gradient-to-r from-indigo-500 to-purple-500" : "bg-muted hover:bg-muted"
+                              level <= (newRelationship.strength || 0) ? "bg-gradient-to-r from-indigo-500 to-purple-500" : "bg-slate-200 hover:bg-slate-300"
                             }`}
                           />
                         ))}
@@ -1965,7 +1965,7 @@ export default function PersonDetailPage() {
                       value={newRelationship.notes}
                       onChange={(e) => setNewRelationship({ ...newRelationship, notes: e.target.value })}
                       placeholder="Add a note..."
-                      className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     />
                   )}
 
@@ -2006,23 +2006,23 @@ export default function PersonDetailPage() {
                 ))
               ) : !addingRelationship && (
                 <div className="text-center py-8">
-                  <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
-                    <Users className="h-6 w-6 text-muted-foreground" />
+                  <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                    <Users className="h-6 w-6 text-slate-400" />
                   </div>
-                  <p className="text-sm font-medium text-muted-foreground">No relationships yet</p>
-                  <p className="text-xs text-muted-foreground mt-1">Add connections to track your network</p>
+                  <p className="text-sm font-medium text-slate-600">No relationships yet</p>
+                  <p className="text-xs text-slate-400 mt-1">Add connections to track your network</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Contact Info */}
-          <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
                 <Mail className="h-4 w-4 text-white" />
               </div>
-              <h2 className="text-sm font-semibold text-foreground">Contact Info</h2>
+              <h2 className="text-sm font-semibold text-slate-900">Contact Info</h2>
             </div>
             <div className="p-4">
               <ContactInfoEditor
@@ -2051,12 +2051,12 @@ export default function PersonDetailPage() {
           </div>
 
           {/* Experience */}
-          <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                 <Building2 className="h-4 w-4 text-white" />
               </div>
-              <h2 className="text-sm font-semibold text-foreground">Experience</h2>
+              <h2 className="text-sm font-semibold text-slate-900">Experience</h2>
             </div>
             <div className="p-4">
               <ExperienceEditor
@@ -2086,9 +2086,9 @@ export default function PersonDetailPage() {
           </div>
 
           {/* About */}
-          <div className="bg-card border border-border rounded-2xl shadow-sm">
-            <div className="px-5 py-4 border-b border-border">
-              <h2 className="text-sm font-semibold text-foreground">About</h2>
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div className="px-5 py-4 border-b border-slate-100">
+              <h2 className="text-sm font-semibold text-slate-900">About</h2>
             </div>
             <div className="p-4">
               <BioEditor value={person.bio} onSave={(val) => saveField("bio", val || null)} />
@@ -2096,9 +2096,9 @@ export default function PersonDetailPage() {
           </div>
 
           {/* Tags */}
-          <div className="bg-card border border-border rounded-2xl shadow-sm">
-            <div className="px-5 py-4 border-b border-border">
-              <h2 className="text-sm font-semibold text-foreground">Tags</h2>
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div className="px-5 py-4 border-b border-slate-100">
+              <h2 className="text-sm font-semibold text-slate-900">Tags</h2>
             </div>
             <div className="p-4">
               <TagsEditor tags={person.tags || []} onSave={(val) => saveField("tags", val)} />
@@ -2106,9 +2106,9 @@ export default function PersonDetailPage() {
           </div>
 
           {/* Notes */}
-          <div className="bg-card border border-border rounded-2xl shadow-sm">
-            <div className="px-5 py-4 border-b border-border">
-              <h2 className="text-sm font-semibold text-foreground">Notes</h2>
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
+            <div className="px-5 py-4 border-b border-slate-100">
+              <h2 className="text-sm font-semibold text-slate-900">Notes</h2>
             </div>
             <div className="p-4">
               <NotesEditor value={person.notes} onSave={(val) => saveField("notes", val || null)} />
@@ -2117,26 +2117,26 @@ export default function PersonDetailPage() {
 
           {/* More Details */}
           <Collapsible.Root open={moreDetailsOpen} onOpenChange={setMoreDetailsOpen}>
-            <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
               <Collapsible.Trigger asChild>
-                <button className="w-full flex items-center justify-between px-5 py-4 text-sm font-semibold text-foreground hover:bg-muted transition-colors">
+                <button className="w-full flex items-center justify-between px-5 py-4 text-sm font-semibold text-slate-900 hover:bg-slate-50 transition-colors">
                   <span>More Details</span>
-                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${moreDetailsOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${moreDetailsOpen ? "rotate-180" : ""}`} />
                 </button>
               </Collapsible.Trigger>
               <Collapsible.Content>
-                <div className="px-5 pb-4 pt-2 border-t border-border space-y-3">
+                <div className="px-5 pb-4 pt-2 border-t border-slate-100 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Source</span>
-                    {person.source ? <SourceBadge source={person.source} /> : <span className="text-xs text-muted-foreground/60 italic">Not set</span>}
+                    <span className="text-xs text-slate-500">Source</span>
+                    {person.source ? <SourceBadge source={person.source} /> : <span className="text-xs text-slate-300 italic">Not set</span>}
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Created</span>
-                    <span className="text-sm text-foreground">{formatDate(person.createdAt)}</span>
+                    <span className="text-xs text-slate-500">Created</span>
+                    <span className="text-sm text-slate-700">{formatDate(person.createdAt)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Updated</span>
-                    <span className="text-sm text-foreground">{formatDate(person.updatedAt)}</span>
+                    <span className="text-xs text-slate-500">Updated</span>
+                    <span className="text-sm text-slate-700">{formatDate(person.updatedAt)}</span>
                   </div>
                 </div>
               </Collapsible.Content>

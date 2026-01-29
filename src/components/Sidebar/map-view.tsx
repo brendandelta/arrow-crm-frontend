@@ -194,12 +194,12 @@ export default function MapView({ markers }: MapViewProps) {
                         {person.firstName} {person.lastName}
                       </div>
                       {person.title && (
-                        <div className="text-xs text-muted-foreground">{person.title}</div>
+                        <div className="text-xs text-slate-500">{person.title}</div>
                       )}
                       {person.org && (
-                        <div className="text-xs text-muted-foreground">{person.org}</div>
+                        <div className="text-xs text-slate-500">{person.org}</div>
                       )}
-                      <div className="text-xs text-muted-foreground mt-1">{person.location}</div>
+                      <div className="text-xs text-slate-400 mt-1">{person.location}</div>
                     </div>
                   </div>
                 </Link>

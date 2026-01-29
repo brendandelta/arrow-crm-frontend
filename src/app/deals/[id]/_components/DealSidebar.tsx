@@ -141,14 +141,14 @@ const TASK_TYPE_CONFIG: Record<string, { label: string; icon: typeof Target; col
   outreach: { label: "Outreach", icon: Target, color: "text-blue-600 bg-blue-50" },
   interest: { label: "Interest", icon: Users, color: "text-green-600 bg-green-50" },
   block: { label: "Block", icon: Briefcase, color: "text-purple-600 bg-purple-50" },
-  internal: { label: "Internal", icon: CheckSquare, color: "text-muted-foreground bg-muted" },
+  internal: { label: "Internal", icon: CheckSquare, color: "text-slate-600 bg-slate-50" },
   edge: { label: "Edge", icon: Lightbulb, color: "text-amber-600 bg-amber-50" },
 };
 
 const PRIORITY_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
   high: { label: "High", color: "text-red-600", dot: "bg-red-500" },
   medium: { label: "Med", color: "text-amber-600", dot: "bg-amber-500" },
-  low: { label: "Low", color: "text-muted-foreground", dot: "bg-muted-foreground/50" },
+  low: { label: "Low", color: "text-slate-500", dot: "bg-slate-400" },
 };
 
 const EDGE_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
@@ -235,9 +235,9 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
       <div
         className={`group flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all hover:shadow-sm ${
           variant === "overdue" ? "bg-red-50/50 border-red-200 hover:border-red-300" :
-          variant === "upcoming" ? "bg-card border-border hover:border-border" :
-          variant === "completed" ? "bg-muted border-border opacity-60" :
-          "bg-card border-border hover:border-border"
+          variant === "upcoming" ? "bg-white border-slate-200 hover:border-slate-300" :
+          variant === "completed" ? "bg-slate-50 border-slate-200 opacity-60" :
+          "bg-white border-slate-200 hover:border-slate-300"
         }`}
         onClick={() => onTaskClick?.(task)}
       >
@@ -256,7 +256,7 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
           className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
             status === "completed" ? "bg-green-500 border-green-500" :
             status === "waiting" ? "bg-amber-100 border-amber-400" :
-            "border-border hover:border-muted-foreground"
+            "border-slate-300 hover:border-slate-400"
           }`}
         >
           {status === "completed" && <Check className="h-3 w-3 text-white" />}
@@ -266,7 +266,7 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
         <div className="flex-1 min-w-0">
           {/* Title Row */}
           <div className="flex items-center gap-2">
-            <span className={`text-sm font-medium ${status === "completed" ? "line-through text-muted-foreground" : "text-foreground"}`}>
+            <span className={`text-sm font-medium ${status === "completed" ? "line-through text-slate-400" : "text-slate-900"}`}>
               {task.subject}
             </span>
           </div>
@@ -286,13 +286,13 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
             </span>
 
             {/* Due Date */}
-            <span className={`text-[11px] ${variant === "overdue" ? "text-red-600 font-medium" : "text-muted-foreground"}`}>
+            <span className={`text-[11px] ${variant === "overdue" ? "text-red-600 font-medium" : "text-slate-500"}`}>
               {formatDate(task.dueAt)}
             </span>
 
             {/* Assignee */}
             {task.assignedTo && (
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-[11px] text-slate-400">
                 @{task.assignedTo.firstName}
               </span>
             )}
@@ -313,7 +313,7 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
           <button
             onClick={() => setOwnerFilter("all")}
             className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
-              ownerFilter === "all" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted"
+              ownerFilter === "all" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
             All
@@ -322,7 +322,7 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
             <button
               onClick={() => setOwnerFilter(currentUserId)}
               className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
-                ownerFilter === currentUserId ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted"
+                ownerFilter === currentUserId ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
               Mine
@@ -336,7 +336,7 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
                 key={a.id}
                 onClick={() => setOwnerFilter(a.id)}
                 className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
-                  ownerFilter === a.id ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted"
+                  ownerFilter === a.id ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >
                 {a.firstName}
@@ -349,7 +349,7 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
           <button
             onClick={() => setTypeFilter("all")}
             className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
-              typeFilter === "all" ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted"
+              typeFilter === "all" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
             All Types
@@ -359,7 +359,7 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
               key={key}
               onClick={() => setTypeFilter(key)}
               className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
-                typeFilter === key ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted"
+                typeFilter === key ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
               {config.label}
@@ -372,7 +372,7 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
       {onAddTask && (
         <button
           onClick={onAddTask}
-          className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-muted-foreground rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-slate-500 hover:text-slate-700 border border-dashed border-slate-300 hover:border-slate-400 rounded-lg transition-colors"
         >
           <Plus className="h-4 w-4" />
           Add Task
@@ -402,8 +402,8 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
         {filteredDueThisWeek.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <CalendarDays className="h-3.5 w-3.5 text-slate-500" />
+              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
                 Due This Week · {filteredDueThisWeek.length}
               </span>
             </div>
@@ -420,7 +420,7 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
           <div>
             <button
               onClick={() => setShowBacklog(!showBacklog)}
-              className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide hover:text-foreground"
+              className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wide hover:text-slate-700"
             >
               {showBacklog ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
               <Circle className="h-3 w-3" />
@@ -441,7 +441,7 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
           <div>
             <button
               onClick={() => setShowCompleted(!showCompleted)}
-              className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide hover:text-muted-foreground"
+              className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wide hover:text-slate-600"
             >
               {showCompleted ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
               <Check className="h-3 w-3" />
@@ -462,7 +462,7 @@ function ActionsTab({ tasks, currentUserId, onTaskToggle, onTaskClick, onAddTask
       {totalOpen === 0 && filteredCompleted.length === 0 && (
         <div className="text-center py-8">
           <CheckSquare className="h-8 w-8 mx-auto text-green-300 mb-2" />
-          <p className="text-sm text-muted-foreground">All clear</p>
+          <p className="text-sm text-slate-500">All clear</p>
         </div>
       )}
     </div>
@@ -519,10 +519,10 @@ function DiligenceTab({ checklist, onUpload, onAddDocument }: DiligenceTabProps)
       {/* Progress */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-sm font-medium text-foreground">{checklist.completionPercent}% Complete</span>
-          <span className="text-xs text-muted-foreground">{checklist.completed}/{checklist.total} docs</span>
+          <span className="text-sm font-medium text-slate-700">{checklist.completionPercent}% Complete</span>
+          <span className="text-xs text-slate-500">{checklist.completed}/{checklist.total} docs</span>
         </div>
-        <div className="h-2 bg-muted rounded-full overflow-hidden">
+        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${
               checklist.completionPercent === 100
@@ -540,7 +540,7 @@ function DiligenceTab({ checklist, onUpload, onAddDocument }: DiligenceTabProps)
       {onAddDocument && (
         <button
           onClick={onAddDocument}
-          className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-muted-foreground rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-slate-500 hover:text-slate-700 border border-dashed border-slate-300 hover:border-slate-400 rounded-lg transition-colors"
         >
           <Upload className="h-4 w-4" />
           Upload Document
@@ -577,14 +577,14 @@ function DiligenceTab({ checklist, onUpload, onAddDocument }: DiligenceTabProps)
       {recentlyUpdated.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Recent</span>
+            <Clock className="h-3.5 w-3.5 text-slate-400" />
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Recent</span>
           </div>
           <div className="space-y-1">
             {recentlyUpdated.map((item) => (
-              <div key={item.kind} className="flex items-center justify-between p-2.5 rounded-lg bg-muted border border-border">
-                <span className="text-sm text-foreground">{item.label}</span>
-                <span className="text-[11px] text-muted-foreground">
+              <div key={item.kind} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                <span className="text-sm text-slate-700">{item.label}</span>
+                <span className="text-[11px] text-slate-400">
                   {item.document?.uploadedAt ? formatUploadDate(item.document.uploadedAt) : ""}
                 </span>
               </div>
@@ -596,8 +596,8 @@ function DiligenceTab({ checklist, onUpload, onAddDocument }: DiligenceTabProps)
       {/* Full Checklist */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <FileText className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Checklist</span>
+          <FileText className="h-3.5 w-3.5 text-slate-400" />
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Checklist</span>
         </div>
         <div className="space-y-1">
           {Object.entries(groupedByCategory).map(([category, items]) => {
@@ -605,29 +605,29 @@ function DiligenceTab({ checklist, onUpload, onAddDocument }: DiligenceTabProps)
             const completedInCategory = items.filter((i) => i.present).length;
 
             return (
-              <div key={category} className="border border-border rounded-lg overflow-hidden">
+              <div key={category} className="border border-slate-200 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setExpandedCategory(isExpanded ? null : category)}
-                  className="w-full flex items-center justify-between p-2.5 text-left hover:bg-muted transition-colors"
+                  className="w-full flex items-center justify-between p-2.5 text-left hover:bg-slate-50 transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
-                    <span className="text-sm text-foreground">{category}</span>
+                    {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-slate-400" /> : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />}
+                    <span className="text-sm text-slate-700">{category}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{completedInCategory}/{items.length}</span>
+                  <span className="text-xs text-slate-400">{completedInCategory}/{items.length}</span>
                 </button>
 
                 {isExpanded && (
-                  <div className="px-2.5 pb-2.5 space-y-1 border-t border-border">
+                  <div className="px-2.5 pb-2.5 space-y-1 border-t border-slate-100">
                     {items.map((item) => (
                       <div
                         key={item.kind}
-                        className={`flex items-center gap-2 p-2 rounded text-sm mt-1 ${item.present ? "bg-green-50" : "bg-muted"}`}
+                        className={`flex items-center gap-2 p-2 rounded text-sm mt-1 ${item.present ? "bg-green-50" : "bg-slate-50"}`}
                       >
-                        <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 ${item.present ? "bg-green-500 text-white" : "border border-border"}`}>
+                        <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 ${item.present ? "bg-green-500 text-white" : "border border-slate-300"}`}>
                           {item.present && <Check className="h-3 w-3" />}
                         </div>
-                        <span className="flex-1 truncate text-foreground">{item.label}</span>
+                        <span className="flex-1 truncate text-slate-700">{item.label}</span>
                         {!item.present && (
                           <button onClick={() => onUpload?.(item.kind)} className="text-xs text-blue-600 hover:text-blue-800">
                             Upload
@@ -702,9 +702,9 @@ function ActivityTab({ activities, onActivityClick }: ActivityTabProps) {
   if (activities.length === 0) {
     return (
       <div className="text-center py-8">
-        <MessageSquare className="h-8 w-8 mx-auto text-muted-foreground/60 mb-2" />
-        <p className="text-sm text-muted-foreground">No activity yet</p>
-        <p className="text-xs text-muted-foreground mt-1">Activity is automatically logged</p>
+        <MessageSquare className="h-8 w-8 mx-auto text-slate-300 mb-2" />
+        <p className="text-sm text-slate-500">No activity yet</p>
+        <p className="text-xs text-slate-400 mt-1">Activity is automatically logged</p>
       </div>
     );
   }
@@ -712,12 +712,12 @@ function ActivityTab({ activities, onActivityClick }: ActivityTabProps) {
   return (
     <div className="space-y-1">
       {/* Read-only indicator */}
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-3">Auto-generated feed</p>
+      <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-3">Auto-generated feed</p>
 
       {/* Activity Timeline */}
       <div className="relative">
         {/* Timeline line */}
-        <div className="absolute left-[11px] top-3 bottom-3 w-px bg-muted" />
+        <div className="absolute left-[11px] top-3 bottom-3 w-px bg-slate-200" />
 
         <div className="space-y-0">
           {activities.slice(0, 15).map((activity, idx) => {
@@ -726,28 +726,28 @@ function ActivityTab({ activities, onActivityClick }: ActivityTabProps) {
               <div
                 key={activity.id}
                 onClick={() => onActivityClick?.(activity)}
-                className="relative flex items-start gap-3 py-2.5 cursor-pointer hover:bg-muted rounded-lg px-1 -mx-1 transition-colors"
+                className="relative flex items-start gap-3 py-2.5 cursor-pointer hover:bg-slate-50 rounded-lg px-1 -mx-1 transition-colors"
               >
                 {/* Icon */}
-                <div className="w-6 h-6 rounded-full bg-card border border-border flex items-center justify-center shrink-0 z-10">
-                  <Icon className="h-3 w-3 text-muted-foreground" />
+                <div className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 z-10">
+                  <Icon className="h-3 w-3 text-slate-500" />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0 pt-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-muted-foreground">
+                    <span className="text-xs font-medium text-slate-600">
                       {kindLabels[activity.kind] || activity.kind}
                     </span>
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-[11px] text-slate-400">
                       {formatDate(activity.occurredAt)}
                     </span>
                   </div>
                   {activity.subject && (
-                    <p className="text-sm text-foreground truncate mt-0.5">{activity.subject}</p>
+                    <p className="text-sm text-slate-700 truncate mt-0.5">{activity.subject}</p>
                   )}
                   {activity.performedBy && (
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <p className="text-[11px] text-slate-400 mt-0.5">
                       by {activity.performedBy.firstName}
                     </p>
                   )}
@@ -759,7 +759,7 @@ function ActivityTab({ activities, onActivityClick }: ActivityTabProps) {
       </div>
 
       {activities.length > 15 && (
-        <p className="text-xs text-center text-muted-foreground pt-2">
+        <p className="text-xs text-center text-slate-400 pt-2">
           Showing 15 of {activities.length}
         </p>
       )}
@@ -791,7 +791,7 @@ function EdgesTab({ edges, onAddEdge, onEdgeClick, onActOnEdge }: EdgesTabProps)
       {[1, 2, 3, 4, 5].map((i) => (
         <div
           key={i}
-          className={`w-1.5 h-1.5 rounded-full ${i <= value ? "bg-blue-500" : "bg-muted"}`}
+          className={`w-1.5 h-1.5 rounded-full ${i <= value ? "bg-blue-500" : "bg-slate-200"}`}
         />
       ))}
     </div>
@@ -802,7 +802,7 @@ function EdgesTab({ edges, onAddEdge, onEdgeClick, onActOnEdge }: EdgesTabProps)
       {[1, 2, 3, 4, 5].map((i) => (
         <div
           key={i}
-          className={`w-1.5 h-1.5 rounded-full ${i <= value ? "bg-green-500" : "bg-muted"}`}
+          className={`w-1.5 h-1.5 rounded-full ${i <= value ? "bg-green-500" : "bg-slate-200"}`}
         />
       ))}
     </div>
@@ -811,13 +811,13 @@ function EdgesTab({ edges, onAddEdge, onEdgeClick, onActOnEdge }: EdgesTabProps)
   if (edges.length === 0) {
     return (
       <div className="text-center py-8">
-        <Shield className="h-8 w-8 mx-auto text-muted-foreground/60 mb-2" />
-        <p className="text-sm text-muted-foreground">No edges documented</p>
-        <p className="text-xs text-muted-foreground mt-1">Edges are rare, valuable insights</p>
+        <Shield className="h-8 w-8 mx-auto text-slate-300 mb-2" />
+        <p className="text-sm text-slate-500">No edges documented</p>
+        <p className="text-xs text-slate-400 mt-1">Edges are rare, valuable insights</p>
         {onAddEdge && (
           <button
             onClick={onAddEdge}
-            className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-foreground bg-muted hover:bg-muted rounded-lg transition-colors"
+            className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
           >
             <Plus className="h-4 w-4" />
             Add Edge
@@ -833,7 +833,7 @@ function EdgesTab({ edges, onAddEdge, onEdgeClick, onActOnEdge }: EdgesTabProps)
       {onAddEdge && (
         <button
           onClick={onAddEdge}
-          className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-muted-foreground rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-slate-500 hover:text-slate-700 border border-dashed border-slate-300 hover:border-slate-400 rounded-lg transition-colors"
         >
           <Plus className="h-4 w-4" />
           Add Edge
@@ -849,7 +849,7 @@ function EdgesTab({ edges, onAddEdge, onEdgeClick, onActOnEdge }: EdgesTabProps)
             <div
               key={edge.id}
               onClick={() => onEdgeClick?.(edge)}
-              className="p-3 rounded-lg border border-border bg-card hover:border-border hover:shadow-sm cursor-pointer transition-all"
+              className="p-3 rounded-lg border border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm cursor-pointer transition-all"
             >
               {/* Header */}
               <div className="flex items-start justify-between gap-2">
@@ -859,18 +859,18 @@ function EdgesTab({ edges, onAddEdge, onEdgeClick, onActOnEdge }: EdgesTabProps)
                       {typeConfig.label}
                     </span>
                   </div>
-                  <p className="text-sm font-medium text-foreground">{edge.title}</p>
+                  <p className="text-sm font-medium text-slate-800">{edge.title}</p>
                 </div>
               </div>
 
               {/* Scores */}
               <div className="flex items-center gap-4 mt-2">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-muted-foreground">Confidence</span>
+                  <span className="text-[10px] text-slate-500">Confidence</span>
                   <ConfidenceDots value={edge.confidence} />
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-muted-foreground">Freshness</span>
+                  <span className="text-[10px] text-slate-500">Freshness</span>
                   <TimelinessDots value={edge.timeliness} />
                 </div>
               </div>
@@ -878,17 +878,17 @@ function EdgesTab({ edges, onAddEdge, onEdgeClick, onActOnEdge }: EdgesTabProps)
               {/* Linked People */}
               {edge.people && edge.people.length > 0 && (
                 <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                  <Users className="h-3 w-3 text-muted-foreground" />
+                  <Users className="h-3 w-3 text-slate-400" />
                   {edge.people.map((person, idx) => (
                     <span key={person.id} className="inline-flex items-center gap-1">
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-slate-600">
                         {person.firstName} {person.lastName}
                         {person.role && (
-                          <span className="text-muted-foreground ml-0.5">({person.role})</span>
+                          <span className="text-slate-400 ml-0.5">({person.role})</span>
                         )}
                       </span>
                       {idx < edge.people!.length - 1 && (
-                        <span className="text-muted-foreground/60">·</span>
+                        <span className="text-slate-300">·</span>
                       )}
                     </span>
                   ))}
@@ -897,12 +897,12 @@ function EdgesTab({ edges, onAddEdge, onEdgeClick, onActOnEdge }: EdgesTabProps)
 
               {/* Notes Preview */}
               {edge.notes && (
-                <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{edge.notes}</p>
+                <p className="text-xs text-slate-500 mt-2 line-clamp-2">{edge.notes}</p>
               )}
 
               {/* Act on Edge */}
-              <div className="flex items-center justify-between mt-3 pt-2 border-t border-border">
-                <span className="text-[10px] text-muted-foreground">
+              <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100">
+                <span className="text-[10px] text-slate-400">
                   {edge.createdBy ? `by ${edge.createdBy.firstName}` : ""}
                 </span>
                 <button
@@ -1003,7 +1003,7 @@ export function DealSidebar({
   return (
     <div className="space-y-4">
       {/* Section Tabs */}
-      <div className="flex border-b border-border overflow-x-auto">
+      <div className="flex border-b border-slate-200 overflow-x-auto">
         {sections.map((section) => {
           const Icon = section.icon;
           const isActive = internalSection === section.key;
@@ -1013,14 +1013,14 @@ export function DealSidebar({
               onClick={() => handleSectionChange(section.key)}
               className={`flex items-center gap-1.5 px-3 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors ${
                 isActive
-                  ? "border-foreground text-foreground font-medium"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
+                  ? "border-slate-900 text-slate-900 font-medium"
+                  : "border-transparent text-slate-500 hover:text-slate-700"
               }`}
             >
               <Icon className="h-4 w-4" />
               {section.label}
               {section.count !== undefined && section.count > 0 && (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-foreground text-background" : "bg-muted text-muted-foreground"}`}>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-600"}`}>
                   {section.count}
                 </span>
               )}

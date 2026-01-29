@@ -46,9 +46,9 @@ export function DocumentsList({
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center">
-          <FileText className="h-12 w-12 text-muted-foreground/60 mx-auto mb-3" />
-          <h3 className="text-sm font-medium text-foreground mb-1">No documents found</h3>
-          <p className="text-sm text-muted-foreground">
+          <FileText className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+          <h3 className="text-sm font-medium text-slate-700 mb-1">No documents found</h3>
+          <p className="text-sm text-slate-500">
             Try adjusting your filters or upload a new document.
           </p>
         </div>
@@ -86,7 +86,7 @@ function DocumentRow({ document, isActive, onClick }: DocumentRowProps) {
     if (['xls', 'xlsx', 'csv'].includes(ext || '')) {
       return <FileSpreadsheet className="h-5 w-5 text-green-600" />;
     }
-    return <File className="h-5 w-5 text-muted-foreground" />;
+    return <File className="h-5 w-5 text-slate-400" />;
   }, [document]);
 
   const statusColor = useMemo(() => {
@@ -98,9 +98,9 @@ function DocumentRow({ document, isActive, onClick }: DocumentRowProps) {
       case 'executed':
         return 'bg-indigo-100 text-indigo-700';
       case 'superseded':
-        return 'bg-muted text-muted-foreground';
+        return 'bg-slate-100 text-slate-500';
       default:
-        return 'bg-muted text-muted-foreground';
+        return 'bg-slate-100 text-slate-600';
     }
   }, [document.status]);
 
@@ -134,7 +134,7 @@ function DocumentRow({ document, isActive, onClick }: DocumentRowProps) {
       className={`w-full text-left px-4 py-3 transition-colors ${
         isActive
           ? 'bg-indigo-50 border-l-2 border-indigo-500'
-          : 'hover:bg-muted border-l-2 border-transparent'
+          : 'hover:bg-slate-50 border-l-2 border-transparent'
       }`}
     >
       <div className="flex items-start gap-3">
@@ -145,14 +145,14 @@ function DocumentRow({ document, isActive, onClick }: DocumentRowProps) {
         <div className="flex-1 min-w-0">
           {/* Title row */}
           <div className="flex items-center gap-2">
-            <span className="font-medium text-foreground truncate">{document.title}</span>
+            <span className="font-medium text-slate-900 truncate">{document.title}</span>
             {sensitivityIndicator}
           </div>
 
           {/* Info row */}
-          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
             {document.docType && (
-              <span className="px-1.5 py-0.5 bg-muted text-muted-foreground rounded">
+              <span className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
                 {document.docType.replace(/_/g, ' ')}
               </span>
             )}
@@ -161,7 +161,7 @@ function DocumentRow({ document, isActive, onClick }: DocumentRowProps) {
                 {document.statusLabel || document.status}
               </span>
             )}
-            <span className="text-muted-foreground">{formatFileSize(document.file.byteSize)}</span>
+            <span className="text-slate-400">{formatFileSize(document.file.byteSize)}</span>
           </div>
 
           {/* Links row */}
@@ -171,14 +171,14 @@ function DocumentRow({ document, isActive, onClick }: DocumentRowProps) {
                 <LinkPill key={link.id} link={link} />
               ))}
               {document.links.length > 3 && (
-                <span className="text-xs text-muted-foreground">+{document.links.length - 3}</span>
+                <span className="text-xs text-slate-400">+{document.links.length - 3}</span>
               )}
             </div>
           )}
         </div>
 
         {/* Date */}
-        <div className="flex-shrink-0 flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex-shrink-0 flex items-center gap-1 text-xs text-slate-400">
           <Clock className="h-3 w-3" />
           <span>{formattedDate}</span>
         </div>
@@ -214,7 +214,7 @@ function LinkPill({ link }: { link: DocumentLink }) {
       case 'InternalEntity':
         return 'bg-amber-50 text-amber-700 border-amber-200';
       default:
-        return 'bg-muted text-muted-foreground border-border';
+        return 'bg-slate-50 text-slate-600 border-slate-200';
     }
   }, [link.linkableType]);
 

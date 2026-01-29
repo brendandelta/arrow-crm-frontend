@@ -38,7 +38,7 @@ function OrgKindBadge({ kind }: { kind: string | null }) {
     fund: "bg-blue-50 text-blue-700",
     company: "bg-purple-50 text-purple-700",
     spv: "bg-amber-50 text-amber-700",
-    broker: "bg-muted text-muted-foreground",
+    broker: "bg-slate-50 text-slate-600",
   };
   return (
     <span className={`text-[10px] px-1.5 py-0.5 rounded ${styles[kind] || styles.broker}`}>
@@ -92,13 +92,13 @@ function PhoneCell({ phone }: { phone: string | null }) {
     <div className="flex items-center gap-2">
       <button
         onClick={handleCopy}
-        className="flex items-center gap-1.5 text-sm text-foreground hover:text-foreground transition-colors group"
+        className="flex items-center gap-1.5 text-sm text-slate-700 hover:text-slate-900 transition-colors group"
         title="Click to copy"
       >
         {copied ? (
           <Check className="h-3.5 w-3.5 text-green-600" />
         ) : (
-          <Copy className="h-3.5 w-3.5 text-muted-foreground group-hover:text-muted-foreground" />
+          <Copy className="h-3.5 w-3.5 text-slate-400 group-hover:text-slate-600" />
         )}
         <span className={copied ? "text-green-600" : ""}>{phone}</span>
       </button>
@@ -176,8 +176,8 @@ function BulkActionBar({
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background px-4 py-3 rounded-xl shadow-2xl flex items-center gap-4 z-50">
-      <div className="flex items-center gap-2 pr-4 border-r border-muted-foreground">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-4 z-50">
+      <div className="flex items-center gap-2 pr-4 border-r border-slate-700">
         <Users className="h-4 w-4" />
         <span className="font-medium">{selectedPeople.length} selected</span>
       </div>
@@ -197,7 +197,7 @@ function BulkActionBar({
           <>
             <button
               onClick={handleCopyPhones}
-              className="flex items-center gap-2 px-3 py-1.5 bg-muted-foreground hover:bg-muted-foreground/80 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors"
             >
               {copiedPhones ? (
                 <Check className="h-4 w-4 text-green-400" />
@@ -222,7 +222,7 @@ function BulkActionBar({
 
       <button
         onClick={onClear}
-        className="ml-2 p-1.5 hover:bg-foreground/80 rounded-lg transition-colors"
+        className="ml-2 p-1.5 hover:bg-slate-700 rounded-lg transition-colors"
         title="Clear selection"
       >
         <X className="h-4 w-4" />
@@ -283,7 +283,7 @@ export default function ChampionsPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/people")}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>

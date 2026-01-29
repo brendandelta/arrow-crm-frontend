@@ -20,8 +20,8 @@ import {
   Columns3,
   ChevronDown,
   Filter,
+  Plus,
 } from "lucide-react";
-import { PageHeader } from "@/components/PageHeader";
 import { ContactSlideOut } from "./_components/ContactSlideOut";
 import { LinkedInIcon, TwitterIcon, InstagramIcon } from "@/components/icons/SocialIcons";
 import { OrgKindBadge } from "@/components/OrgKindBadge";
@@ -89,7 +89,7 @@ const WARMTH_OPTIONS = [
 
 // Warmth configuration for inline editing
 const WARMTH_CONFIG = [
-  { label: "Cold", color: "bg-muted-foreground", hoverBg: "hover:bg-muted" },
+  { label: "Cold", color: "bg-slate-400", hoverBg: "hover:bg-slate-100" },
   { label: "Warm", color: "bg-yellow-500", hoverBg: "hover:bg-yellow-50" },
   { label: "Hot", color: "bg-orange-500", hoverBg: "hover:bg-orange-50" },
   { label: "Champion", color: "bg-red-500", hoverBg: "hover:bg-red-50" },
@@ -122,7 +122,7 @@ function InlineWarmthSelector({
             className={`px-2 py-0.5 text-[11px] font-medium rounded-full border transition-all ${
               i === warmth
                 ? `${w.color} text-white border-transparent`
-                : `bg-card border-border text-muted-foreground ${w.hoverBg}`
+                : `bg-white border-slate-200 text-slate-600 ${w.hoverBg}`
             }`}
           >
             {w.label}
@@ -790,29 +790,33 @@ export default function PeoplePage() {
   const visibleColumnCount = visibleColumns.size + 1; // +1 for checkbox column
 
   return (
-    <div className="flex flex-col">
-      <PageHeader
-        subtitle={
-          <span className="flex items-center gap-2">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h1 className="text-xl font-semibold">People</h1>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <span>{people.length} total</span>
-            <span className="text-muted-foreground/60">·</span>
+            <span>·</span>
             <span className="text-blue-600">{newThisWeek} new this week</span>
-            <span className="text-muted-foreground/60">·</span>
+            <span>·</span>
             <span className="text-green-600">{championsCount} champions</span>
-            <span className="text-muted-foreground/60">·</span>
+            <span>·</span>
             <span className="text-orange-600">{hotCount} hot</span>
-          </span>
-        }
-        primaryActionLabel="New Contact"
-        onPrimaryAction={() => setShowContactSlideOut(true)}
-      />
-
-      <div className="px-8 py-6 space-y-4">
+          </div>
+        </div>
+        <button
+          onClick={() => setShowContactSlideOut(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+          New Contact
+        </button>
+      </div>
 
       {/* Top Sources Analytics */}
       {topSources.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Top Sources:</span>
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Top Sources:</span>
           {topSources.map(([name, count]) => {
             const resolved = resolveSource(name);
             const config = resolved
@@ -828,14 +832,14 @@ export default function PeoplePage() {
                 className={`inline-flex items-center gap-1.5 px-2 py-1 text-xs rounded-full border transition-colors ${
                   sourceFilter === name
                     ? "border-blue-400 bg-blue-50 text-blue-700"
-                    : "border-border text-muted-foreground hover:bg-muted"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 {config && (
                   <span className={`h-1.5 w-1.5 rounded-full ${config.color}`} />
                 )}
                 <span>{name}</span>
-                <span className="text-muted-foreground">{count}</span>
+                <span className="text-slate-400">{count}</span>
               </button>
             );
           })}
@@ -855,18 +859,18 @@ export default function PeoplePage() {
             />
           ) : (
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search people..."
-                className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -879,7 +883,7 @@ export default function PeoplePage() {
         <div ref={columnDropdownRef} className="relative">
           <button
             onClick={() => setShowColumnDropdown(!showColumnDropdown)}
-            className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg text-sm text-foreground hover:bg-muted transition-colors"
+            className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 transition-colors"
           >
             <Columns3 className="h-4 w-4" />
             <span>Columns</span>
@@ -887,9 +891,9 @@ export default function PeoplePage() {
           </button>
 
           {showColumnDropdown && (
-            <div className="absolute z-50 top-full left-0 mt-1 w-48 bg-card border border-border rounded-lg overflow-hidden">
+            <div className="absolute z-50 top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg overflow-hidden">
               <div className="p-2">
-                <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-2 py-1">
+                <div className="text-xs font-medium text-slate-500 uppercase tracking-wide px-2 py-1">
                   Show Columns
                 </div>
                 {ALL_COLUMNS.map((column) => (
@@ -897,7 +901,7 @@ export default function PeoplePage() {
                     key={column.id}
                     onClick={() => !column.required && toggleColumn(column.id)}
                     className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded transition-colors ${
-                      column.required ? "opacity-50 cursor-not-allowed" : "hover:bg-muted cursor-pointer"
+                      column.required ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 cursor-pointer"
                     }`}
                   >
                     <Checkbox
@@ -907,7 +911,7 @@ export default function PeoplePage() {
                     />
                     <span>{column.label}</span>
                     {column.required && (
-                      <span className="text-xs text-muted-foreground ml-auto">Required</span>
+                      <span className="text-xs text-slate-400 ml-auto">Required</span>
                     )}
                   </div>
                 ))}
@@ -923,7 +927,7 @@ export default function PeoplePage() {
             className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${
               activeFiltersCount > 0
                 ? "border-blue-500 bg-blue-50 text-blue-700"
-                : "border-border text-foreground hover:bg-muted"
+                : "border-slate-200 text-slate-700 hover:bg-slate-50"
             }`}
           >
             <Filter className="h-4 w-4" />
@@ -937,16 +941,16 @@ export default function PeoplePage() {
           </button>
 
           {showFilterDropdown && (
-            <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-card border border-border rounded-lg overflow-hidden">
+            <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-white border border-slate-200 rounded-lg overflow-hidden">
               <div className="p-3 space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                     Warmth
                   </label>
                   <select
                     value={warmthFilter}
                     onChange={(e) => setWarmthFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {WARMTH_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -957,13 +961,13 @@ export default function PeoplePage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                     Organization Type
                   </label>
                   <select
                     value={orgKindFilter}
                     onChange={(e) => setOrgKindFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {ORG_KIND_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -974,13 +978,13 @@ export default function PeoplePage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                     Source
                   </label>
                   <select
                     value={sourceFilter}
                     onChange={(e) => setSourceFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {sourceFilterOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -991,13 +995,13 @@ export default function PeoplePage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                     Source Category
                   </label>
                   <select
                     value={sourceCategoryFilter}
                     onChange={(e) => setSourceCategoryFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {SOURCE_CATEGORY_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -1022,7 +1026,7 @@ export default function PeoplePage() {
 
         {/* Results count when filtered */}
         {(searchQuery || smartSearchResults !== null || activeFiltersCount > 0 || columnFiltersCount > 0) && (
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-slate-500">
             {smartSearchResults !== null ? (
               <span>
                 <span className="text-indigo-600 font-medium">{sortedPeople.length}</span>
@@ -1270,7 +1274,7 @@ export default function PeoplePage() {
                   />
                 </TableHead>
               )}
-              {visibleColumns.has("links") && <TableHead className="text-xs uppercase tracking-wide text-muted-foreground">Links</TableHead>}
+              {visibleColumns.has("links") && <TableHead className="text-xs uppercase tracking-wide text-slate-500">Links</TableHead>}
               {visibleColumns.has("createdAt") && (
                 <TableHead>
                   <FilterableColumnHeader
@@ -1317,7 +1321,7 @@ export default function PeoplePage() {
                   {visibleColumns.has("name") && (
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                        <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">
                           {getInitials(person.firstName, person.lastName)}
                         </div>
                         <div className="font-medium">{person.firstName} {person.lastName}</div>
@@ -1392,7 +1396,7 @@ export default function PeoplePage() {
                           {person.tags.slice(0, 2).map((tag) => (
                             <span
                               key={tag}
-                              className="px-1.5 py-0.5 bg-muted text-muted-foreground text-xs rounded"
+                              className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded"
                             >
                               {tag}
                             </span>
@@ -1458,7 +1462,7 @@ export default function PeoplePage() {
                             href={person.twitter}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-foreground hover:text-black"
+                            className="text-slate-800 hover:text-black"
                             onClick={(e) => e.stopPropagation()}
                             title="X (Twitter)"
                           >
@@ -1507,7 +1511,6 @@ export default function PeoplePage() {
           router.push(`/people/${newContact.id}`);
         }}
       />
-      </div>
     </div>
   );
 }

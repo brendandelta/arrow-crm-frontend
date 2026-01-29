@@ -31,8 +31,8 @@ export function MissingDataDropdown({ missingFields, onAddClick }: MissingDataDr
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg z-20 py-2">
-            <div className="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-20 py-2">
+            <div className="px-3 py-1.5 text-xs font-medium text-slate-400 uppercase tracking-wide">
               Missing Data
             </div>
             {missingFields.map((field) => (
@@ -44,7 +44,7 @@ export function MissingDataDropdown({ missingFields, onAddClick }: MissingDataDr
                   }
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-3 py-2 text-sm text-muted-foreground hover:bg-muted transition-colors"
+                className="w-full flex items-center justify-between px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
               >
                 <span>{field.label}</span>
                 {onAddClick && (

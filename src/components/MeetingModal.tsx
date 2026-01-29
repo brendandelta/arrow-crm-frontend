@@ -128,7 +128,7 @@ function MeetingKindBadge({ kind }: { kind: string | null }) {
   const { icon: Icon, label, className } = config[kind] || {
     icon: Calendar,
     label: kind,
-    className: "bg-muted text-foreground"
+    className: "bg-slate-100 text-slate-700"
   };
 
   return (
@@ -186,16 +186,16 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
       />
 
       {/* Modal */}
-      <div className="relative bg-card border border-border rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="relative bg-white border border-slate-200 rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between p-4 border-b border-border">
+        <div className="flex items-start justify-between p-4 border-b border-slate-100">
           <div className="flex-1 min-w-0">
             {loading ? (
-              <div className="h-6 w-48 bg-muted rounded animate-pulse" />
+              <div className="h-6 w-48 bg-slate-200 rounded animate-pulse" />
             ) : meeting ? (
               <>
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-lg font-semibold text-foreground truncate">{meeting.title}</h2>
+                  <h2 className="text-lg font-semibold text-slate-900 truncate">{meeting.title}</h2>
                   {meeting.isCompleted && (
                     <span className="flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                       <CheckCircle2 className="h-3 w-3" />
@@ -206,19 +206,19 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
                 <div className="flex items-center gap-2 flex-wrap">
                   <MeetingKindBadge kind={meeting.kind} />
                   {isPast && !meeting.isCompleted && (
-                    <span className="px-2 py-0.5 bg-muted text-muted-foreground rounded-full text-xs font-medium">
+                    <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs font-medium">
                       Past
                     </span>
                   )}
                 </div>
               </>
             ) : (
-              <h2 className="text-lg font-semibold text-foreground">Meeting Details</h2>
+              <h2 className="text-lg font-semibold text-slate-900">Meeting Details</h2>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-muted-foreground hover:text-muted-foreground rounded transition-colors"
+            className="p-1 text-slate-400 hover:text-slate-600 rounded transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -228,33 +228,33 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
         <div className="flex-1 overflow-y-auto p-4">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
+              <Loader2 className="h-8 w-8 text-slate-400 animate-spin" />
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">{error}</p>
+              <p className="text-slate-500">{error}</p>
             </div>
           ) : meeting ? (
             <div className="space-y-6">
               {/* Date & Time */}
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-muted rounded-lg">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
+                <div className="p-2 bg-slate-100 rounded-lg">
+                  <Calendar className="h-5 w-5 text-slate-600" />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-foreground">
+                  <div className="text-sm font-medium text-slate-900">
                     {formatDateTime(meeting.startsAt, meeting.allDay)}
                   </div>
                   {!meeting.allDay && meeting.endsAt && (
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-slate-500">
                       {formatTime(meeting.startsAt)} – {formatTime(meeting.endsAt)}
-                      <span className="text-muted-foreground ml-2">
+                      <span className="text-slate-400 ml-2">
                         ({formatDuration(meeting.startsAt, meeting.endsAt)})
                       </span>
                     </div>
                   )}
                   {meeting.timezone && (
-                    <div className="text-xs text-muted-foreground mt-0.5">{meeting.timezone}</div>
+                    <div className="text-xs text-slate-400 mt-0.5">{meeting.timezone}</div>
                   )}
                 </div>
               </div>
@@ -262,15 +262,15 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
               {/* Location / Meeting URL */}
               {(meeting.location || meeting.meetingUrl || meeting.address || meeting.dialIn) && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-muted rounded-lg">
-                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <MapPin className="h-5 w-5 text-slate-600" />
                   </div>
                   <div className="space-y-1">
                     {meeting.location && (
-                      <div className="text-sm font-medium text-foreground">{meeting.location}</div>
+                      <div className="text-sm font-medium text-slate-900">{meeting.location}</div>
                     )}
                     {meeting.address && (
-                      <div className="text-sm text-muted-foreground">{meeting.address}</div>
+                      <div className="text-sm text-slate-500">{meeting.address}</div>
                     )}
                     {meeting.meetingUrl && (
                       <a
@@ -285,8 +285,8 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
                       </a>
                     )}
                     {meeting.dialIn && (
-                      <div className="text-sm text-muted-foreground">
-                        <span className="text-muted-foreground">Dial-in:</span> {meeting.dialIn}
+                      <div className="text-sm text-slate-500">
+                        <span className="text-slate-400">Dial-in:</span> {meeting.dialIn}
                       </div>
                     )}
                   </div>
@@ -296,11 +296,11 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
               {/* Related Deal / Organization */}
               {(meeting.dealId || meeting.organizationId) && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-muted rounded-lg">
+                  <div className="p-2 bg-slate-100 rounded-lg">
                     {meeting.dealId ? (
-                      <Briefcase className="h-5 w-5 text-muted-foreground" />
+                      <Briefcase className="h-5 w-5 text-slate-600" />
                     ) : (
-                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                      <Building2 className="h-5 w-5 text-slate-600" />
                     )}
                   </div>
                   <div>
@@ -327,11 +327,11 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
               {/* Attendees */}
               {(meeting.attendees.length > 0 || meeting.externalAttendees.length > 0) && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-muted rounded-lg">
-                    <Users className="h-5 w-5 text-muted-foreground" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <Users className="h-5 w-5 text-slate-600" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-foreground mb-2">
+                    <div className="text-sm font-medium text-slate-700 mb-2">
                       Attendees ({meeting.attendees.length + meeting.externalAttendees.length})
                     </div>
                     <div className="space-y-2">
@@ -339,7 +339,7 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
                         <Link
                           key={attendee.id}
                           href={`/people/${attendee.id}`}
-                          className="flex items-center gap-2 p-2 bg-muted rounded-lg hover:bg-muted transition-colors"
+                          className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
                         >
                           {attendee.avatarUrl ? (
                             <img
@@ -348,16 +348,16 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
                               className="h-8 w-8 rounded-full object-cover"
                             />
                           ) : (
-                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center text-xs font-medium text-muted-foreground">
+                            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center text-xs font-medium text-slate-600">
                               {attendee.firstName?.charAt(0)}{attendee.lastName?.charAt(0)}
                             </div>
                           )}
                           <div className="min-w-0">
-                            <div className="text-sm font-medium text-foreground truncate">
+                            <div className="text-sm font-medium text-slate-900 truncate">
                               {attendee.firstName} {attendee.lastName}
                             </div>
                             {attendee.email && (
-                              <div className="text-xs text-muted-foreground truncate">{attendee.email}</div>
+                              <div className="text-xs text-slate-500 truncate">{attendee.email}</div>
                             )}
                           </div>
                         </Link>
@@ -365,17 +365,17 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
                       {meeting.externalAttendees.map((ext, i) => (
                         <div
                           key={i}
-                          className="flex items-center gap-2 p-2 bg-muted rounded-lg"
+                          className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg"
                         >
-                          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                          <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium text-slate-500">
                             {ext.name?.charAt(0) || ext.email?.charAt(0) || "?"}
                           </div>
                           <div className="min-w-0">
-                            <div className="text-sm text-foreground truncate">
+                            <div className="text-sm text-slate-900 truncate">
                               {ext.name || ext.email || "External attendee"}
                             </div>
                             {ext.name && ext.email && (
-                              <div className="text-xs text-muted-foreground truncate">{ext.email}</div>
+                              <div className="text-xs text-slate-500 truncate">{ext.email}</div>
                             )}
                           </div>
                         </div>
@@ -388,12 +388,12 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
               {/* Description */}
               {meeting.description && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-muted rounded-lg">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <FileText className="h-5 w-5 text-slate-600" />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-foreground mb-1">Description</div>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{meeting.description}</p>
+                    <div className="text-sm font-medium text-slate-700 mb-1">Description</div>
+                    <p className="text-sm text-slate-600 whitespace-pre-wrap">{meeting.description}</p>
                   </div>
                 </div>
               )}
@@ -401,12 +401,12 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
               {/* Agenda */}
               {meeting.agenda && (
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-muted rounded-lg">
-                    <ListTodo className="h-5 w-5 text-muted-foreground" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <ListTodo className="h-5 w-5 text-slate-600" />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-foreground mb-1">Agenda</div>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{meeting.agenda}</p>
+                    <div className="text-sm font-medium text-slate-700 mb-1">Agenda</div>
+                    <p className="text-sm text-slate-600 whitespace-pre-wrap">{meeting.agenda}</p>
                   </div>
                 </div>
               )}
@@ -437,13 +437,13 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
 
               {/* Recording / Transcript */}
               {(meeting.recordingUrl || meeting.transcriptUrl) && (
-                <div className="flex items-center gap-3 pt-2 border-t border-border">
+                <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
                   {meeting.recordingUrl && (
                     <a
                       href={meeting.recordingUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground bg-muted hover:bg-muted rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
                     >
                       <PlayCircle className="h-4 w-4" />
                       View Recording
@@ -454,7 +454,7 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
                       href={meeting.transcriptUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground bg-muted hover:bg-muted rounded-lg transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
                     >
                       <FileText className="h-4 w-4" />
                       View Transcript
@@ -482,11 +482,11 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
 
               {/* Tags */}
               {meeting.tags && meeting.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-2 border-t border-border">
+                <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100">
                   {meeting.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-2 py-0.5 bg-muted text-muted-foreground rounded-full text-xs"
+                      className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-xs"
                     >
                       {tag}
                     </span>
@@ -496,12 +496,12 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
 
               {/* Google Calendar link */}
               {meeting.gcalUrl && (
-                <div className="pt-2 border-t border-border">
+                <div className="pt-2 border-t border-slate-100">
                   <a
                     href={meeting.gcalUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                    className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
                   >
                     <ExternalLink className="h-4 w-4" />
                     View in Google Calendar
@@ -513,10 +513,10 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-4 border-t border-border">
+        <div className="flex items-center justify-end gap-3 p-4 border-t border-slate-100">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
           >
             Close
           </button>

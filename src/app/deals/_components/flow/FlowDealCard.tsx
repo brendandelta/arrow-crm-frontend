@@ -27,18 +27,18 @@ export function FlowDealCard({ deal, onClick, compact }: FlowDealCardProps) {
       ? "bg-blue-500"
       : coveragePct >= 30
       ? "bg-amber-500"
-      : "bg-muted-foreground/30";
+      : "bg-slate-300";
 
   return (
     <div
       onClick={onClick}
       className={`
-        group relative rounded-lg border bg-card p-3 cursor-pointer
+        group relative rounded-lg border bg-white p-3 cursor-pointer
         transition-all duration-150
-        hover:shadow-md hover:border-border hover:-translate-y-px
+        hover:shadow-md hover:border-slate-300 hover:-translate-y-px
         ${hasDanger ? "border-l-[3px] border-l-red-400" : ""}
         ${hasWarning ? "border-l-[3px] border-l-amber-400" : ""}
-        ${!hasDanger && !hasWarning ? "border-border" : ""}
+        ${!hasDanger && !hasWarning ? "border-slate-200" : ""}
       `}
     >
       {/* Row 1: Name + Priority + Owner */}
@@ -61,7 +61,7 @@ export function FlowDealCard({ deal, onClick, compact }: FlowDealCardProps) {
           )}
         </div>
         {deal.owner && (
-          <div className="shrink-0 h-5 w-5 rounded-full bg-muted border border-border flex items-center justify-center text-[10px] font-medium text-muted-foreground">
+          <div className="shrink-0 h-5 w-5 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-medium text-slate-600">
             {deal.owner.firstName.charAt(0)}
           </div>
         )}
@@ -80,7 +80,7 @@ export function FlowDealCard({ deal, onClick, compact }: FlowDealCardProps) {
               </span>
             )}
           </div>
-          <div className="h-1 bg-muted rounded-full overflow-hidden">
+          <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${coverageColor}`}
               style={{ width: `${Math.min(coveragePct, 100)}%` }}

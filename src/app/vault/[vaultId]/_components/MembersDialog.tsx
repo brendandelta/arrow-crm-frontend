@@ -49,7 +49,7 @@ const ROLE_COLORS: Record<string, string> = {
   admin: "bg-purple-100 text-purple-700",
   editor: "bg-blue-100 text-blue-700",
   revealer: "bg-amber-100 text-amber-700",
-  viewer: "bg-muted text-muted-foreground",
+  viewer: "bg-slate-100 text-slate-600",
 };
 
 export function MembersDialog({
@@ -142,14 +142,14 @@ export function MembersDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative bg-card rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
-            <Users className="h-5 w-5 text-muted-foreground" />
+            <Users className="h-5 w-5 text-slate-600" />
             <h2 className="text-lg font-semibold">Vault Members</h2>
           </div>
-          <button onClick={onClose} className="p-1 hover:bg-muted rounded">
+          <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -158,13 +158,13 @@ export function MembersDialog({
         <div className="flex-1 overflow-y-auto p-6">
           {/* Add Member Form */}
           {showAddForm ? (
-            <div className="p-4 border rounded-lg bg-muted mb-4">
+            <div className="p-4 border rounded-lg bg-slate-50 mb-4">
               <h3 className="text-sm font-medium mb-3">Add Member</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">User</label>
+                  <label className="block text-xs text-slate-500 mb-1">User</label>
                   {loadingUsers ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Loading users...
                     </div>
@@ -184,7 +184,7 @@ export function MembersDialog({
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">Role</label>
+                  <label className="block text-xs text-slate-500 mb-1">Role</label>
                   <select
                     value={selectedRole}
                     onChange={(e) => setSelectedRole(e.target.value)}
@@ -200,14 +200,14 @@ export function MembersDialog({
                 <div className="flex items-center gap-2 pt-2">
                   <button
                     onClick={() => setShowAddForm(false)}
-                    className="px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted rounded"
+                    className="px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-200 rounded"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleAddMember}
                     disabled={saving || !selectedUserId}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded disabled:opacity-50"
                   >
                     {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                     Add Member
@@ -218,7 +218,7 @@ export function MembersDialog({
           ) : (
             <button
               onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-2 w-full px-4 py-3 text-sm font-medium border border-dashed rounded-lg hover:bg-muted text-muted-foreground mb-4"
+              className="flex items-center gap-2 w-full px-4 py-3 text-sm font-medium border border-dashed rounded-lg hover:bg-slate-50 text-slate-600 mb-4"
             >
               <Plus className="h-4 w-4" />
               Add Member
@@ -267,7 +267,7 @@ export function MembersDialog({
                       </select>
                       <button
                         onClick={() => setEditingMemberId(null)}
-                        className="text-xs text-muted-foreground hover:text-foreground"
+                        className="text-xs text-slate-500 hover:text-slate-700"
                       >
                         Cancel
                       </button>
@@ -301,7 +301,7 @@ export function MembersDialog({
 
           {/* Role Legend */}
           <div className="mt-6 pt-4 border-t">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+            <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">
               Role Permissions
             </h3>
             <div className="space-y-2 text-sm">
@@ -322,10 +322,10 @@ export function MembersDialog({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t bg-muted">
+        <div className="flex items-center justify-end gap-3 p-6 border-t bg-slate-50">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-foreground hover:bg-muted rounded-md"
+            className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 rounded-md"
           >
             Done
           </button>

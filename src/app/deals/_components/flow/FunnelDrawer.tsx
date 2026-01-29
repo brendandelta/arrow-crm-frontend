@@ -141,7 +141,7 @@ export function FunnelDrawer({ open, onClose, deals, stats }: FunnelDrawerProps)
     {
       label: "N/A",
       count: deals.filter((d) => d.coverageRatio === null).length,
-      color: "bg-muted-foreground/30",
+      color: "bg-slate-300",
     },
   ];
   const maxCoverage = Math.max(...coverageBuckets.map((b) => b.count), 1);
@@ -157,7 +157,7 @@ export function FunnelDrawer({ open, onClose, deals, stats }: FunnelDrawerProps)
             </DrawerDescription>
           </div>
           <DrawerClose asChild>
-            <button className="p-2 rounded-md hover:bg-muted transition-colors text-muted-foreground">
+            <button className="p-2 rounded-md hover:bg-slate-100 transition-colors text-muted-foreground">
               <X className="h-4 w-4" />
             </button>
           </DrawerClose>
@@ -178,7 +178,7 @@ export function FunnelDrawer({ open, onClose, deals, stats }: FunnelDrawerProps)
                         </span>
                       </div>
                       <div className="flex-1 flex gap-1 items-center">
-                        <div className="flex-1 h-6 bg-muted rounded overflow-hidden">
+                        <div className="flex-1 h-6 bg-slate-100 rounded overflow-hidden">
                           <div
                             className={`h-full ${stage.dotColor} rounded transition-all`}
                             style={{
@@ -220,14 +220,14 @@ export function FunnelDrawer({ open, onClose, deals, stats }: FunnelDrawerProps)
                       </span>
                     </div>
                     <div className="flex-1 flex gap-1 items-center">
-                      <div className="flex-1 h-6 bg-muted rounded overflow-hidden">
+                      <div className="flex-1 h-6 bg-slate-100 rounded overflow-hidden">
                         <div
                           className={`h-full rounded transition-all ${
                             bucket.label === "Overdue"
                               ? "bg-red-400"
                               : bucket.label === "< 7 days"
                               ? "bg-amber-400"
-                              : "bg-muted-foreground/50"
+                              : "bg-slate-400"
                           }`}
                           style={{
                             width: `${Math.max(
@@ -258,7 +258,7 @@ export function FunnelDrawer({ open, onClose, deals, stats }: FunnelDrawerProps)
                       </span>
                     </div>
                     <div className="flex-1 flex gap-1 items-center">
-                      <div className="flex-1 h-6 bg-muted rounded overflow-hidden">
+                      <div className="flex-1 h-6 bg-slate-100 rounded overflow-hidden">
                         <div
                           className={`h-full ${bucket.color} rounded transition-all`}
                           style={{

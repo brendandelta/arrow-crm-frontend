@@ -82,12 +82,12 @@ export default function SourcingDealsPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/deals")}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
           <h1 className="text-xl font-semibold">Sourcing</h1>
-          <Badge className="bg-muted text-muted-foreground hover:bg-muted">
+          <Badge className="bg-slate-100 text-slate-600 hover:bg-slate-100">
             {deals.length} deals
           </Badge>
         </div>

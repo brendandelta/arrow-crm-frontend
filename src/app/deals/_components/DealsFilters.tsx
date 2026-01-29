@@ -90,13 +90,13 @@ export function DealsFilters({
           onClick={() => setOpenDropdown(openDropdown === "status" ? null : "status")}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border transition-colors ${
             activeFilters.statuses.length > 0
-              ? "bg-muted border-border"
-              : "bg-card border-border hover:border-border"
+              ? "bg-slate-100 border-slate-300"
+              : "bg-white border-slate-200 hover:border-slate-300"
           }`}
         >
           Status
           {activeFilters.statuses.length > 0 && (
-            <span className="bg-muted-foreground text-background text-xs px-1.5 rounded-full">
+            <span className="bg-slate-600 text-white text-xs px-1.5 rounded-full">
               {activeFilters.statuses.length}
             </span>
           )}
@@ -105,12 +105,12 @@ export function DealsFilters({
         {openDropdown === "status" && (
           <DropdownMenu onClose={() => setOpenDropdown(null)}>
             {statuses.map((status) => (
-              <label key={status} className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer">
+              <label key={status} className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={activeFilters.statuses.includes(status)}
                   onChange={() => toggleFilter("statuses", status)}
-                  className="rounded border-border"
+                  className="rounded border-slate-300"
                 />
                 <span className="text-sm capitalize">{status}</span>
               </label>
@@ -125,13 +125,13 @@ export function DealsFilters({
           onClick={() => setOpenDropdown(openDropdown === "stage" ? null : "stage")}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border transition-colors ${
             activeFilters.stages.length > 0
-              ? "bg-muted border-border"
-              : "bg-card border-border hover:border-border"
+              ? "bg-slate-100 border-slate-300"
+              : "bg-white border-slate-200 hover:border-slate-300"
           }`}
         >
           Stage
           {activeFilters.stages.length > 0 && (
-            <span className="bg-muted-foreground text-background text-xs px-1.5 rounded-full">
+            <span className="bg-slate-600 text-white text-xs px-1.5 rounded-full">
               {activeFilters.stages.length}
             </span>
           )}
@@ -140,12 +140,12 @@ export function DealsFilters({
         {openDropdown === "stage" && (
           <DropdownMenu onClose={() => setOpenDropdown(null)}>
             {stages.map((stage) => (
-              <label key={stage} className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer">
+              <label key={stage} className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={activeFilters.stages.includes(stage)}
                   onChange={() => toggleFilter("stages", stage)}
-                  className="rounded border-border"
+                  className="rounded border-slate-300"
                 />
                 <span className="text-sm">{stage}</span>
               </label>
@@ -160,13 +160,13 @@ export function DealsFilters({
           onClick={() => setOpenDropdown(openDropdown === "owner" ? null : "owner")}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border transition-colors ${
             activeFilters.owners.length > 0
-              ? "bg-muted border-border"
-              : "bg-card border-border hover:border-border"
+              ? "bg-slate-100 border-slate-300"
+              : "bg-white border-slate-200 hover:border-slate-300"
           }`}
         >
           Owner
           {activeFilters.owners.length > 0 && (
-            <span className="bg-muted-foreground text-background text-xs px-1.5 rounded-full">
+            <span className="bg-slate-600 text-white text-xs px-1.5 rounded-full">
               {activeFilters.owners.length}
             </span>
           )}
@@ -175,12 +175,12 @@ export function DealsFilters({
         {openDropdown === "owner" && (
           <DropdownMenu onClose={() => setOpenDropdown(null)}>
             {owners.map((owner) => (
-              <label key={owner.id} className="flex items-center gap-2 px-3 py-2 hover:bg-muted cursor-pointer">
+              <label key={owner.id} className="flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={activeFilters.owners.includes(owner.id)}
                   onChange={() => toggleFilter("owners", owner.id)}
-                  className="rounded border-border"
+                  className="rounded border-slate-300"
                 />
                 <span className="text-sm">
                   {owner.firstName} {owner.lastName}
@@ -197,13 +197,13 @@ export function DealsFilters({
           onClick={() => setOpenDropdown(openDropdown === "close" ? null : "close")}
           className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border transition-colors ${
             activeFilters.closeWindow
-              ? "bg-muted border-border"
-              : "bg-card border-border hover:border-border"
+              ? "bg-slate-100 border-slate-300"
+              : "bg-white border-slate-200 hover:border-slate-300"
           }`}
         >
           Close Window
           {activeFilters.closeWindow && (
-            <span className="text-xs text-muted-foreground">({activeFilters.closeWindow}d)</span>
+            <span className="text-xs text-slate-600">({activeFilters.closeWindow}d)</span>
           )}
           <ChevronDown className="h-3.5 w-3.5" />
         </button>
@@ -214,8 +214,8 @@ export function DealsFilters({
                 setCloseWindow(null);
                 setOpenDropdown(null);
               }}
-              className={`w-full text-left px-3 py-2 text-sm hover:bg-muted ${
-                !activeFilters.closeWindow ? "bg-muted" : ""
+              className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-50 ${
+                !activeFilters.closeWindow ? "bg-slate-100" : ""
               }`}
             >
               Any time
@@ -227,8 +227,8 @@ export function DealsFilters({
                   setCloseWindow(option.value);
                   setOpenDropdown(null);
                 }}
-                className={`w-full text-left px-3 py-2 text-sm hover:bg-muted ${
-                  activeFilters.closeWindow === option.value ? "bg-muted" : ""
+                className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-50 ${
+                  activeFilters.closeWindow === option.value ? "bg-slate-100" : ""
                 }`}
               >
                 Within {option.label}
@@ -239,7 +239,7 @@ export function DealsFilters({
       </div>
 
       {/* Divider */}
-      <div className="w-px h-6 bg-muted" />
+      <div className="w-px h-6 bg-slate-200" />
 
       {/* Toggle Filters */}
       <button
@@ -247,7 +247,7 @@ export function DealsFilters({
         className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
           activeFilters.needsOutreach
             ? "bg-amber-100 border-amber-300 text-amber-700"
-            : "bg-card border-border hover:border-border text-muted-foreground"
+            : "bg-white border-slate-200 hover:border-slate-300 text-slate-600"
         }`}
       >
         Needs Outreach
@@ -258,7 +258,7 @@ export function DealsFilters({
         className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
           activeFilters.needsDocs
             ? "bg-orange-100 border-orange-300 text-orange-700"
-            : "bg-card border-border hover:border-border text-muted-foreground"
+            : "bg-white border-slate-200 hover:border-slate-300 text-slate-600"
         }`}
       >
         Needs Docs
@@ -269,7 +269,7 @@ export function DealsFilters({
         className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
           activeFilters.pricingStale
             ? "bg-red-100 border-red-300 text-red-700"
-            : "bg-card border-border hover:border-border text-muted-foreground"
+            : "bg-white border-slate-200 hover:border-slate-300 text-slate-600"
         }`}
       >
         Pricing Stale
@@ -279,7 +279,7 @@ export function DealsFilters({
       {activeCount > 0 && (
         <button
           onClick={clearAllFilters}
-          className="flex items-center gap-1 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+          className="flex items-center gap-1 px-2 py-1.5 text-sm text-slate-500 hover:text-slate-700"
         >
           <X className="h-3.5 w-3.5" />
           Clear ({activeCount})
@@ -300,7 +300,7 @@ function DropdownMenu({
   return (
     <>
       <div className="fixed inset-0 z-10" onClick={onClose} />
-      <div className="absolute top-full left-0 mt-1 w-48 bg-card border border-border rounded-lg shadow-lg z-20 py-1 max-h-60 overflow-y-auto">
+      <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-20 py-1 max-h-60 overflow-y-auto">
         {children}
       </div>
     </>
@@ -326,13 +326,13 @@ export function ActiveFiltersBar({
         {filters.map((filter, idx) => (
           <span
             key={`${filter.type}-${filter.value}-${idx}`}
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-muted rounded text-sm"
+            className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded text-sm"
           >
             <span className="text-muted-foreground text-xs">{filter.type}:</span>
             {filter.label}
             <button
               onClick={() => onRemove(filter.type, filter.value)}
-              className="text-muted-foreground hover:text-muted-foreground ml-0.5"
+              className="text-slate-400 hover:text-slate-600 ml-0.5"
             >
               <X className="h-3 w-3" />
             </button>
@@ -340,7 +340,7 @@ export function ActiveFiltersBar({
         ))}
         <button
           onClick={onClearAll}
-          className="text-xs text-muted-foreground hover:text-foreground ml-2"
+          className="text-xs text-slate-500 hover:text-slate-700 ml-2"
         >
           Clear all
         </button>

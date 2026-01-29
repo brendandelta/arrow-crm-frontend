@@ -84,19 +84,19 @@ export function PersonSelector({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 border border-border rounded-lg bg-card text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full flex items-center justify-between px-3 py-2 border border-slate-200 rounded-lg bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <Users className="h-4 w-4 text-slate-400 flex-shrink-0" />
           {selectedPerson ? (
-            <span className="text-foreground truncate">
+            <span className="text-slate-900 truncate">
               {selectedPerson.firstName} {selectedPerson.lastName}
               {selectedPerson.org && (
-                <span className="text-muted-foreground text-sm ml-1">({selectedPerson.org})</span>
+                <span className="text-slate-400 text-sm ml-1">({selectedPerson.org})</span>
               )}
             </span>
           ) : (
-            <span className="text-muted-foreground">{placeholder}</span>
+            <span className="text-slate-400">{placeholder}</span>
           )}
         </div>
         <div className="flex items-center gap-1">
@@ -114,29 +114,29 @@ export function PersonSelector({
                   handleClear();
                 }
               }}
-              className="p-1 text-muted-foreground hover:text-muted-foreground rounded cursor-pointer"
+              className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
             >
               <X className="h-4 w-4" />
             </span>
           )}
-          <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
+          <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
         </div>
       </button>
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
           {/* Search input */}
-          <div className="p-2 border-b border-border">
+          <div className="p-2 border-b border-slate-100">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <input
                 ref={inputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search people..."
-                className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -149,19 +149,19 @@ export function PersonSelector({
                   key={person.id}
                   type="button"
                   onClick={() => handleSelect(person)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted transition-colors ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 transition-colors ${
                     person.id === value ? "bg-blue-50" : ""
                   }`}
                 >
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-xs font-medium text-muted-foreground flex-shrink-0">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-xs font-medium text-slate-500 flex-shrink-0">
                     {person.firstName?.charAt(0)}{person.lastName?.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-foreground truncate">
+                    <div className="text-sm text-slate-900 truncate">
                       {person.firstName} {person.lastName}
                     </div>
                     {(person.title || person.org) && (
-                      <div className="text-xs text-muted-foreground truncate">
+                      <div className="text-xs text-slate-400 truncate">
                         {person.title}{person.title && person.org && " at "}{person.org}
                       </div>
                     )}
@@ -169,7 +169,7 @@ export function PersonSelector({
                 </button>
               ))
             ) : (
-              <div className="px-3 py-4 text-center text-sm text-muted-foreground">
+              <div className="px-3 py-4 text-center text-sm text-slate-400">
                 No people found
               </div>
             )}

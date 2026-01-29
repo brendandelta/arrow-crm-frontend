@@ -31,7 +31,7 @@ interface PipelineViewProps {
 }
 
 const PIPELINE_STAGES = [
-  { key: "sourcing", label: "Sourcing", color: "bg-muted0" },
+  { key: "sourcing", label: "Sourcing", color: "bg-slate-500" },
   { key: "live", label: "Live", color: "bg-green-500" },
   { key: "closing", label: "Closing", color: "bg-blue-500" },
   { key: "closed", label: "Closed", color: "bg-purple-500" },
@@ -75,7 +75,7 @@ function PipelineStage({
         <div className={`${stage.color} text-white px-4 py-3 rounded-t-lg`}>
           <div className="flex items-center justify-between">
             <span className="font-semibold">{stage.label}</span>
-            <Badge variant="secondary" className="bg-card/20 text-white hover:bg-card/30">
+            <Badge variant="secondary" className="bg-white/20 text-white hover:bg-white/30">
               {stage.deals.length}
             </Badge>
           </div>
@@ -104,7 +104,7 @@ function PipelineStage({
                     e.stopPropagation();
                     onDealClick(deal.id);
                   }}
-                  className="p-2 bg-card rounded border text-sm hover:shadow-sm hover:border-border cursor-pointer transition-all"
+                  className="p-2 bg-white rounded border text-sm hover:shadow-sm hover:border-slate-300 cursor-pointer transition-all"
                 >
                   <div className="font-medium truncate">{deal.name}</div>
                   <div className="text-xs text-muted-foreground truncate">
@@ -136,7 +136,7 @@ function PipelineStage({
       {/* Connector Arrow */}
       {!isLast && (
         <div className="flex items-center px-2">
-          <ChevronRight className="h-8 w-8 text-muted-foreground/60" />
+          <ChevronRight className="h-8 w-8 text-slate-300" />
         </div>
       )}
     </div>
@@ -155,7 +155,7 @@ function PipelineSummary({ stages }: { stages: StageData[] }) {
       : null;
 
   return (
-    <div className="grid grid-cols-4 gap-4 p-4 bg-muted rounded-lg mb-6">
+    <div className="grid grid-cols-4 gap-4 p-4 bg-slate-50 rounded-lg mb-6">
       <div>
         <div className="text-sm text-muted-foreground">Total Deals</div>
         <div className="text-2xl font-bold">{totalDeals}</div>
@@ -256,14 +256,14 @@ export function PipelineView({ deals, onDealClick }: PipelineViewProps) {
               <div
                 key={deal.id}
                 onClick={() => onDealClick(deal.id)}
-                className="p-2 bg-muted rounded border text-sm hover:bg-muted cursor-pointer"
+                className="p-2 bg-slate-50 rounded border text-sm hover:bg-slate-100 cursor-pointer"
               >
                 <div className="font-medium truncate text-muted-foreground">{deal.name}</div>
                 <div className="text-xs text-muted-foreground">{formatCurrency(deal.blocksValue)}</div>
               </div>
             ))}
             {deadDeals.length > 8 && (
-              <div className="p-2 bg-muted rounded border text-sm flex items-center justify-center text-muted-foreground">
+              <div className="p-2 bg-slate-50 rounded border text-sm flex items-center justify-center text-muted-foreground">
                 +{deadDeals.length - 8} more
               </div>
             )}

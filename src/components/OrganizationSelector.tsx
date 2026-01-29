@@ -146,17 +146,17 @@ export function OrganizationSelector({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between px-3 py-2 border border-border rounded-lg bg-card text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full flex items-center justify-between px-3 py-2 border border-slate-200 rounded-lg bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <Building2 className="h-4 w-4 text-slate-400 flex-shrink-0" />
             {selectedOrg ? (
-              <span className="text-foreground truncate">
+              <span className="text-slate-900 truncate">
                 {selectedOrg.name}
-                <span className="text-muted-foreground text-sm ml-1">({selectedOrg.kind})</span>
+                <span className="text-slate-400 text-sm ml-1">({selectedOrg.kind})</span>
               </span>
             ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
+              <span className="text-slate-400">{placeholder}</span>
             )}
           </div>
           <div className="flex items-center gap-1">
@@ -174,29 +174,29 @@ export function OrganizationSelector({
                     handleClear();
                   }
                 }}
-                className="p-1 text-muted-foreground hover:text-muted-foreground rounded cursor-pointer"
+                className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </span>
             )}
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
+            <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
           </div>
         </button>
 
         {/* Dropdown */}
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg overflow-hidden">
+          <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg overflow-hidden">
             {/* Search input */}
-            <div className="p-2 border-b border-border">
+            <div className="p-2 border-b border-slate-100">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <input
                   ref={inputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search organizations..."
-                  className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -209,26 +209,26 @@ export function OrganizationSelector({
                     key={org.id}
                     type="button"
                     onClick={() => handleSelect(org)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted transition-colors ${
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 transition-colors ${
                       org.id === value ? "bg-blue-50" : ""
                     }`}
                   >
-                    <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <Building2 className="h-4 w-4 text-slate-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm text-foreground truncate">{org.name}</div>
-                      <div className="text-xs text-muted-foreground capitalize">{org.kind}</div>
+                      <div className="text-sm text-slate-900 truncate">{org.name}</div>
+                      <div className="text-xs text-slate-400 capitalize">{org.kind}</div>
                     </div>
                   </button>
                 ))
               ) : (
-                <div className="px-3 py-4 text-center text-sm text-muted-foreground">
+                <div className="px-3 py-4 text-center text-sm text-slate-400">
                   No organizations found
                 </div>
               )}
             </div>
 
             {/* Create new option */}
-            <div className="border-t border-border p-2">
+            <div className="border-t border-slate-100 p-2">
               <button
                 type="button"
                 onClick={openCreateModal}
@@ -237,7 +237,7 @@ export function OrganizationSelector({
                 <Plus className="h-4 w-4 flex-shrink-0" />
                 <span>Create new organization</span>
                 {searchQuery && (
-                  <span className="text-muted-foreground truncate">"{searchQuery}"</span>
+                  <span className="text-slate-400 truncate">"{searchQuery}"</span>
                 )}
               </button>
             </div>
@@ -255,13 +255,13 @@ export function OrganizationSelector({
           />
 
           {/* Modal */}
-          <div className="relative bg-card border border-border rounded-xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-white border border-slate-200 rounded-xl w-full max-w-md mx-4 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-foreground">Create Organization</h2>
+              <h2 className="text-lg font-semibold text-slate-900">Create Organization</h2>
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="p-1 text-muted-foreground hover:text-muted-foreground rounded"
+                className="p-1 text-slate-400 hover:text-slate-600 rounded"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -269,7 +269,7 @@ export function OrganizationSelector({
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Organization Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -277,13 +277,13 @@ export function OrganizationSelector({
                   value={newOrgName}
                   onChange={(e) => setNewOrgName(e.target.value)}
                   placeholder="Enter organization name"
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Type <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-3 gap-2 auto-rows-[44px]">
@@ -295,7 +295,7 @@ export function OrganizationSelector({
                       className={`px-2 py-1 text-sm rounded-lg border transition-colors h-full flex items-center justify-center text-center leading-tight ${
                         newOrgKind === kind.value
                           ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-border text-muted-foreground hover:border-border"
+                          : "border-slate-200 text-slate-600 hover:border-slate-300"
                       }`}
                     >
                       {kind.label}
@@ -309,7 +309,7 @@ export function OrganizationSelector({
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
               >
                 Cancel
               </button>

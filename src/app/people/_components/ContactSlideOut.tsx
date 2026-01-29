@@ -112,7 +112,7 @@ function formatE164(phone: string): string {
 }
 
 const WARMTH_OPTIONS = [
-  { value: 0, label: "Cold", color: "bg-muted0" },
+  { value: 0, label: "Cold", color: "bg-slate-500" },
   { value: 1, label: "Warm", color: "bg-yellow-500" },
   { value: 2, label: "Hot", color: "bg-orange-500" },
   { value: 3, label: "Champion", color: "bg-green-500" },
@@ -273,9 +273,9 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
-      <div className="relative w-full max-w-xl bg-card shadow-xl flex flex-col">
+      <div className="relative w-full max-w-xl bg-white shadow-xl flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 bg-card border-b px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-blue-100">
               <User className="h-5 w-5 text-blue-600" />
@@ -285,7 +285,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
               <p className="text-xs text-muted-foreground">Add a new person to your CRM</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-muted rounded">
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -295,32 +295,32 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
           <div className="space-y-6">
             {/* Basic Info */}
             <div>
-              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">
                 Basic Information
               </h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
                     First Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="John"
                     autoFocus
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
                     Last Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Doe"
                   />
                 </div>
@@ -329,14 +329,14 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
 
             {/* Contact Info */}
             <div className="pt-4 border-t">
-              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">
                 Contact Information
               </h3>
 
               {/* Emails */}
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">Emails</span>
+                  <span className="text-sm font-medium text-slate-700">Emails</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -350,8 +350,8 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                   </button>
                 </div>
                 {emails.map((email, index) => (
-                  <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                    <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div key={index} className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg">
+                    <Mail className="h-4 w-4 text-slate-400 flex-shrink-0" />
                     <input
                       type="email"
                       value={email.value}
@@ -361,7 +361,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                         setEmails(newEmails);
                       }}
                       placeholder="email@example.com"
-                      className="flex-1 min-w-0 px-2 py-1 text-sm border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-card"
+                      className="flex-1 min-w-0 px-2 py-1 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                     />
                     <select
                       value={email.label}
@@ -370,7 +370,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                         newEmails[index] = { ...newEmails[index], label: e.target.value as "work" | "personal" };
                         setEmails(newEmails);
                       }}
-                      className="px-2 py-1 text-xs border border-border rounded bg-card focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="px-2 py-1 text-xs border border-slate-200 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="work">Work</option>
                       <option value="personal">Personal</option>
@@ -394,7 +394,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                       className={`p-1 rounded transition-colors ${
                         email.primary
                           ? "text-amber-500 bg-amber-50"
-                          : "text-muted-foreground/60 hover:text-amber-500 hover:bg-amber-50"
+                          : "text-slate-300 hover:text-amber-500 hover:bg-amber-50"
                       }`}
                       title={email.primary ? "Primary email" : "Set as primary"}
                     >
@@ -416,14 +416,14 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                   </div>
                 ))}
                 {emails.length === 0 && (
-                  <p className="text-sm text-muted-foreground italic">No emails added yet</p>
+                  <p className="text-sm text-slate-400 italic">No emails added yet</p>
                 )}
               </div>
 
               {/* Phones */}
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">Phone Numbers</span>
+                  <span className="text-sm font-medium text-slate-700">Phone Numbers</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -437,9 +437,9 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                   </button>
                 </div>
                 {phones.map((phone, index) => (
-                  <div key={index} className="p-2 bg-muted rounded-lg space-y-2">
+                  <div key={index} className="p-2 bg-slate-50 rounded-lg space-y-2">
                     <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <Phone className="h-4 w-4 text-slate-400 flex-shrink-0" />
                       <input
                         type="tel"
                         value={phone.value}
@@ -454,7 +454,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                           setPhones(newPhones);
                         }}
                         placeholder="+15551234567"
-                        className="flex-1 min-w-0 px-2 py-1 text-sm border border-border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-card"
+                        className="flex-1 min-w-0 px-2 py-1 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
                       />
                       <select
                         value={phone.label}
@@ -463,7 +463,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                           newPhones[index] = { ...newPhones[index], label: e.target.value as "work" | "personal" };
                           setPhones(newPhones);
                         }}
-                        className="px-2 py-1 text-xs border border-border rounded bg-card focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="px-2 py-1 text-xs border border-slate-200 rounded bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="work">Work</option>
                         <option value="personal">Personal</option>
@@ -487,7 +487,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                         className={`p-1 rounded transition-colors ${
                           phone.primary
                             ? "text-amber-500 bg-amber-50"
-                            : "text-muted-foreground/60 hover:text-amber-500 hover:bg-amber-50"
+                            : "text-slate-300 hover:text-amber-500 hover:bg-amber-50"
                         }`}
                         title={phone.primary ? "Primary phone" : "Set as primary"}
                       >
@@ -509,7 +509,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                     </div>
                     {/* Contact Methods */}
                     <div className="flex items-center gap-2 pl-6 flex-wrap">
-                      <span className="text-xs text-muted-foreground">Via:</span>
+                      <span className="text-xs text-slate-400">Via:</span>
                       <button
                         type="button"
                         onClick={() => {
@@ -520,7 +520,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                         className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-xs transition-colors ${
                           phone.call
                             ? "bg-green-100 text-green-700"
-                            : "bg-muted text-muted-foreground"
+                            : "bg-slate-100 text-slate-400"
                         }`}
                         title="Phone calls"
                       >
@@ -537,7 +537,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                         className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-xs transition-colors ${
                           phone.text
                             ? "bg-blue-100 text-blue-700"
-                            : "bg-muted text-muted-foreground"
+                            : "bg-slate-100 text-slate-400"
                         }`}
                         title="Text/SMS"
                       >
@@ -554,7 +554,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                         className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-xs transition-colors ${
                           phone.whatsapp
                             ? "bg-green-100 text-green-700"
-                            : "bg-muted text-muted-foreground"
+                            : "bg-slate-100 text-slate-400"
                         }`}
                         title="WhatsApp"
                       >
@@ -571,7 +571,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                         className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-xs transition-colors ${
                           phone.telegram
                             ? "bg-sky-100 text-sky-700"
-                            : "bg-muted text-muted-foreground"
+                            : "bg-slate-100 text-slate-400"
                         }`}
                         title="Telegram"
                       >
@@ -588,7 +588,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                         className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-xs transition-colors ${
                           phone.signal
                             ? "bg-blue-100 text-blue-700"
-                            : "bg-muted text-muted-foreground"
+                            : "bg-slate-100 text-slate-400"
                         }`}
                         title="Signal"
                       >
@@ -599,14 +599,14 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                   </div>
                 ))}
                 {phones.length === 0 && (
-                  <p className="text-sm text-muted-foreground italic">No phone numbers added yet</p>
+                  <p className="text-sm text-slate-400 italic">No phone numbers added yet</p>
                 )}
               </div>
 
               {/* Social Links */}
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
                     <LinkedInIcon className="h-3.5 w-3.5 inline mr-1.5 text-[#0A66C2]" />
                     LinkedIn URL
                   </label>
@@ -614,25 +614,25 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                     type="url"
                     value={linkedinUrl}
                     onChange={(e) => setLinkedinUrl(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="https://linkedin.com/in/johndoe"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    <TwitterIcon className="h-3.5 w-3.5 inline mr-1.5 text-foreground" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <TwitterIcon className="h-3.5 w-3.5 inline mr-1.5 text-slate-800" />
                     X (Twitter) URL
                   </label>
                   <input
                     type="url"
                     value={twitterUrl}
                     onChange={(e) => setTwitterUrl(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="https://x.com/johndoe"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
                     <InstagramIcon className="h-3.5 w-3.5 inline mr-1.5 text-[#E4405F]" />
                     Instagram URL
                   </label>
@@ -640,7 +640,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                     type="url"
                     value={instagramUrl}
                     onChange={(e) => setInstagramUrl(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="https://instagram.com/johndoe"
                   />
                 </div>
@@ -649,13 +649,13 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
 
             {/* Work Info */}
             <div className="pt-4 border-t">
-              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">
                 Work
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    <Building2 className="h-3.5 w-3.5 inline mr-1.5 text-muted-foreground" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <Building2 className="h-3.5 w-3.5 inline mr-1.5 text-slate-400" />
                     Organization
                   </label>
                   <OrganizationSelector
@@ -669,15 +669,15 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    <Briefcase className="h-3.5 w-3.5 inline mr-1.5 text-muted-foreground" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <Briefcase className="h-3.5 w-3.5 inline mr-1.5 text-slate-400" />
                     Job Title
                   </label>
                   <input
                     type="text"
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Partner, Managing Director, etc."
                   />
                 </div>
@@ -686,44 +686,44 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
 
             {/* Location */}
             <div className="pt-4 border-t">
-              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">
                 Location
               </h3>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    <MapPin className="h-3.5 w-3.5 inline mr-1.5 text-muted-foreground" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <MapPin className="h-3.5 w-3.5 inline mr-1.5 text-slate-400" />
                     City
                   </label>
                   <input
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="San Francisco"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
                     State
                   </label>
                   <input
                     type="text"
                     value={state}
                     onChange={(e) => setState(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="CA"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
                     Country
                   </label>
                   <input
                     type="text"
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="United States"
                   />
                 </div>
@@ -732,12 +732,12 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
 
             {/* Relationship */}
             <div className="pt-4 border-t">
-              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">
                 Relationship
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
                     Warmth
                   </label>
                   <div className="flex gap-2 flex-wrap">
@@ -749,7 +749,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm transition-all ${
                           warmth === option.value
                             ? "border-blue-500 bg-blue-50 text-blue-700"
-                            : "border-border hover:border-border text-muted-foreground"
+                            : "border-slate-200 hover:border-slate-300 text-slate-600"
                         }`}
                       >
                         <div className={`w-2 h-2 rounded-full ${option.color}`} />
@@ -759,14 +759,14 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
                     Source
                   </label>
                   <input
                     type="text"
                     value={source}
                     onChange={(e) => setSource(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Referral, Conference, LinkedIn, etc."
                   />
                 </div>
@@ -775,7 +775,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
 
             {/* Tags */}
             <div className="pt-4 border-t">
-              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">
                 Tags
               </h3>
               <div className="space-y-2">
@@ -785,14 +785,14 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                     {tags.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center gap-1 px-2 py-1 bg-muted text-foreground text-sm rounded-md"
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 text-slate-700 text-sm rounded-md"
                       >
                         <Tag className="h-3 w-3" />
                         {tag}
                         <button
                           type="button"
                           onClick={() => setTags(tags.filter((t) => t !== tag))}
-                          className="ml-1 text-muted-foreground hover:text-red-500 transition-colors"
+                          className="ml-1 text-slate-400 hover:text-red-500 transition-colors"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -815,7 +815,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                         setNewTag("");
                       }
                     }}
-                    className="flex-1 px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Add a tag and press Enter..."
                   />
                   <button
@@ -827,7 +827,7 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
                       }
                     }}
                     disabled={!newTag.trim()}
-                    className="px-3 py-2 text-sm font-medium text-white bg-muted-foreground hover:bg-muted-foreground/90 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-2 text-sm font-medium text-white bg-slate-700 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -837,14 +837,14 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
 
             {/* Notes */}
             <div className="pt-4 border-t">
-              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-medium text-slate-400 uppercase tracking-wide mb-3">
                 Notes
               </h3>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 placeholder="Any notes about this contact..."
               />
             </div>
@@ -852,19 +852,19 @@ export function ContactSlideOut({ isOpen, onClose, onSave }: ContactSlideOutProp
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-card border-t px-6 py-4 flex items-center justify-end gap-3">
+        <div className="sticky bottom-0 bg-white border-t px-6 py-4 flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={saving || !firstName.trim() || !lastName.trim()}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-background bg-foreground hover:bg-foreground/90 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? (
               <>

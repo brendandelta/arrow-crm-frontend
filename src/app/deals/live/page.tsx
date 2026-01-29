@@ -52,7 +52,7 @@ function ProgressBar({ committed, closed }: { committed: number; closed: number 
   const percent = closed > 0 ? Math.min(100, Math.round((closed / committed) * 100)) : 0;
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
+      <div className="h-1.5 w-16 rounded-full bg-slate-100 overflow-hidden">
         <div
           className="h-full bg-green-500 rounded-full"
           style={{ width: `${percent}%` }}
@@ -90,7 +90,7 @@ export default function LiveDealsPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/deals")}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>

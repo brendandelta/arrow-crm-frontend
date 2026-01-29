@@ -98,7 +98,7 @@ const STATUS_OPTIONS = [
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  not_started: "bg-muted text-muted-foreground",
+  not_started: "bg-slate-100 text-slate-600",
   contacted: "bg-sky-50 text-sky-700",
   engaged: "bg-indigo-50 text-indigo-700",
   negotiating: "bg-violet-50 text-violet-700",
@@ -266,20 +266,20 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarg
           <div className="flex items-center border rounded-md overflow-hidden">
             <button
               onClick={() => setViewMode("card")}
-              className={`p-1.5 ${viewMode === "card" ? "bg-muted" : "hover:bg-muted"}`}
+              className={`p-1.5 ${viewMode === "card" ? "bg-slate-100" : "hover:bg-slate-50"}`}
             >
               <LayoutGrid className="h-4 w-4" />
             </button>
             <button
               onClick={() => setViewMode("table")}
-              className={`p-1.5 ${viewMode === "table" ? "bg-muted" : "hover:bg-muted"}`}
+              className={`p-1.5 ${viewMode === "table" ? "bg-slate-100" : "hover:bg-slate-50"}`}
             >
               <LayoutList className="h-4 w-4" />
             </button>
           </div>
           <button
             onClick={onAddTarget}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md transition-colors shadow-sm"
           >
             <Plus className="h-3.5 w-3.5" />
             Add Target
@@ -289,7 +289,7 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarg
 
       {/* Content */}
       {targets.length === 0 ? (
-        <div className="text-center py-12 text-sm text-muted-foreground">
+        <div className="text-center py-12 text-sm text-slate-400">
           No outreach targets for this deal
         </div>
       ) : viewMode === "table" ? (
@@ -322,7 +322,7 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarg
               {filteredData.length === 0 && hasActiveFilters ? (
                 <TableRow>
                   <TableCell colSpan={TARGET_COLUMNS.length} className="text-center py-8">
-                    <div className="text-sm text-muted-foreground">No results match your filters</div>
+                    <div className="text-sm text-slate-400">No results match your filters</div>
                     <button
                       onClick={clearAllFilters}
                       className="text-xs text-blue-600 hover:text-blue-800 mt-1"
@@ -337,7 +337,7 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarg
                 return (
                   <TableRow
                     key={target.id}
-                    className={`cursor-pointer hover:bg-muted ${isStale ? "bg-amber-50/50" : ""}`}
+                    className={`cursor-pointer hover:bg-slate-50 ${isStale ? "bg-amber-50/50" : ""}`}
                     onClick={() => onTargetClick?.(target)}
                   >
                     <TableCell>
@@ -349,7 +349,7 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarg
                         value={target.status}
                         onChange={(e) => { e.stopPropagation(); handleStatusChange(target.id, e.target.value); }}
                         onClick={(e) => e.stopPropagation()}
-                        className={`text-[11px] px-2 py-0.5 rounded-full border-0 font-medium cursor-pointer appearance-none ${STATUS_COLORS[target.status] || "bg-muted text-muted-foreground"}`}
+                        className={`text-[11px] px-2 py-0.5 rounded-full border-0 font-medium cursor-pointer appearance-none ${STATUS_COLORS[target.status] || "bg-slate-100 text-slate-600"}`}
                       >
                         {STATUS_OPTIONS.map((opt) => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -500,10 +500,10 @@ function TargetRow({
   return (
     <div
       id={`target-card-${target.id}`}
-      className={`group/card rounded-lg border bg-card transition-all hover:shadow-sm ${
+      className={`group/card rounded-lg border bg-white transition-all hover:shadow-sm ${
         isStale
           ? "border-l-[3px] border-l-amber-400 border-t-slate-200 border-r-slate-200 border-b-slate-200"
-          : "border-border hover:border-border"
+          : "border-slate-200 hover:border-slate-300"
       }`}
     >
       {/* Card Header */}
@@ -513,14 +513,14 @@ function TargetRow({
             <div className="flex items-center gap-2.5">
               <button
                 onClick={() => onTargetClick?.(target)}
-                className="text-[15px] font-semibold text-foreground hover:text-indigo-600 transition-colors text-left leading-tight"
+                className="text-[15px] font-semibold text-slate-900 hover:text-indigo-600 transition-colors text-left leading-tight"
               >
                 {target.targetName}
               </button>
               <select
                 value={target.status}
                 onChange={(e) => onStatusChange(target.id, e.target.value)}
-                className={`text-[11px] px-2 py-0.5 rounded-full border-0 font-medium cursor-pointer appearance-none ${STATUS_COLORS[target.status] || "bg-muted text-muted-foreground"}`}
+                className={`text-[11px] px-2 py-0.5 rounded-full border-0 font-medium cursor-pointer appearance-none ${STATUS_COLORS[target.status] || "bg-slate-100 text-slate-600"}`}
               >
                 {STATUS_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -529,11 +529,11 @@ function TargetRow({
             </div>
             <div className="flex items-center gap-3 mt-1">
               {target.role && (
-                <span className="text-[11px] text-muted-foreground capitalize">
+                <span className="text-[11px] text-slate-400 capitalize">
                   {target.role.replace(/_/g, " ")}
                 </span>
               )}
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-[11px] text-slate-400">
                 {target.daysSinceContact !== null
                   ? target.daysSinceContact === 0
                     ? "Contacted today"
@@ -545,7 +545,7 @@ function TargetRow({
 
           <div className="flex items-center gap-2 shrink-0 ml-3">
             {target.owner && (
-              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
                 <User className="h-3 w-3" />
                 {target.owner.firstName}
               </div>
@@ -561,7 +561,7 @@ function TargetRow({
                 </button>
                 <button
                   onClick={() => setConfirmDelete(false)}
-                  className="text-[11px] text-muted-foreground hover:text-muted-foreground px-1.5 py-1 transition-colors"
+                  className="text-[11px] text-slate-400 hover:text-slate-600 px-1.5 py-1 transition-colors"
                 >
                   Cancel
                 </button>
@@ -569,7 +569,7 @@ function TargetRow({
             ) : (
               <button
                 onClick={() => setConfirmDelete(true)}
-                className="opacity-0 group-hover/card:opacity-100 p-1.5 rounded-md text-muted-foreground/60 hover:text-red-500 hover:bg-red-50 transition-all"
+                className="opacity-0 group-hover/card:opacity-100 p-1.5 rounded-md text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"
                 title="Remove target"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -580,11 +580,11 @@ function TargetRow({
       </div>
 
       {/* Card Body — Two columns */}
-      <div className="flex border-t border-border">
+      <div className="flex border-t border-slate-100">
         {/* Left: Activity / Events */}
         <div className="flex-1 min-w-0 px-5 py-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Activity</span>
+            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Activity</span>
             {!isLoggingEvent && (
               <button
                 onClick={() => onStartLogEvent("call")}
@@ -600,28 +600,28 @@ function TargetRow({
             <div>
               <button
                 onClick={onToggleTimeline}
-                className="flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors w-full text-left"
+                className="flex items-center gap-1.5 text-[12px] text-slate-600 hover:text-slate-900 transition-colors w-full text-left"
               >
                 {isTimelineExpanded ? (
-                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                  <ChevronDown className="h-3 w-3 text-slate-400" />
                 ) : (
-                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                  <ChevronRight className="h-3 w-3 text-slate-400" />
                 )}
                 <span className="font-medium">{target.recentActivities.length}</span>
-                <span className="text-muted-foreground">event{target.recentActivities.length !== 1 ? "s" : ""}</span>
+                <span className="text-slate-400">event{target.recentActivities.length !== 1 ? "s" : ""}</span>
               </button>
 
               {isTimelineExpanded && (
-                <div className="mt-2 ml-1 space-y-1 border-l-2 border-border pl-3">
+                <div className="mt-2 ml-1 space-y-1 border-l-2 border-slate-100 pl-3">
                   {target.recentActivities.map((activity) => {
                     const Icon = ACTIVITY_ICONS[activity.kind] || Clock;
                     return (
                       <div key={activity.id} className="flex items-center gap-2 py-0.5">
-                        <Icon className="h-3 w-3 text-muted-foreground/60 shrink-0" />
-                        <span className="text-[12px] text-muted-foreground truncate flex-1">
+                        <Icon className="h-3 w-3 text-slate-300 shrink-0" />
+                        <span className="text-[12px] text-slate-600 truncate flex-1">
                           {activity.subject || activity.kind}
                         </span>
-                        <span className="text-[11px] text-muted-foreground/60 shrink-0 tabular-nums">
+                        <span className="text-[11px] text-slate-300 shrink-0 tabular-nums">
                           {formatDate(activity.occurredAt)}
                         </span>
                       </div>
@@ -631,7 +631,7 @@ function TargetRow({
               )}
             </div>
           ) : (
-            <p className="text-[12px] text-muted-foreground/60 italic">No activity recorded</p>
+            <p className="text-[12px] text-slate-300 italic">No activity recorded</p>
           )}
 
           {isLoggingEvent && (
@@ -646,12 +646,12 @@ function TargetRow({
         </div>
 
         {/* Divider */}
-        <div className="w-px bg-muted my-3" />
+        <div className="w-px bg-slate-100 my-3" />
 
         {/* Right: Target Tasks */}
         <div className="w-[280px] shrink-0 px-5 py-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Target Tasks</span>
+            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Target Tasks</span>
             {!isAddingTask && (
               <button
                 onClick={onStartAddTask}
@@ -678,7 +678,7 @@ function TargetRow({
                 <>
                   <button
                     onClick={() => setTasksExpanded(!tasksExpanded)}
-                    className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-muted-foreground mt-1 ml-6 transition-colors"
+                    className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600 mt-1 ml-6 transition-colors"
                   >
                     {tasksExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                     {target.tasks.length - 1} more
@@ -699,7 +699,7 @@ function TargetRow({
               )}
             </div>
           ) : !isAddingTask ? (
-            <p className="text-[12px] text-muted-foreground/60 italic">No tasks yet</p>
+            <p className="text-[12px] text-slate-300 italic">No tasks yet</p>
           ) : null}
 
           {isAddingTask && (
@@ -714,13 +714,13 @@ function TargetRow({
       </div>
 
       {/* Notes Section */}
-      <div className="border-t border-border px-5 py-3">
+      <div className="border-t border-slate-100 px-5 py-3">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Notes</span>
+          <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Notes</span>
           {!editingNotes && (
             <button
               onClick={() => setEditingNotes(true)}
-              className="opacity-0 group-hover/card:opacity-100 text-muted-foreground hover:text-indigo-500 transition-all"
+              className="opacity-0 group-hover/card:opacity-100 text-slate-400 hover:text-indigo-500 transition-all"
             >
               <Pencil className="h-3 w-3" />
             </button>
@@ -742,7 +742,7 @@ function TargetRow({
               }
             }}
             placeholder="Add a note..."
-            className="w-full text-[13px] text-foreground bg-muted border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 resize-none min-h-[60px] placeholder:text-muted-foreground/60"
+            className="w-full text-[13px] text-slate-700 bg-slate-50 border border-slate-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 resize-none min-h-[60px] placeholder:text-slate-300"
           />
         ) : (
           <button
@@ -750,9 +750,9 @@ function TargetRow({
             className="w-full text-left"
           >
             {notesValue ? (
-              <p className="text-[13px] text-muted-foreground whitespace-pre-wrap leading-relaxed">{notesValue}</p>
+              <p className="text-[13px] text-slate-600 whitespace-pre-wrap leading-relaxed">{notesValue}</p>
             ) : (
-              <p className="text-[12px] text-muted-foreground/60 italic">Add a note...</p>
+              <p className="text-[12px] text-slate-300 italic">Add a note...</p>
             )}
           </button>
         )}
@@ -794,35 +794,35 @@ function TaskCheckboxItem({ task, formatDate, onComplete, isPrimary }: {
         <div className="w-[18px] h-[18px] rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
           <Check className="h-3 w-3 text-white" />
         </div>
-        <span className="text-[12px] text-muted-foreground line-through truncate">{task.subject}</span>
+        <span className="text-[12px] text-slate-400 line-through truncate">{task.subject}</span>
       </div>
     );
   }
 
   return (
-    <div className={`flex items-start gap-2 py-1 px-1.5 rounded-md group/task hover:bg-muted transition-colors ${isPrimary ? "" : ""}`}>
+    <div className={`flex items-start gap-2 py-1 px-1.5 rounded-md group/task hover:bg-slate-50 transition-colors ${isPrimary ? "" : ""}`}>
       <button
         onClick={handleComplete}
         disabled={completing}
-        className="mt-[2px] w-[18px] h-[18px] rounded-full border-[1.5px] border-border group-hover/task:border-emerald-400 flex items-center justify-center shrink-0 transition-all hover:bg-emerald-50 disabled:opacity-50"
+        className="mt-[2px] w-[18px] h-[18px] rounded-full border-[1.5px] border-slate-300 group-hover/task:border-emerald-400 flex items-center justify-center shrink-0 transition-all hover:bg-emerald-50 disabled:opacity-50"
       >
         <Check className="h-3 w-3 text-emerald-500 opacity-0 group-hover/task:opacity-60 transition-opacity" />
       </button>
       <div className="flex-1 min-w-0">
         <div className={`text-[13px] leading-tight truncate ${
-          task.overdue ? "text-rose-600 font-medium" : "text-foreground"
+          task.overdue ? "text-rose-600 font-medium" : "text-slate-700"
         }`}>
           {task.subject}
         </div>
         <div className="flex items-center gap-2 mt-0.5">
           {task.dueAt && (
-            <span className={`text-[11px] ${task.overdue ? "text-rose-500 font-medium" : "text-muted-foreground"}`}>
+            <span className={`text-[11px] ${task.overdue ? "text-rose-500 font-medium" : "text-slate-400"}`}>
               {formatDate(task.dueAt)}
             </span>
           )}
           {task.assignedTo && (
-            <span className="text-[11px] text-muted-foreground/60 flex items-center gap-0.5">
-              <Circle className="h-2 w-2 fill-slate-300 text-muted-foreground/60" />
+            <span className="text-[11px] text-slate-300 flex items-center gap-0.5">
+              <Circle className="h-2 w-2 fill-slate-300 text-slate-300" />
               {task.assignedTo.firstName}
             </span>
           )}
@@ -914,7 +914,7 @@ function InlineLogEventForm({ dealId, targetId, initialKind = "call", onCancel, 
   };
 
   return (
-    <div className="mt-3 p-3 bg-muted/80 rounded-lg border border-border space-y-2.5">
+    <div className="mt-3 p-3 bg-slate-50/80 rounded-lg border border-slate-200 space-y-2.5">
       {/* Kind selector */}
       <div className="flex items-center gap-1">
         {ACTIVITY_KINDS.map((k) => {
@@ -925,8 +925,8 @@ function InlineLogEventForm({ dealId, targetId, initialKind = "call", onCancel, 
               onClick={() => setKind(k.value)}
               className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-md transition-all ${
                 kind === k.value
-                  ? "bg-foreground text-background shadow-sm"
-                  : "text-muted-foreground hover:bg-muted"
+                  ? "bg-slate-800 text-white shadow-sm"
+                  : "text-slate-500 hover:bg-slate-100"
               }`}
             >
               <Icon className="h-3 w-3" />
@@ -941,20 +941,20 @@ function InlineLogEventForm({ dealId, targetId, initialKind = "call", onCancel, 
         placeholder="What happened?"
         value={subject}
         onChange={(e) => setSubject(e.target.value)}
-        className="w-full text-[13px] px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 placeholder:text-muted-foreground/60"
+        className="w-full text-[13px] px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 placeholder:text-slate-300"
         autoFocus
       />
 
       {/* Type-specific fields */}
       <div className="flex items-center gap-2 flex-wrap">
         {showDirection && (
-          <div className="flex items-center rounded-md overflow-hidden border border-border">
+          <div className="flex items-center rounded-md overflow-hidden border border-slate-200">
             {DIRECTIONS.map((d) => (
               <button
                 key={d.value}
                 onClick={() => setDirection(d.value)}
                 className={`text-[11px] px-2.5 py-1 transition-colors ${
-                  direction === d.value ? "bg-indigo-500 text-white" : "bg-card text-muted-foreground hover:bg-muted"
+                  direction === d.value ? "bg-indigo-500 text-white" : "bg-white text-slate-500 hover:bg-slate-50"
                 }`}
               >
                 {d.label}
@@ -966,7 +966,7 @@ function InlineLogEventForm({ dealId, targetId, initialKind = "call", onCancel, 
           <select
             value={outcome}
             onChange={(e) => setOutcome(e.target.value)}
-            className="text-[11px] bg-card border border-border rounded-md px-2 py-1"
+            className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1"
           >
             <option value="">Outcome...</option>
             {outcomeOptions.map((o) => (
@@ -979,12 +979,12 @@ function InlineLogEventForm({ dealId, targetId, initialKind = "call", onCancel, 
       {showTime && (
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-muted-foreground">Start:</span>
-            <input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className="text-[11px] bg-card border border-border rounded-md px-2 py-1" />
+            <span className="text-[11px] text-slate-400">Start:</span>
+            <input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1" />
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-muted-foreground">End:</span>
-            <input type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className="text-[11px] bg-card border border-border rounded-md px-2 py-1" />
+            <span className="text-[11px] text-slate-400">End:</span>
+            <input type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1" />
           </div>
         </div>
       )}
@@ -994,18 +994,18 @@ function InlineLogEventForm({ dealId, targetId, initialKind = "call", onCancel, 
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={2}
-        className="w-full text-[13px] px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 resize-none placeholder:text-muted-foreground/60"
+        className="w-full text-[13px] px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 resize-none placeholder:text-slate-300"
       />
 
       <div className="flex items-center gap-2 pt-0.5">
         <button
           onClick={handleSubmit}
           disabled={!subject.trim() || submitting}
-          className="px-3 py-1.5 text-[12px] font-medium text-background bg-foreground rounded-md hover:bg-foreground/80 disabled:opacity-40 transition-colors shadow-sm"
+          className="px-3 py-1.5 text-[12px] font-medium text-white bg-slate-800 rounded-md hover:bg-slate-700 disabled:opacity-40 transition-colors shadow-sm"
         >
           {submitting ? "Saving..." : "Log Event"}
         </button>
-        <button onClick={onCancel} className="px-3 py-1.5 text-[12px] text-muted-foreground hover:text-muted-foreground transition-colors">
+        <button onClick={onCancel} className="px-3 py-1.5 text-[12px] text-slate-400 hover:text-slate-600 transition-colors">
           Cancel
         </button>
       </div>
@@ -1070,30 +1070,30 @@ function InlineAddTaskForm({ dealId, targetId, onCancel, onSuccess }: InlineAddT
   };
 
   return (
-    <div className="mt-2 p-3 bg-muted/80 rounded-lg border border-border space-y-2">
+    <div className="mt-2 p-3 bg-slate-50/80 rounded-lg border border-slate-200 space-y-2">
       <input
         type="text"
         placeholder="What needs to be done?"
         value={subject}
         onChange={(e) => setSubject(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="w-full text-[13px] px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 placeholder:text-muted-foreground/60"
+        className="w-full text-[13px] px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 placeholder:text-slate-300"
         autoFocus
       />
       <div className="flex items-center gap-2 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <CalendarClock className="h-3 w-3 text-muted-foreground/60" />
+          <CalendarClock className="h-3 w-3 text-slate-300" />
           <input
             type="date"
             value={dueAt}
             onChange={(e) => setDueAt(e.target.value)}
-            className="text-[11px] bg-card border border-border rounded-md px-2 py-1 text-muted-foreground"
+            className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
           />
         </div>
         <select
           value={priority}
           onChange={(e) => setPriority(e.target.value)}
-          className="text-[11px] bg-card border border-border rounded-md px-2 py-1 text-muted-foreground"
+          className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
         >
           <option value="low">Low</option>
           <option value="normal">Normal</option>
@@ -1102,7 +1102,7 @@ function InlineAddTaskForm({ dealId, targetId, onCancel, onSuccess }: InlineAddT
         <select
           value={assignedToId}
           onChange={(e) => setAssignedToId(e.target.value)}
-          className="text-[11px] bg-card border border-border rounded-md px-2 py-1 text-muted-foreground"
+          className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
         >
           <option value="">Assign to...</option>
           {users.map((u) => (
@@ -1116,11 +1116,11 @@ function InlineAddTaskForm({ dealId, targetId, onCancel, onSuccess }: InlineAddT
         <button
           onClick={handleSubmit}
           disabled={!subject.trim() || submitting}
-          className="px-3 py-1.5 text-[12px] font-medium text-background bg-foreground rounded-md hover:bg-foreground/80 disabled:opacity-40 transition-colors shadow-sm"
+          className="px-3 py-1.5 text-[12px] font-medium text-white bg-slate-800 rounded-md hover:bg-slate-700 disabled:opacity-40 transition-colors shadow-sm"
         >
           {submitting ? "Saving..." : "Add Task"}
         </button>
-        <button onClick={onCancel} className="px-3 py-1.5 text-[12px] text-muted-foreground hover:text-muted-foreground transition-colors">
+        <button onClick={onCancel} className="px-3 py-1.5 text-[12px] text-slate-400 hover:text-slate-600 transition-colors">
           Cancel
         </button>
       </div>

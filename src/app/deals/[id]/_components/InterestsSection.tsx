@@ -101,14 +101,14 @@ function formatDate(dateStr: string | null) {
 
 function InterestStatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    prospecting: "bg-muted text-muted-foreground",
-    contacted: "bg-muted text-foreground",
+    prospecting: "bg-slate-100 text-slate-600",
+    contacted: "bg-slate-200 text-slate-700",
     soft_circled: "bg-blue-100 text-blue-700",
     committed: "bg-purple-100 text-purple-700",
     allocated: "bg-indigo-100 text-indigo-700",
     funded: "bg-emerald-100 text-emerald-700",
     declined: "bg-red-100 text-red-600",
-    withdrawn: "bg-muted text-muted-foreground",
+    withdrawn: "bg-slate-100 text-slate-500",
   };
 
   const displayStatus = status.replace(/_/g, " ");
@@ -121,14 +121,14 @@ function InterestStatusBadge({ status }: { status: string }) {
 }
 
 const INTEREST_STATUS_OPTIONS = [
-  { value: "prospecting", label: "Prospecting", color: "bg-muted text-muted-foreground" },
-  { value: "contacted", label: "Contacted", color: "bg-muted text-foreground" },
+  { value: "prospecting", label: "Prospecting", color: "bg-slate-100 text-slate-600" },
+  { value: "contacted", label: "Contacted", color: "bg-slate-200 text-slate-700" },
   { value: "soft_circled", label: "Soft Circled", color: "bg-blue-100 text-blue-700" },
   { value: "committed", label: "Committed", color: "bg-purple-100 text-purple-700" },
   { value: "allocated", label: "Allocated", color: "bg-indigo-100 text-indigo-700" },
   { value: "funded", label: "Funded", color: "bg-emerald-100 text-emerald-700" },
   { value: "declined", label: "Declined", color: "bg-red-100 text-red-600" },
-  { value: "withdrawn", label: "Withdrawn", color: "bg-muted text-muted-foreground" },
+  { value: "withdrawn", label: "Withdrawn", color: "bg-slate-100 text-slate-500" },
 ];
 
 const INTEREST_COLUMNS: ColumnDef<Interest>[] = [
@@ -268,20 +268,20 @@ export function InterestsSection({
           <div className="flex items-center border rounded-md overflow-hidden">
             <button
               onClick={() => setViewMode("card")}
-              className={`p-1.5 ${viewMode === "card" ? "bg-muted" : "hover:bg-muted"}`}
+              className={`p-1.5 ${viewMode === "card" ? "bg-slate-100" : "hover:bg-slate-50"}`}
             >
               <LayoutGrid className="h-4 w-4" />
             </button>
             <button
               onClick={() => setViewMode("table")}
-              className={`p-1.5 ${viewMode === "table" ? "bg-muted" : "hover:bg-muted"}`}
+              className={`p-1.5 ${viewMode === "table" ? "bg-slate-100" : "hover:bg-slate-50"}`}
             >
               <LayoutList className="h-4 w-4" />
             </button>
           </div>
           <button
             onClick={onAddInterest}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-background bg-foreground hover:bg-foreground/90 rounded-md transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-slate-900 hover:bg-slate-800 rounded-md transition-colors shadow-sm"
           >
             <Plus className="h-3.5 w-3.5" />
             Add Interest
@@ -330,7 +330,7 @@ export function InterestsSection({
               {filteredData.length === 0 && hasActiveFilters ? (
                 <TableRow>
                   <TableCell colSpan={INTEREST_COLUMNS.length} className="text-center py-8">
-                    <div className="text-sm text-muted-foreground">No results match your filters</div>
+                    <div className="text-sm text-slate-400">No results match your filters</div>
                     <button
                       onClick={clearAllFilters}
                       className="text-xs text-blue-600 hover:text-blue-800 mt-1"
@@ -343,7 +343,7 @@ export function InterestsSection({
               filteredData.map((interest) => (
                 <TableRow
                   key={interest.id}
-                  className={`cursor-pointer hover:bg-muted ${
+                  className={`cursor-pointer hover:bg-slate-50 ${
                     interest.isStale ? "bg-amber-50/50" : ""
                   }`}
                   onClick={() => onInterestClick?.(interest)}
@@ -426,7 +426,7 @@ export function InterestsSection({
             <div
               key={interest.id}
               onClick={() => onInterestClick?.(interest)}
-              className={`p-4 border rounded-lg cursor-pointer hover:border-border hover:bg-muted transition-colors ${
+              className={`p-4 border rounded-lg cursor-pointer hover:border-slate-300 hover:bg-slate-50 transition-colors ${
                 interest.isStale ? "border-l-[3px] border-l-amber-400" : ""
               }`}
             >

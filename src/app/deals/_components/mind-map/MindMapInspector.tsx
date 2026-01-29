@@ -75,7 +75,7 @@ interface MindMapInspectorProps {
 
 // ---- STATUS config for targets ----
 const TARGET_STATUS_COLORS: Record<string, string> = {
-  not_started: "bg-muted text-muted-foreground",
+  not_started: "bg-slate-100 text-slate-600",
   contacted: "bg-blue-50 text-blue-700",
   engaged: "bg-indigo-50 text-indigo-700",
   negotiating: "bg-purple-50 text-purple-700",
@@ -85,22 +85,22 @@ const TARGET_STATUS_COLORS: Record<string, string> = {
 };
 
 const INTEREST_STATUS_COLORS: Record<string, string> = {
-  prospecting: "bg-muted text-muted-foreground",
+  prospecting: "bg-slate-100 text-slate-600",
   contacted: "bg-blue-50 text-blue-700",
   soft_circled: "bg-amber-50 text-amber-700",
   committed: "bg-green-50 text-green-700",
   allocated: "bg-emerald-50 text-emerald-700",
   funded: "bg-violet-50 text-violet-700",
   declined: "bg-red-50 text-red-600",
-  withdrawn: "bg-muted text-muted-foreground",
+  withdrawn: "bg-slate-100 text-slate-500",
 };
 
 const STAGE_COLORS: Record<string, { label: string; color: string }> = {
-  sourcing: { label: "Sourcing", color: "bg-muted text-foreground" },
+  sourcing: { label: "Sourcing", color: "bg-slate-50 text-slate-700" },
   live: { label: "Live", color: "bg-emerald-50 text-emerald-700" },
   closing: { label: "Closing", color: "bg-blue-50 text-blue-700" },
   closed: { label: "Closed", color: "bg-violet-50 text-violet-700" },
-  dead: { label: "Dead", color: "bg-muted text-muted-foreground" },
+  dead: { label: "Dead", color: "bg-slate-50 text-slate-500" },
 };
 
 export function MindMapInspector({
@@ -245,21 +245,21 @@ function DealInspectorContent({
         <div className="flex items-center gap-1.5 flex-wrap">
           <button
             onClick={() => onNavigate(dealId)}
-            className="h-7 px-2.5 rounded-md text-xs font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors flex items-center gap-1.5"
+            className="h-7 px-2.5 rounded-md text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-1.5"
           >
             <ExternalLink className="h-3 w-3" />
             Open Deal
           </button>
           <button
             onClick={() => onAddTarget(dealId)}
-            className="h-7 px-2.5 rounded-md text-xs font-medium bg-card border border-border text-muted-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
+            className="h-7 px-2.5 rounded-md text-xs font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
           >
             <Plus className="h-3 w-3" />
             Add Target
           </button>
           <button
             onClick={() => onAddInterest(dealId)}
-            className="h-7 px-2.5 rounded-md text-xs font-medium bg-card border border-border text-muted-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
+            className="h-7 px-2.5 rounded-md text-xs font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
           >
             <Plus className="h-3 w-3" />
             Add Interest
@@ -277,25 +277,25 @@ function DealInspectorContent({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-[11px] text-muted-foreground block mb-1">Owner</label>
-                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-card">
+                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-white">
                   {owner ? `${owner.firstName} ${owner.lastName}` : "Unassigned"}
                 </div>
               </div>
               <div>
                 <label className="text-[11px] text-muted-foreground block mb-1">Coverage</label>
-                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-card">
+                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-white">
                   {coverageRatio != null ? `${coverageRatio}%` : "--"}
                 </div>
               </div>
               <div>
                 <label className="text-[11px] text-muted-foreground block mb-1">Targets</label>
-                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-card">
+                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-white">
                   {targetCount}
                 </div>
               </div>
               <div>
                 <label className="text-[11px] text-muted-foreground block mb-1">Interests</label>
-                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-card">
+                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-white">
                   {interestCount}
                 </div>
               </div>
@@ -312,13 +312,13 @@ function DealInspectorContent({
             {loading ? (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-10 bg-muted rounded animate-pulse" />
+                  <div key={i} className="h-10 bg-slate-100 rounded animate-pulse" />
                 ))}
               </div>
             ) : expanded?.topBlocks && expanded.topBlocks.length > 0 ? (
               <div className="space-y-1.5">
                 {expanded.topBlocks.map((block) => (
-                  <div key={block.id} className="flex items-center justify-between p-2 rounded-md border bg-card text-xs">
+                  <div key={block.id} className="flex items-center justify-between p-2 rounded-md border bg-white text-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       <Blocks className="h-3 w-3 text-muted-foreground shrink-0" />
                       <span className="truncate">{block.seller?.name || "Unknown"}</span>
@@ -344,13 +344,13 @@ function DealInspectorContent({
             {loading ? (
               <div className="space-y-2">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-8 bg-muted rounded animate-pulse" />
+                  <div key={i} className="h-8 bg-slate-100 rounded animate-pulse" />
                 ))}
               </div>
             ) : expanded?.nextFollowups && expanded.nextFollowups.length > 0 ? (
               <div className="space-y-1">
                 {expanded.nextFollowups.map((fu) => (
-                  <div key={fu.id} className="flex items-center justify-between p-2 rounded-md border bg-card text-xs">
+                  <div key={fu.id} className="flex items-center justify-between p-2 rounded-md border bg-white text-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       <Users className="h-3 w-3 text-muted-foreground shrink-0" />
                       <span className="truncate">{fu.targetName}</span>
@@ -376,7 +376,7 @@ function DealInspectorContent({
             {loading ? (
               <div className="space-y-2">
                 {[1, 2].map((i) => (
-                  <div key={i} className="h-8 bg-muted rounded animate-pulse" />
+                  <div key={i} className="h-8 bg-slate-100 rounded animate-pulse" />
                 ))}
               </div>
             ) : expanded?.nextTasks && expanded.nextTasks.length > 0 ? (
@@ -385,7 +385,7 @@ function DealInspectorContent({
                   <div
                     key={task.id}
                     className={`flex items-start gap-2 p-2 rounded-md border text-xs ${
-                      task.overdue ? "bg-red-50 border-red-200" : "bg-card"
+                      task.overdue ? "bg-red-50 border-red-200" : "bg-white"
                     }`}
                   >
                     {task.overdue ? (
@@ -452,13 +452,13 @@ function TargetInspectorContent({
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => onEditTarget(itemId, dealId)}
-            className="h-7 px-2.5 rounded-md text-xs font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors"
+            className="h-7 px-2.5 rounded-md text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 transition-colors"
           >
             Edit Target
           </button>
           <button
             onClick={() => onNavigate(dealId)}
-            className="h-7 px-2.5 rounded-md text-xs font-medium bg-card border border-border text-muted-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
+            className="h-7 px-2.5 rounded-md text-xs font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
           >
             <ExternalLink className="h-3 w-3" />
             Open Deal
@@ -481,13 +481,13 @@ function TargetInspectorContent({
               </div>
               <div>
                 <label className="text-[11px] text-muted-foreground block mb-1">Next Step</label>
-                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-card truncate">
+                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-white truncate">
                   {nextStep || "--"}
                 </div>
               </div>
               <div>
                 <label className="text-[11px] text-muted-foreground block mb-1">Due Date</label>
-                <div className={`h-8 flex items-center text-xs border rounded-md px-2.5 bg-card gap-1.5 ${isOverdue ? "text-red-600" : "text-foreground"}`}>
+                <div className={`h-8 flex items-center text-xs border rounded-md px-2.5 bg-white gap-1.5 ${isOverdue ? "text-red-600" : "text-foreground"}`}>
                   <Calendar className="h-3 w-3" />
                   {nextStepAt ? formatDate(nextStepAt) : "--"}
                 </div>
@@ -559,13 +559,13 @@ function InterestInspectorContent({
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => onEditInterest(itemId, dealId)}
-            className="h-7 px-2.5 rounded-md text-xs font-medium bg-foreground text-background hover:bg-foreground/90 transition-colors"
+            className="h-7 px-2.5 rounded-md text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 transition-colors"
           >
             Edit Interest
           </button>
           <button
             onClick={() => onNavigate(dealId)}
-            className="h-7 px-2.5 rounded-md text-xs font-medium bg-card border border-border text-muted-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
+            className="h-7 px-2.5 rounded-md text-xs font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
           >
             <ExternalLink className="h-3 w-3" />
             Open Deal
@@ -588,27 +588,27 @@ function InterestInspectorContent({
               </div>
               <div>
                 <label className="text-[11px] text-muted-foreground block mb-1">Committed</label>
-                <div className="h-8 flex items-center text-xs font-medium tabular-nums border rounded-md px-2.5 bg-card">
+                <div className="h-8 flex items-center text-xs font-medium tabular-nums border rounded-md px-2.5 bg-white">
                   {committedCents ? formatCurrency(committedCents) : "--"}
                 </div>
               </div>
               {blockName && (
                 <div>
                   <label className="text-[11px] text-muted-foreground block mb-1">Block</label>
-                  <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-card truncate">
+                  <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-white truncate">
                     {blockName}
                   </div>
                 </div>
               )}
               <div>
                 <label className="text-[11px] text-muted-foreground block mb-1">Next Step</label>
-                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-card truncate">
+                <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-white truncate">
                   {nextStep || "--"}
                 </div>
               </div>
               <div>
                 <label className="text-[11px] text-muted-foreground block mb-1">Due Date</label>
-                <div className={`h-8 flex items-center text-xs border rounded-md px-2.5 bg-card gap-1.5 ${isOverdue ? "text-red-600" : "text-foreground"}`}>
+                <div className={`h-8 flex items-center text-xs border rounded-md px-2.5 bg-white gap-1.5 ${isOverdue ? "text-red-600" : "text-foreground"}`}>
                   <Calendar className="h-3 w-3" />
                   {nextStepAt ? formatDate(nextStepAt) : "--"}
                 </div>

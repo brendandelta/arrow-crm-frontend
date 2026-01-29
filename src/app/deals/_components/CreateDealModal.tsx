@@ -215,13 +215,13 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-card border border-border rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="relative bg-white border border-slate-200 rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-base font-semibold text-foreground">Create New Deal</h2>
+        <div className="flex items-center justify-between p-4 border-b border-slate-100">
+          <h2 className="text-base font-semibold text-slate-900">Create New Deal</h2>
           <button
             onClick={onClose}
-            className="p-1 text-muted-foreground hover:text-muted-foreground rounded transition-colors"
+            className="p-1 text-slate-400 hover:text-slate-600 rounded transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -233,7 +233,7 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
             {/* Section 1: Name + Company */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
                   Deal Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -241,14 +241,14 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Series B — Acme Corp"
-                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                   autoFocus
                 />
               </div>
               <div className="relative">
-                <label className="block text-sm font-medium text-foreground mb-1">Company <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Company <span className="text-red-500">*</span></label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                   <input
                     ref={companyInputRef}
                     type="text"
@@ -256,23 +256,23 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
                     onChange={(e) => handleCompanyQueryChange(e.target.value)}
                     onFocus={() => { if (companyResults.length > 0) setShowCompanyDropdown(true); }}
                     placeholder="Search companies..."
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                   />
                   {companySearching && (
-                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground animate-spin" />
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 animate-spin" />
                   )}
                 </div>
                 {showCompanyDropdown && (
                   <div
                     ref={companyDropdownRef}
-                    className="absolute z-10 mt-1 w-full bg-card border border-border rounded-lg shadow-lg max-h-56 overflow-y-auto"
+                    className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-56 overflow-y-auto"
                   >
                     {companyResults.map((c) => (
                       <button
                         key={c.id}
                         type="button"
                         onClick={() => selectCompany(c)}
-                        className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-muted border-b border-border last:border-0"
+                        className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 border-b border-slate-100 last:border-0"
                       >
                         {c.name}
                       </button>
@@ -298,11 +298,11 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
             {/* Section 2: Stage, Kind */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Stage</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Stage</label>
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 bg-card"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
                 >
                   {STATUSES.map((s) => (
                     <option key={s} value={s}>{formatLabel(s)}</option>
@@ -310,11 +310,11 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Kind</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Kind</label>
                 <select
                   value={kind}
                   onChange={(e) => setKind(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 bg-card"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
                 >
                   {KINDS.map((k) => (
                     <option key={k} value={k}>{formatLabel(k)}</option>
@@ -326,11 +326,11 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
             {/* Section 3: Owner, Priority, Confidence */}
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Owner</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Owner</label>
                 <select
                   value={ownerId ?? ""}
                   onChange={(e) => setOwnerId(e.target.value ? parseInt(e.target.value, 10) : null)}
-                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 bg-card"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
                 >
                   <option value="">Unassigned</option>
                   {users.map((u) => (
@@ -341,7 +341,7 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Priority</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Priority</label>
                 <div className="flex gap-1">
                   {DEAL_PRIORITIES.map((p) => (
                     <button
@@ -351,7 +351,7 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
                       className={`flex-1 py-2 text-xs font-medium rounded-lg border transition-colors ${
                         priority === p.value
                           ? p.color
-                          : "bg-card text-muted-foreground border-border hover:bg-muted"
+                          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                       }`}
                     >
                       {p.label}
@@ -360,7 +360,7 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Confidence</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Confidence</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -369,9 +369,9 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
                     value={confidence}
                     onChange={(e) => setConfidence(e.target.value)}
                     placeholder="0–100"
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
                 </div>
               </div>
             </div>
@@ -379,57 +379,57 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
             {/* Section 4: Dates */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Expected Close</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Expected Close</label>
                 <input
                   type="date"
                   value={expectedClose}
                   onChange={(e) => setExpectedClose(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1">Deadline</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Deadline</label>
                 <input
                   type="date"
                   value={deadline}
                   onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                 />
               </div>
             </div>
 
             {/* Section 5: Terms (optional) */}
             <div>
-              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+              <label className="block text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">
                 Terms (optional)
               </label>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Valuation</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Valuation</label>
                   <input
                     type="text"
                     value={valuation}
                     onChange={(e) => setValuation(e.target.value)}
                     placeholder="e.g. 10B, 500M"
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Share Price</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Share Price</label>
                   <input
                     type="text"
                     value={sharePrice}
                     onChange={(e) => setSharePrice(e.target.value)}
                     placeholder="e.g. $45.50"
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">Source</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Source</label>
                   <select
                     value={source}
                     onChange={(e) => setSource(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 bg-card"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
                   >
                     <option value="">Select...</option>
                     {SOURCES.map((s) => (
@@ -441,24 +441,24 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
             </div>
 
             {/* Section 6: Collapsible More */}
-            <div className="border border-border rounded-lg">
+            <div className="border border-slate-200 rounded-lg">
               <button
                 type="button"
                 onClick={() => setMoreOpen(!moreOpen)}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted rounded-lg transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
               >
                 {moreOpen ? (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <ChevronDown className="h-4 w-4 text-slate-400" />
                 ) : (
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
                 )}
                 More
               </button>
               {moreOpen && (
-                <div className="px-3 pb-3 space-y-4 border-t border-border pt-3">
+                <div className="px-3 pb-3 space-y-4 border-t border-slate-100 pt-3">
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-1">Tags</label>
-                    <div className="flex flex-wrap items-center gap-1.5 p-2 border border-border rounded-lg focus-within:ring-2 focus-within:ring-indigo-200 focus-within:border-indigo-300 min-h-[38px]">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Tags</label>
+                    <div className="flex flex-wrap items-center gap-1.5 p-2 border border-slate-200 rounded-lg focus-within:ring-2 focus-within:ring-indigo-200 focus-within:border-indigo-300 min-h-[38px]">
                       {tags.map((tag) => (
                         <span
                           key={tag}
@@ -490,59 +490,59 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
                           }
                         }}
                         placeholder={tags.length === 0 ? "Type and press Enter..." : ""}
-                        className="flex-1 min-w-[100px] text-sm outline-none bg-transparent placeholder:text-muted-foreground"
+                        className="flex-1 min-w-[100px] text-sm outline-none bg-transparent placeholder:text-slate-400"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
                     <textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       rows={3}
                       placeholder="Internal notes..."
-                      className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 resize-none"
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 resize-none"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-1">Drive URL</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Drive URL</label>
                       <input
                         type="url"
                         value={driveUrl}
                         onChange={(e) => setDriveUrl(e.target.value)}
                         placeholder="https://..."
-                        className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-1">Data Room URL</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Data Room URL</label>
                       <input
                         type="url"
                         value={dataRoomUrl}
                         onChange={(e) => setDataRoomUrl(e.target.value)}
                         placeholder="https://..."
-                        className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-1">Deck URL</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Deck URL</label>
                       <input
                         type="url"
                         value={deckUrl}
                         onChange={(e) => setDeckUrl(e.target.value)}
                         placeholder="https://..."
-                        className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-foreground mb-1">Notion URL</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Notion URL</label>
                       <input
                         type="url"
                         value={notionUrl}
                         onChange={(e) => setNotionUrl(e.target.value)}
                         placeholder="https://..."
-                        className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300"
                       />
                     </div>
                   </div>
@@ -552,11 +552,11 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
           </div>
 
           {/* Sticky Footer */}
-          <div className="flex items-center justify-end gap-3 p-4 border-t border-border bg-card">
+          <div className="flex items-center justify-end gap-3 p-4 border-t border-slate-100 bg-white">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
               Cancel
             </button>

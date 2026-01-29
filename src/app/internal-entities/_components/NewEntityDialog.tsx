@@ -117,7 +117,7 @@ export function NewEntityDialog({
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           {/* Legal Name */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Legal Name <span className="text-red-500">*</span>
             </label>
             <Input
@@ -130,7 +130,7 @@ export function NewEntityDialog({
 
           {/* Short Name */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Short Name
             </label>
             <Input
@@ -139,7 +139,7 @@ export function NewEntityDialog({
               placeholder="Optional display name"
               className="w-full"
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Used for display if set, otherwise uses legal name
             </p>
           </div>
@@ -147,7 +147,7 @@ export function NewEntityDialog({
           {/* Entity Type and Status */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 Entity Type <span className="text-red-500">*</span>
               </label>
               <Select value={entityType} onValueChange={setEntityType}>
@@ -164,7 +164,7 @@ export function NewEntityDialog({
               </Select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 Status
               </label>
               <Select value={status} onValueChange={setStatus}>
@@ -185,7 +185,7 @@ export function NewEntityDialog({
           {/* Jurisdiction and Formation Date */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 Jurisdiction State
               </label>
               <Select value={jurisdictionState} onValueChange={setJurisdictionState}>
@@ -202,7 +202,7 @@ export function NewEntityDialog({
               </Select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 Formation Date
               </label>
               <Input
@@ -216,7 +216,7 @@ export function NewEntityDialog({
 
           {/* Tax Classification */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Tax Classification
             </label>
             <Select value={taxClassification} onValueChange={setTaxClassification}>
@@ -235,7 +235,7 @@ export function NewEntityDialog({
 
           {/* EIN */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
               EIN (Employer ID Number)
             </label>
             <Input
@@ -245,7 +245,7 @@ export function NewEntityDialog({
               className="w-full font-mono"
               maxLength={10}
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-slate-500 mt-1">
               Stored encrypted with access logging
             </p>
           </div>

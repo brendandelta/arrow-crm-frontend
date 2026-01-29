@@ -3,10 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { PageHeader, PageSearch } from "@/components/PageHeader";
+import { Search, Plus, Landmark } from "lucide-react";
 import { EntityFiltersRail } from "./_components/EntityFiltersRail";
 import { EntityList } from "./_components/EntityList";
-import { Landmark } from "lucide-react";
 import { EntityDetailPanel } from "./_components/EntityDetailPanel";
 import { NewEntityDialog } from "./_components/NewEntityDialog";
 import { AddBankAccountDialog } from "./_components/AddBankAccountDialog";
@@ -274,30 +273,73 @@ export default function InternalEntitiesPage() {
   }, [activeEntityId]);
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col bg-background">
-      <PageHeader
-        subtitle={
-          loading ? (
-            <span className="inline-block w-24 h-4 bg-muted rounded animate-pulse" />
-          ) : (
-            <>
-              {totalCount} {totalCount === 1 ? "entity" : "entities"}
-              {entities.length !== totalCount && (
-                <span className="text-muted-foreground/70"> · {entities.length} showing</span>
-              )}
-            </>
-          )
-        }
-        primaryActionLabel="New Entity"
-        onPrimaryAction={() => setShowNewEntityDialog(true)}
-        search={
-          <PageSearch
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search entities..."
-          />
-        }
-      />
+    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
+      {/* Premium Header */}
+      <div className="bg-white border-b border-slate-200/80">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between">
+            {/* Title Section */}
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <Landmark className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  Internal Entities
+                </h1>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  {loading ? (
+                    <span className="inline-block w-24 h-4 bg-slate-100 rounded animate-pulse" />
+                  ) : (
+                    <>
+                      {totalCount} {totalCount === 1 ? "entity" : "entities"}
+                      {entities.length !== totalCount && (
+                        <span className="text-slate-400"> · {entities.length} showing</span>
+                      )}
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-4">
+              {/* Search */}
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                  <input
+                    type="text"
+                    placeholder="Search entities..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-72 h-11 pl-11 pr-4 text-sm bg-slate-50 border border-slate-200/80 rounded-xl
+                             placeholder:text-slate-400
+                             focus:outline-none focus:bg-white focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10
+                             transition-all duration-200"
+                  />
+                </div>
+              </div>
+
+              {/* New Entity Button */}
+              <button
+                onClick={() => setShowNewEntityDialog(true)}
+                className="group relative flex items-center gap-2.5 h-11 px-5
+                         bg-gradient-to-b from-indigo-500 to-indigo-600
+                         text-white text-sm font-medium rounded-xl
+                         shadow-lg shadow-indigo-500/25
+                         hover:from-indigo-600 hover:to-indigo-700 hover:shadow-xl hover:shadow-indigo-500/30
+                         active:scale-[0.98]
+                         transition-all duration-200"
+              >
+                <Plus className="h-4 w-4" />
+                <span>New Entity</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">

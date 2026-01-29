@@ -151,7 +151,7 @@ export function MindMapView() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[600px] text-muted-foreground">
+      <div className="flex items-center justify-center h-[600px] text-slate-400">
         Loading mind map...
       </div>
     );
@@ -163,7 +163,7 @@ export function MindMapView() {
       <div className="mb-2 flex items-center gap-2">
         <button
           onClick={() => setRailOpen(!railOpen)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-muted-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors shadow-sm"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
         >
           {railOpen ? (
             <PanelLeftClose className="h-3.5 w-3.5" />
@@ -174,9 +174,9 @@ export function MindMapView() {
         </button>
         <button
           onClick={() => setCommandOpen(true)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-muted-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors shadow-sm"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-400 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
         >
-          <kbd className="text-[10px] font-mono bg-muted px-1 py-0.5 rounded">
+          <kbd className="text-[10px] font-mono bg-slate-100 px-1 py-0.5 rounded">
             {typeof navigator !== "undefined" && /Mac/.test(navigator.userAgent) ? "\u2318" : "Ctrl+"}K
           </kbd>
           <span>Jump to node</span>
@@ -184,7 +184,7 @@ export function MindMapView() {
       </div>
 
       {/* Main layout */}
-      <div className="flex-1 flex rounded-xl border border-border overflow-hidden shadow-sm">
+      <div className="flex-1 flex rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         {/* Left filter rail */}
         {railOpen && (
           <MindMapFilterRail

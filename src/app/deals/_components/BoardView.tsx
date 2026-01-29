@@ -66,7 +66,7 @@ interface BoardViewProps {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
-  sourcing: { label: "Sourcing", color: "text-foreground", bgColor: "bg-muted" },
+  sourcing: { label: "Sourcing", color: "text-slate-700", bgColor: "bg-slate-100" },
   live: { label: "Live", color: "text-green-700", bgColor: "bg-green-100" },
   closing: { label: "Closing", color: "text-blue-700", bgColor: "bg-blue-100" },
   closed: { label: "Closed", color: "text-purple-700", bgColor: "bg-purple-100" },
@@ -84,8 +84,8 @@ function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }) {
     <div
       onClick={onClick}
       className={`
-        p-3 bg-card rounded-lg border shadow-sm cursor-pointer
-        hover:shadow-md hover:border-border transition-all
+        p-3 bg-white rounded-lg border shadow-sm cursor-pointer
+        hover:shadow-md hover:border-slate-300 transition-all
         ${hasRisk && deal.riskFlagsSummary.hasDanger ? "border-l-4 border-l-red-400" : ""}
         ${hasRisk && !deal.riskFlagsSummary.hasDanger && deal.riskFlagsSummary.hasWarning ? "border-l-4 border-l-amber-400" : ""}
       `}
@@ -102,7 +102,7 @@ function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }) {
           )}
         </div>
         {deal.owner && (
-          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
+          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium">
             {deal.owner.firstName.charAt(0)}
           </div>
         )}
@@ -239,7 +239,7 @@ function DroppableBoardColumn({
       <div
         ref={setNodeRef}
         className={`flex-1 rounded-b-lg p-2 space-y-2 overflow-y-auto max-h-[calc(100vh-300px)] transition-all ${
-          isOver ? "bg-muted ring-2 ring-inset ring-slate-300" : "bg-muted"
+          isOver ? "bg-slate-100 ring-2 ring-inset ring-slate-300" : "bg-slate-50"
         }`}
       >
         {deals.length === 0 ? (

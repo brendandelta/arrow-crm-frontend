@@ -14,13 +14,13 @@ export function BooleanFilter({
   onChange,
 }: BooleanFilterProps) {
   return (
-    <div className="flex rounded-md overflow-hidden border border-border">
+    <div className="flex rounded-md overflow-hidden border border-slate-200">
       <button
         onClick={() => onChange(value === "has" ? null : "has")}
         className={`flex-1 text-[12px] px-3 py-1.5 font-medium transition-colors ${
           value === "has"
             ? "bg-blue-500 text-white"
-            : "bg-card text-muted-foreground hover:bg-muted"
+            : "bg-white text-slate-500 hover:bg-slate-50"
         }`}
         onPointerDown={(e) => e.stopPropagation()}
       >
@@ -28,10 +28,10 @@ export function BooleanFilter({
       </button>
       <button
         onClick={() => onChange(value === "lacks" ? null : "lacks")}
-        className={`flex-1 text-[12px] px-3 py-1.5 font-medium transition-colors border-l border-border ${
+        className={`flex-1 text-[12px] px-3 py-1.5 font-medium transition-colors border-l border-slate-200 ${
           value === "lacks"
             ? "bg-blue-500 text-white"
-            : "bg-card text-muted-foreground hover:bg-muted"
+            : "bg-white text-slate-500 hover:bg-slate-50"
         }`}
         onPointerDown={(e) => e.stopPropagation()}
       >

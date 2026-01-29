@@ -100,12 +100,12 @@ function TaskRow({
   const priorityColors: Record<number, string> = {
     3: "bg-red-100 text-red-700",
     2: "bg-amber-100 text-amber-700",
-    1: "bg-muted text-muted-foreground",
+    1: "bg-slate-100 text-slate-600",
   };
 
   return (
     <div
-      className="group flex items-center gap-3 px-4 py-3 hover:bg-muted border-b border-border last:border-b-0 cursor-pointer"
+      className="group flex items-center gap-3 px-4 py-3 hover:bg-slate-50 border-b border-slate-100 last:border-b-0 cursor-pointer"
       onClick={() => onClick(task)}
     >
       <button
@@ -116,7 +116,7 @@ function TaskRow({
         className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
           task.completed
             ? "bg-green-500 border-green-500 text-white"
-            : "border-border hover:border-muted-foreground"
+            : "border-slate-300 hover:border-slate-400"
         }`}
       >
         {task.completed && <CheckSquare className="h-3 w-3" />}
@@ -189,21 +189,21 @@ function TaskSection({
   if (tasks.length === 0) return null;
 
   const bgColors = {
-    default: "bg-muted",
+    default: "bg-slate-50",
     danger: "bg-red-50",
     warning: "bg-amber-50",
     success: "bg-green-50",
   };
 
   const textColors = {
-    default: "text-foreground",
+    default: "text-slate-700",
     danger: "text-red-700",
     warning: "text-amber-700",
     success: "text-green-700",
   };
 
   const iconColors = {
-    default: "text-muted-foreground",
+    default: "text-slate-500",
     danger: "text-red-500",
     warning: "text-amber-500",
     success: "text-green-500",
@@ -232,7 +232,7 @@ function TaskSection({
         </Badge>
       </button>
       {expanded && (
-        <div className="bg-card">
+        <div className="bg-white">
           {tasks.map((task) => (
             <TaskRow
               key={task.id}
@@ -356,7 +356,7 @@ export default function MyTasksPage() {
               setSelectedTask(null);
               setSlideOutOpen(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-md hover:bg-slate-800"
           >
             <Plus className="h-4 w-4" />
             New Task
@@ -378,7 +378,7 @@ export default function MyTasksPage() {
               setSelectedTask(null);
               setSlideOutOpen(true);
             }}
-            className="mt-4 text-sm text-muted-foreground hover:text-foreground underline"
+            className="mt-4 text-sm text-slate-600 hover:text-slate-900 underline"
           >
             Create your first task
           </button>

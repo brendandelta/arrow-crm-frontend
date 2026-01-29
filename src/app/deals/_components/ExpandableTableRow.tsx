@@ -71,7 +71,7 @@ function formatDate(dateStr: string | null) {
 }
 
 function HeatIndicator({ heat }: { heat: number }) {
-  const colors = ["text-muted-foreground", "text-yellow-500", "text-orange-500", "text-red-500"];
+  const colors = ["text-slate-400", "text-yellow-500", "text-orange-500", "text-red-500"];
   return (
     <div className="flex">
       {Array.from({ length: Math.min(heat + 1, 4) }).map((_, i) => (
@@ -94,24 +94,24 @@ export function ExpandableTableRow({
           e.stopPropagation();
           onToggle();
         }}
-        className="p-1 hover:bg-muted rounded"
+        className="p-1 hover:bg-slate-100 rounded"
       >
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <ChevronRight className="h-4 w-4 text-slate-400" />
       </button>
     );
   }
 
   return (
-    <div className="col-span-full bg-muted border-t border-b">
+    <div className="col-span-full bg-slate-50 border-t border-b">
       <div className="flex items-start">
         <button
           onClick={(e) => {
             e.stopPropagation();
             onToggle();
           }}
-          className="p-2 hover:bg-muted rounded mt-2 ml-2"
+          className="p-2 hover:bg-slate-100 rounded mt-2 ml-2"
         >
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <ChevronDown className="h-4 w-4 text-slate-400" />
         </button>
 
         {loading ? (
@@ -132,7 +132,7 @@ export function ExpandableTableRow({
                   {data.topBlocks.slice(0, 3).map((block) => (
                     <div
                       key={block.id}
-                      className="flex items-center justify-between p-2 bg-card rounded border text-sm"
+                      className="flex items-center justify-between p-2 bg-white rounded border text-sm"
                     >
                       <div>
                         <div className="font-medium">{block.seller?.name || "—"}</div>
@@ -162,7 +162,7 @@ export function ExpandableTableRow({
                   {data.topInterests.slice(0, 5).map((interest) => (
                     <div
                       key={interest.id}
-                      className="flex items-center justify-between p-2 bg-card rounded border text-sm"
+                      className="flex items-center justify-between p-2 bg-white rounded border text-sm"
                     >
                       <div className="font-medium truncate max-w-[120px]">
                         {interest.investor?.name || "—"}
@@ -175,7 +175,7 @@ export function ExpandableTableRow({
                               ? "bg-green-100 text-green-700"
                               : interest.status === "soft_circled"
                               ? "bg-blue-100 text-blue-700"
-                              : "bg-muted text-muted-foreground"
+                              : "bg-slate-100 text-slate-600"
                           }`}
                         >
                           {interest.status.replace("_", " ")}
@@ -199,7 +199,7 @@ export function ExpandableTableRow({
                   {data.nextFollowups.slice(0, 3).map((target) => (
                     <div
                       key={target.id}
-                      className="flex items-center gap-2 p-2 bg-card rounded border text-sm"
+                      className="flex items-center gap-2 p-2 bg-white rounded border text-sm"
                     >
                       <Users className="h-4 w-4 text-muted-foreground shrink-0" />
                       <div className="flex-1 min-w-0">
@@ -233,7 +233,7 @@ export function ExpandableTableRow({
                   {data.nextTasks.slice(0, 3).map((task) => (
                     <div
                       key={task.id}
-                      className={`flex items-center gap-2 p-2 bg-card rounded border text-sm ${
+                      className={`flex items-center gap-2 p-2 bg-white rounded border text-sm ${
                         task.overdue ? "border-red-200" : ""
                       }`}
                     >
@@ -279,7 +279,7 @@ export function ExpandedRowContent({
   if (loading) {
     return (
       <tr>
-        <td colSpan={10} className="bg-muted p-4 text-center text-muted-foreground">
+        <td colSpan={10} className="bg-slate-50 p-4 text-center text-muted-foreground">
           Loading details...
         </td>
       </tr>
@@ -289,7 +289,7 @@ export function ExpandedRowContent({
   if (!data) {
     return (
       <tr>
-        <td colSpan={10} className="bg-muted p-4 text-center text-muted-foreground">
+        <td colSpan={10} className="bg-slate-50 p-4 text-center text-muted-foreground">
           No details available
         </td>
       </tr>
@@ -298,14 +298,14 @@ export function ExpandedRowContent({
 
   return (
     <tr>
-      <td colSpan={10} className="bg-muted p-0">
+      <td colSpan={10} className="bg-slate-50 p-0">
         <div className="grid grid-cols-4 gap-4 p-4">
           {/* Reuse the same content structure */}
           <ExpandedSection title="Top Blocks">
             {data.topBlocks.slice(0, 3).map((block) => (
               <div
                 key={block.id}
-                className="flex items-center justify-between p-2 bg-card rounded border text-sm"
+                className="flex items-center justify-between p-2 bg-white rounded border text-sm"
               >
                 <div>
                   <div className="font-medium">{block.seller?.name || "—"}</div>
@@ -325,7 +325,7 @@ export function ExpandedRowContent({
             {data.topInterests.slice(0, 5).map((interest) => (
               <div
                 key={interest.id}
-                className="flex items-center justify-between p-2 bg-card rounded border text-sm"
+                className="flex items-center justify-between p-2 bg-white rounded border text-sm"
               >
                 <div className="font-medium truncate max-w-[120px]">
                   {interest.investor?.name || "—"}
@@ -337,7 +337,7 @@ export function ExpandedRowContent({
 
           <ExpandedSection title="Next Follow-ups">
             {data.nextFollowups.slice(0, 3).map((target) => (
-              <div key={target.id} className="p-2 bg-card rounded border text-sm">
+              <div key={target.id} className="p-2 bg-white rounded border text-sm">
                 <div className="font-medium truncate">{target.targetName}</div>
                 {target.nextStepAt && (
                   <div className="text-xs text-muted-foreground">{formatDate(target.nextStepAt)}</div>
@@ -350,7 +350,7 @@ export function ExpandedRowContent({
             {data.nextTasks.slice(0, 3).map((task) => (
               <div
                 key={task.id}
-                className={`p-2 bg-card rounded border text-sm ${
+                className={`p-2 bg-white rounded border text-sm ${
                   task.overdue ? "border-red-200" : ""
                 }`}
               >

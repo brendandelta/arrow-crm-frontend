@@ -110,9 +110,9 @@ export function RevealDialog({ credential, onClose }: RevealDialogProps) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-        <div className="relative bg-card rounded-lg shadow-xl w-full max-w-md p-6">
+        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6">
           <div className="flex flex-col items-center justify-center h-40 gap-4">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
             <p className="text-sm text-muted-foreground">Loading secrets...</p>
           </div>
         </div>
@@ -124,13 +124,13 @@ export function RevealDialog({ credential, onClose }: RevealDialogProps) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-        <div className="relative bg-card rounded-lg shadow-xl w-full max-w-md p-6">
+        <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6">
           <div className="flex flex-col items-center justify-center h-40 gap-4">
             <AlertTriangle className="h-8 w-8 text-red-500" />
             <p className="text-sm text-red-600">{error}</p>
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-md"
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-md"
             >
               Close
             </button>
@@ -143,7 +143,7 @@ export function RevealDialog({ credential, onClose }: RevealDialogProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-card rounded-lg shadow-xl w-full max-w-lg overflow-hidden">
+      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg overflow-hidden">
         {/* Security Warning Header */}
         <div className="bg-amber-50 border-b border-amber-100 px-6 py-3">
           <div className="flex items-center gap-2 text-amber-700">
@@ -161,11 +161,11 @@ export function RevealDialog({ credential, onClose }: RevealDialogProps) {
             <p className="text-sm text-muted-foreground">{credential.credentialTypeLabel}</p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-sm text-slate-500">
               <Clock className="h-4 w-4" />
               <span>Auto-hide in {countdown}s</span>
             </div>
-            <button onClick={onClose} className="p-1 hover:bg-muted rounded">
+            <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -227,7 +227,7 @@ export function RevealDialog({ credential, onClose }: RevealDialogProps) {
           {/* Custom Fields */}
           {revealed?.fields && revealed.fields.length > 0 && (
             <div className="pt-4 border-t">
-              <h3 className="text-sm font-medium text-foreground mb-3">
+              <h3 className="text-sm font-medium text-slate-700 mb-3">
                 Custom Fields
               </h3>
               <div className="space-y-3">
@@ -252,10 +252,10 @@ export function RevealDialog({ credential, onClose }: RevealDialogProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-muted">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-slate-50">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-foreground hover:bg-muted rounded-md"
+            className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 rounded-md"
           >
             Close
           </button>
@@ -291,21 +291,21 @@ function SecretField({
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="text-sm font-medium text-foreground">{label}</label>
+        <label className="text-sm font-medium text-slate-700">{label}</label>
         {isHighSecurity && (
           <span className="text-xs text-amber-600 font-medium">SENSITIVE</span>
         )}
       </div>
       <div
         className={`flex items-start gap-2 p-3 rounded-lg border ${
-          isHighSecurity ? "bg-amber-50 border-amber-200" : "bg-muted"
+          isHighSecurity ? "bg-amber-50 border-amber-200" : "bg-slate-50"
         }`}
       >
         <div className="flex-1 min-w-0">
           {isMultiline ? (
             <pre
               className={`text-sm font-mono whitespace-pre-wrap break-all ${
-                !isVisible ? "text-muted-foreground" : ""
+                !isVisible ? "text-slate-400" : ""
               }`}
             >
               {isVisible ? value : maskValue(value)}
@@ -313,7 +313,7 @@ function SecretField({
           ) : (
             <code
               className={`text-sm font-mono block truncate ${
-                !isVisible ? "text-muted-foreground" : ""
+                !isVisible ? "text-slate-400" : ""
               }`}
             >
               {isVisible ? value : maskValue(value)}
@@ -323,24 +323,24 @@ function SecretField({
         <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={onToggle}
-            className="p-1.5 hover:bg-card rounded-md"
+            className="p-1.5 hover:bg-white rounded-md"
             title={isVisible ? "Hide" : "Show"}
           >
             {isVisible ? (
-              <EyeOff className="h-4 w-4 text-muted-foreground" />
+              <EyeOff className="h-4 w-4 text-slate-500" />
             ) : (
-              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Eye className="h-4 w-4 text-slate-500" />
             )}
           </button>
           <button
             onClick={onCopy}
-            className="p-1.5 hover:bg-card rounded-md"
+            className="p-1.5 hover:bg-white rounded-md"
             title="Copy to clipboard"
           >
             {isCopied ? (
               <Check className="h-4 w-4 text-green-600" />
             ) : (
-              <Copy className="h-4 w-4 text-muted-foreground" />
+              <Copy className="h-4 w-4 text-slate-500" />
             )}
           </button>
         </div>

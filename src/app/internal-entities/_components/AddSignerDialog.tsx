@@ -151,11 +151,11 @@ export function AddSignerDialog({
           {/* Person Search */}
           {!selectedPerson ? (
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 Search for Person <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -166,13 +166,13 @@ export function AddSignerDialog({
 
               {/* Search Results */}
               {(people.length > 0 || searching) && (
-                <div className="mt-2 border border-border rounded-lg max-h-48 overflow-y-auto">
+                <div className="mt-2 border border-slate-200 rounded-lg max-h-48 overflow-y-auto">
                   {searching ? (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
+                    <div className="p-4 text-center text-sm text-slate-500">
                       Searching...
                     </div>
                   ) : people.length === 0 ? (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
+                    <div className="p-4 text-center text-sm text-slate-500">
                       No results found
                     </div>
                   ) : (
@@ -185,16 +185,16 @@ export function AddSignerDialog({
                           setSearchQuery("");
                           setPeople([]);
                         }}
-                        className="w-full flex items-center gap-3 p-3 hover:bg-muted text-left border-b border-border last:border-b-0"
+                        className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 text-left border-b border-slate-100 last:border-b-0"
                       >
-                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                          <User className="h-4 w-4 text-muted-foreground" />
+                        <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">
+                          <User className="h-4 w-4 text-slate-500" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm text-foreground truncate">
+                          <p className="font-medium text-sm text-slate-900 truncate">
                             {person.fullName}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs text-slate-500 truncate">
                             {person.title && `${person.title} · `}
                             {person.orgName || person.email || ""}
                           </p>
@@ -207,7 +207,7 @@ export function AddSignerDialog({
             </div>
           ) : (
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 Selected Person
               </label>
               <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
@@ -216,10 +216,10 @@ export function AddSignerDialog({
                     <User className="h-4 w-4 text-indigo-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-sm text-foreground">
+                    <p className="font-medium text-sm text-slate-900">
                       {selectedPerson.fullName}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-slate-500">
                       {selectedPerson.title && `${selectedPerson.title} · `}
                       {selectedPerson.orgName || selectedPerson.email || ""}
                     </p>
@@ -238,7 +238,7 @@ export function AddSignerDialog({
 
           {/* Role */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Role <span className="text-red-500">*</span>
             </label>
             <Select value={role} onValueChange={setRole}>
@@ -258,7 +258,7 @@ export function AddSignerDialog({
           {/* Effective Dates */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 Effective From
               </label>
               <Input
@@ -269,7 +269,7 @@ export function AddSignerDialog({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 Effective To
               </label>
               <Input
@@ -278,7 +278,7 @@ export function AddSignerDialog({
                 onChange={(e) => setEffectiveTo(e.target.value)}
                 className="w-full"
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Leave blank if current
               </p>
             </div>
