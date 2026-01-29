@@ -20,6 +20,7 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
+  Copy,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -27,12 +28,14 @@ import {
   type InternalEntityDetail,
   type BankAccountMasked,
   updateInternalEntity,
+  deleteInternalEntity,
   revealEin,
   revealBankNumbers,
   deleteBankAccount,
   deleteEntitySigner,
   getStatusColor,
   getEntityTypeColor,
+  formatEinWithDash,
   ENTITY_TYPES,
   ENTITY_STATUSES,
   TAX_CLASSIFICATIONS,
@@ -44,6 +47,7 @@ interface EntityDetailPanelProps {
   loading: boolean;
   onClose: () => void;
   onUpdate: (entity: InternalEntityDetail) => void;
+  onDelete: () => void;
   onAddBankAccount: () => void;
   onAddSigner: () => void;
   onRefresh: () => void;
@@ -54,6 +58,7 @@ export function EntityDetailPanel({
   loading,
   onClose,
   onUpdate,
+  onDelete,
   onAddBankAccount,
   onAddSigner,
   onRefresh,
@@ -65,6 +70,7 @@ export function EntityDetailPanel({
   const [revealingEin, setRevealingEin] = useState(false);
   const [revealedBankAccounts, setRevealedBankAccounts] = useState<Map<number, { routing: string; account: string }>>(new Map());
   const [revealingBankId, setRevealingBankId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const toggleSection = (section: string) => {
     const newExpanded = new Set(expandedSections);
@@ -149,6 +155,43 @@ export function EntityDetailPanel({
     }
   };
 
+  const handleDeleteEntity = async () => {
+    if (!entity) return;
+    if (!confirm(`Are you sure you want to delete "${entity.displayName}"? This will mark it as dissolved.`)) return;
+
+    setDeleting(true);
+    try {
+      await deleteInternalEntity(entity.id);
+      toast.success("Entity deleted");
+      onDelete();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete entity");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleCopyEin = async () => {
+    if (!entity) return;
+
+    const einToCopy = revealedEin || entity.einLast4;
+    if (!einToCopy) {
+      toast.error("No EIN to copy");
+      return;
+    }
+
+    // If revealed, copy the full EIN formatted with dash
+    // If not revealed, just copy the last 4
+    const textToCopy = revealedEin ? formatEinWithDash(revealedEin) : entity.einLast4;
+
+    try {
+      await navigator.clipboard.writeText(textToCopy || "");
+      toast.success(revealedEin ? "EIN copied to clipboard" : "Last 4 digits copied");
+    } catch (error) {
+      toast.error("Failed to copy to clipboard");
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-[420px] bg-white border-l border-slate-200/60 flex flex-col">
@@ -191,12 +234,26 @@ export function EntityDetailPanel({
               )}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleDeleteEntity}
+              disabled={deleting}
+              className="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors disabled:opacity-50"
+              title="Delete entity"
+            >
+              {deleting ? (
+                <span className="h-5 w-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin block" />
+              ) : (
+                <Trash2 className="h-5 w-5" />
+              )}
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         {/* Status and Type Badges */}
@@ -284,13 +341,22 @@ export function EntityDetailPanel({
           onToggle={() => toggleSection("tax")}
         >
           <div className="space-y-3">
-            {/* EIN with Reveal */}
+            {/* EIN with Reveal and Copy */}
             <div>
               <label className="block text-xs text-slate-500 mb-1">EIN (Employer ID Number)</label>
               <div className="flex items-center gap-2">
-                <span className="flex-1 font-mono text-sm text-slate-700">
-                  {revealedEin ? revealedEin : entity.einMasked || "Not set"}
-                </span>
+                {entity.einPresent ? (
+                  <button
+                    onClick={handleCopyEin}
+                    className="flex-1 font-mono text-sm text-slate-700 hover:text-indigo-600 flex items-center gap-1.5 group text-left"
+                    title="Click to copy"
+                  >
+                    <span>{revealedEin ? formatEinWithDash(revealedEin) : formatEinWithDash(entity.einMasked)}</span>
+                    <Copy className="h-3 w-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                ) : (
+                  <span className="flex-1 font-mono text-sm text-slate-400">Not set</span>
+                )}
                 {entity.einPresent && (
                   <button
                     onClick={handleRevealEin}

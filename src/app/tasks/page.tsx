@@ -735,11 +735,16 @@ function TaskRow({
     <div className="border-b border-slate-100 last:border-b-0">
       {/* Main Task Row */}
       <div className="group flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50">
-        {/* Expand Arrow */}
-        {task.subtaskCount > 0 ? (
+        {/* Expand Arrow - always show for master tasks to allow adding subtasks */}
+        {!task.isSubtask ? (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-slate-400 hover:text-slate-600"
+            className={`flex-shrink-0 w-5 h-5 flex items-center justify-center transition-colors ${
+              task.subtaskCount > 0
+                ? "text-slate-400 hover:text-slate-600"
+                : "text-slate-300 hover:text-slate-500"
+            }`}
+            title={task.subtaskCount > 0 ? (expanded ? "Collapse subtasks" : "Expand subtasks") : "Add subtask"}
           >
             {expanded ? (
               <ChevronDown className="h-4 w-4" />

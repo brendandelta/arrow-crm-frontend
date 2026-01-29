@@ -298,6 +298,17 @@ export async function updateInternalEntity(
   return res.json();
 }
 
+// Delete internal entity (soft delete - sets status to dissolved)
+export async function deleteInternalEntity(id: number): Promise<void> {
+  const res = await authFetch(`${API_BASE}/api/internal_entities/${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    if (res.status === 403) throw new Error('You do not have permission to delete entities');
+    throw new Error('Failed to delete internal entity');
+  }
+}
+
 // Reveal EIN
 export async function revealEin(entityId: number): Promise<{ ein: string | null }> {
   const res = await authFetch(`${API_BASE}/api/internal_entities/${entityId}/reveal_ein`, {
@@ -579,4 +590,19 @@ export function getEntityTypeColor(type: string): string {
     default:
       return 'bg-slate-50 text-slate-600 border-slate-200';
   }
+}
+
+// Format EIN with dash (XX-XXXXXXX)
+export function formatEinWithDash(ein: string | null): string | null {
+  if (!ein) return null;
+  // Remove any existing dashes or spaces
+  const cleaned = ein.replace(/[\s-]/g, '');
+  if (cleaned.length === 9) {
+    return `${cleaned.slice(0, 2)}-${cleaned.slice(2)}`;
+  }
+  // For masked values like ••••1234, format as ••-•••1234
+  if (cleaned.length >= 4 && cleaned.includes('•')) {
+    return `••-•••${cleaned.slice(-4)}`;
+  }
+  return ein;
 }

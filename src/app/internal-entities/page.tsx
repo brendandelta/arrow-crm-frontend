@@ -262,6 +262,15 @@ export default function InternalEntitiesPage() {
     }
   }, [activeEntityId]);
 
+  const handleEntityDeleted = useCallback(() => {
+    // Remove from list
+    setEntities((prev) => prev.filter((e) => e.id !== activeEntityId));
+    setTotalCount((prev) => prev - 1);
+    // Close the detail panel
+    setActiveEntityId(null);
+    setActiveEntity(null);
+  }, [activeEntityId]);
+
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col">
       {/* Header */}
@@ -338,6 +347,7 @@ export default function InternalEntitiesPage() {
             loading={loadingEntity}
             onClose={handleClosePreview}
             onUpdate={handleEntityUpdate}
+            onDelete={handleEntityDeleted}
             onAddBankAccount={() => setShowAddBankDialog(true)}
             onAddSigner={() => setShowAddSignerDialog(true)}
             onRefresh={refreshActiveEntity}
