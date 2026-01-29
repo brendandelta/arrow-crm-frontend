@@ -12,6 +12,7 @@ import {
   Map,
   CheckSquare,
   FolderKanban,
+  KeyRound,
 } from "lucide-react"
 
 import { NavMain } from "@/components/Sidebar/nav-main"
@@ -94,6 +95,11 @@ const data = {
       title: "Documents",
       url: "/documents",
       icon: FileText,
+    },
+    {
+      title: "Vault",
+      url: "/vault",
+      icon: KeyRound,
     },
   ],
 }
