@@ -1,6 +1,8 @@
 "use client";
 
+import * as React from "react";
 import { type ReactNode } from "react";
+import { Search, X, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type PageIdentity, getPageIdentityByPath } from "@/lib/page-registry";
 import { usePathname } from "next/navigation";
@@ -18,13 +20,19 @@ interface PageHeaderProps {
   count?: number;
   countLabel?: string;
 
-  // Search component slot
+  // Search
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  searchPlaceholder?: string;
+
+  // Primary action button
+  primaryActionLabel?: string;
+  primaryActionIcon?: ReactNode;
+  onPrimaryAction?: () => void;
+
+  // Component slots for custom content
   search?: ReactNode;
-
-  // Primary action button slot
   primaryAction?: ReactNode;
-
-  // Secondary actions slot
   secondaryActions?: ReactNode;
 
   // Additional content below the header
@@ -35,15 +43,14 @@ interface PageHeaderProps {
 }
 
 /**
- * Unified premium page header component
+ * Premium page header with glass morphism and beautiful rounded edges
  *
- * Provides consistent styling across all pages with:
- * - Gradient icon derived from page identity
- * - Clean title and count display
- * - Premium search bar with glow effect
- * - Themed primary action button
- *
- * Based on the Internal Entities page design (gold standard)
+ * Features:
+ * - Frosted glass background with backdrop blur
+ * - Gradient icon with inner glow
+ * - Clean typography with tight tracking
+ * - Themed search with soft focus glow
+ * - Premium gradient button with shine effect
  */
 export function PageHeader({
   pageId,
@@ -52,8 +59,14 @@ export function PageHeader({
   subtitle,
   count,
   countLabel,
-  search,
-  primaryAction,
+  searchValue,
+  onSearchChange,
+  searchPlaceholder = "Search...",
+  primaryActionLabel,
+  primaryActionIcon,
+  onPrimaryAction,
+  search: customSearch,
+  primaryAction: customPrimaryAction,
   secondaryActions,
   children,
   className,
@@ -69,52 +82,93 @@ export function PageHeader({
   const theme = identity?.theme;
 
   return (
-    <div className={cn("bg-white border-b border-slate-200/80", className)}>
-      <div className="px-8 py-6">
+    <div
+      className={cn(
+        // Glass morphism background
+        "relative bg-white/70 backdrop-blur-xl",
+        // Bottom border with gradient fade
+        "border-b border-slate-200/50",
+        // Subtle shadow for depth
+        "shadow-sm shadow-slate-100/50",
+        className
+      )}
+    >
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-50/50 via-transparent to-slate-50/50 pointer-events-none" />
+
+      <div className="relative px-8 py-5">
         <div className="flex items-center justify-between">
           {/* Left side: Icon, Title, Count */}
           <div className="flex items-center gap-4">
-            {/* Page icon with gradient */}
+            {/* Page icon with gradient and glow */}
             {Icon && theme && (
-              <div
-                className={cn(
-                  "h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg",
-                  `bg-gradient-to-br ${theme.gradient}`,
-                  theme.shadow
-                )}
-              >
-                <Icon className="h-6 w-6 text-white" />
+              <div className="relative group">
+                {/* Outer glow */}
+                <div
+                  className={cn(
+                    "absolute -inset-1 rounded-2xl blur-md opacity-40 group-hover:opacity-60 transition-opacity",
+                    `bg-gradient-to-br ${theme.gradient}`
+                  )}
+                />
+                {/* Icon container */}
+                <div
+                  className={cn(
+                    "relative h-11 w-11 rounded-xl flex items-center justify-center",
+                    "shadow-lg transition-transform group-hover:scale-[1.02]",
+                    `bg-gradient-to-br ${theme.gradient}`
+                  )}
+                >
+                  {/* Inner shine */}
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent to-white/20" />
+                  <Icon className="relative h-5 w-5 text-white drop-shadow-sm" />
+                </div>
               </div>
             )}
 
-            <div>
-              <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+            <div className="space-y-0.5">
+              <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
                 {displayTitle}
               </h1>
 
               {/* Subtitle or count */}
-              <div className="text-sm text-slate-500 mt-0.5">
-                {subtitle || (
-                  count !== undefined && (
-                    <>
-                      {count.toLocaleString()} {countLabel || "items"}
-                    </>
-                  )
-                )}
-              </div>
+              {(subtitle || count !== undefined) && (
+                <div className="text-[13px] text-slate-500 flex items-center gap-2">
+                  {subtitle || (
+                    count !== undefined && (
+                      <span className="tabular-nums">
+                        {count.toLocaleString()} {countLabel || "items"}
+                      </span>
+                    )
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Right side: Search and Actions */}
-          <div className="flex items-center gap-4">
-            {/* Search */}
-            {search}
+          <div className="flex items-center gap-3">
+            {/* Search - custom or built-in */}
+            {customSearch || (onSearchChange && (
+              <PageSearch
+                value={searchValue || ""}
+                onChange={onSearchChange}
+                placeholder={searchPlaceholder}
+                theme={theme}
+              />
+            ))}
 
             {/* Secondary actions */}
             {secondaryActions}
 
-            {/* Primary action */}
-            {primaryAction}
+            {/* Primary action - custom or built-in */}
+            {customPrimaryAction || (onPrimaryAction && primaryActionLabel && (
+              <PagePrimaryAction
+                onClick={onPrimaryAction}
+                label={primaryActionLabel}
+                icon={primaryActionIcon}
+                theme={theme}
+              />
+            ))}
           </div>
         </div>
 
@@ -126,7 +180,7 @@ export function PageHeader({
 }
 
 /**
- * Themed search input for page headers
+ * Premium search input with soft glow effect
  */
 interface PageSearchProps {
   value: string;
@@ -143,27 +197,27 @@ export function PageSearch({
   theme,
   className,
 }: PageSearchProps) {
-  const SearchIcon = require("lucide-react").Search;
+  const [isFocused, setIsFocused] = React.useState(false);
 
   return (
     <div className={cn("relative group", className)}>
-      {/* Glow effect on focus */}
+      {/* Soft glow effect on focus */}
       {theme && (
         <div
           className={cn(
-            "absolute inset-0 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity",
-            `bg-gradient-to-r ${theme.gradient}`
+            "absolute -inset-0.5 rounded-xl blur-md transition-opacity duration-300",
+            `bg-gradient-to-r ${theme.gradient}`,
+            isFocused ? "opacity-30" : "opacity-0"
           )}
-          style={{ opacity: 0.15 }}
         />
       )}
 
+      {/* Input container with glass effect */}
       <div className="relative">
-        <SearchIcon
+        <Search
           className={cn(
-            "absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors",
-            "text-slate-400 group-focus-within:text-slate-600",
-            theme && `group-focus-within:${theme.text}`
+            "absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors duration-200",
+            isFocused ? "text-slate-600" : "text-slate-400"
           )}
         />
         <input
@@ -171,26 +225,39 @@ export function PageSearch({
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           className={cn(
-            "w-72 h-11 pl-11 pr-4 text-sm rounded-xl transition-all duration-200",
-            "bg-slate-50 border border-slate-200/80",
+            "w-64 h-10 pl-10 pr-9 text-sm rounded-xl transition-all duration-200",
+            // Background and border
+            "bg-slate-50/80 border border-slate-200/60",
             "placeholder:text-slate-400",
-            "focus:outline-none focus:bg-white focus:border-slate-300",
-            theme && `focus:ring-4 ${theme.ring}`
+            // Focus state
+            "focus:outline-none focus:bg-white/90 focus:border-slate-300",
+            "focus:shadow-sm focus:shadow-slate-200/50"
           )}
         />
+        {/* Clear button */}
+        {value && (
+          <button
+            onClick={() => onChange("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-md hover:bg-slate-200/60 text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
 /**
- * Themed primary action button for page headers
+ * Premium gradient button with shine effect
  */
 interface PagePrimaryActionProps {
   onClick: () => void;
   label: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   theme?: PageIdentity["theme"];
   className?: string;
   disabled?: boolean;
@@ -204,32 +271,100 @@ export function PagePrimaryAction({
   className,
   disabled,
 }: PagePrimaryActionProps) {
-  const PlusIcon = require("lucide-react").Plus;
-
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "group relative flex items-center gap-2.5 h-11 px-5",
+        "group relative flex items-center gap-2 h-10 px-4",
         "text-white text-sm font-medium rounded-xl",
-        "shadow-lg active:scale-[0.98] transition-all duration-200",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
+        "shadow-md hover:shadow-lg active:scale-[0.98]",
+        "transition-all duration-200",
+        "disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100",
         theme
-          ? cn(
-              `bg-gradient-to-b ${theme.gradient}`,
-              theme.shadow,
-              `hover:${theme.hoverGradient}`,
-              "hover:shadow-xl"
-            )
-          : "bg-gradient-to-b from-slate-700 to-slate-800 shadow-slate-500/25 hover:from-slate-800 hover:to-slate-900",
+          ? cn(`bg-gradient-to-b ${theme.gradient}`, theme.shadow)
+          : "bg-gradient-to-b from-slate-700 to-slate-800 shadow-slate-500/25",
         className
       )}
     >
-      {icon || <PlusIcon className="h-4 w-4" />}
-      <span>{label}</span>
+      {/* Shine overlay */}
+      <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent via-white/5 to-white/15 pointer-events-none" />
+      {/* Content */}
+      {icon || <Plus className="relative h-4 w-4" />}
+      <span className="relative">{label}</span>
     </button>
   );
+}
+
+/**
+ * Secondary action button (outline style)
+ */
+interface PageSecondaryActionProps {
+  onClick: () => void;
+  label?: string;
+  icon?: ReactNode;
+  className?: string;
+  disabled?: boolean;
+}
+
+export function PageSecondaryAction({
+  onClick,
+  label,
+  icon,
+  className,
+  disabled,
+}: PageSecondaryActionProps) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "flex items-center gap-2 h-10 px-3.5",
+        "text-slate-600 text-sm font-medium rounded-xl",
+        "bg-white/80 border border-slate-200/60",
+        "hover:bg-slate-50 hover:border-slate-300/60",
+        "active:scale-[0.98] transition-all duration-200",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        className
+      )}
+    >
+      {icon}
+      {label && <span>{label}</span>}
+    </button>
+  );
+}
+
+/**
+ * Stat display for subtitles
+ */
+export function HeaderStat({
+  value,
+  label,
+  variant = "default",
+}: {
+  value: number | string;
+  label: string;
+  variant?: "default" | "highlight" | "warning" | "danger";
+}) {
+  const styles = {
+    default: "text-slate-600",
+    highlight: "text-indigo-600 font-medium",
+    warning: "text-amber-600 font-medium",
+    danger: "text-red-600 font-medium",
+  };
+
+  return (
+    <span className={cn("tabular-nums", styles[variant])}>
+      {typeof value === "number" ? value.toLocaleString() : value} {label}
+    </span>
+  );
+}
+
+/**
+ * Divider between stats
+ */
+export function HeaderDivider() {
+  return <span className="text-slate-300">·</span>;
 }
 
 /**

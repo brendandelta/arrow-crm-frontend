@@ -427,16 +427,24 @@ export default function ProjectsPage() {
   return (
     <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
       {/* Premium Header */}
-      <div className="bg-white border-b border-slate-200/80">
-        <div className="px-8 py-6">
+      <div className="relative bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm">
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-50/50 via-transparent to-slate-50/50 pointer-events-none" />
+        <div className="relative px-8 py-5">
           <div className="flex items-center justify-between">
             {/* Title Section */}
             <div className="flex items-center gap-4">
-              <div className={cn(
-                "h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg",
-                theme && `bg-gradient-to-br ${theme.gradient} ${theme.shadow}`
-              )}>
-                <PageIcon className="h-6 w-6 text-white" />
+              <div className="relative group">
+                <div className={cn(
+                  "absolute -inset-1 rounded-2xl blur-md opacity-40 group-hover:opacity-60 transition-opacity",
+                  theme && `bg-gradient-to-br ${theme.gradient}`
+                )} />
+                <div className={cn(
+                  "relative h-11 w-11 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-[1.02]",
+                  theme && `bg-gradient-to-br ${theme.gradient}`
+                )}>
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent to-white/20" />
+                  <PageIcon className="relative h-5 w-5 text-white drop-shadow-sm" />
+                </div>
               </div>
               <div>
                 <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
