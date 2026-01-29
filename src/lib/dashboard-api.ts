@@ -384,7 +384,7 @@ function calculateTruthBar(
   let totalDeployedCents = 0;
 
   for (const deal of activeDeals) {
-    if (deal.interests) {
+    if (Array.isArray(deal.interests)) {
       for (const interest of deal.interests) {
         totalCommittedCents += interest.committedCents || 0;
         totalWiredCents += interest.wiredCents || 0;
@@ -780,7 +780,7 @@ function buildRelationshipSignals(
     }
 
     // Also check interests
-    if (deal.interests) {
+    if (Array.isArray(deal.interests)) {
       for (const interest of deal.interests) {
         if (interest.investorId) {
           if (!dealsByPerson.has(interest.investorId)) {
