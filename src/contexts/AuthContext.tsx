@@ -5,9 +5,9 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 // Users with hashed PINs (simple hash for demo - in production use bcrypt)
 // Brendan: 400107, Chris: 847291, Gabe: 562830
 const USERS = [
-  { id: 1, name: "Brendan Conn", email: "brendan@arrow.fund", pinHash: "a400107z" },
-  { id: 2, name: "Chris Clifford", email: "chris@arrow.fund", pinHash: "a847291z" },
-  { id: 3, name: "Gabriel Borden", email: "gabe@arrow.fund", pinHash: "a562830z" },
+  { id: 1, name: "Brendan Conn", email: "brendan@arrowfund.co", pinHash: "a400107z" },
+  { id: 2, name: "Chris Clifford", email: "chris@arrowfund.co", pinHash: "a847291z" },
+  { id: 3, name: "Gabriel Borden", email: "gabe@arrowfund.co", pinHash: "a562830z" },
 ];
 
 const LOCKOUT_KEY = "arrow_lockout";
