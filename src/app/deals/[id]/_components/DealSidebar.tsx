@@ -945,6 +945,8 @@ interface DealSidebarProps {
   lpMode: boolean;
   currentUserId?: number | null;
   activeSection?: string;
+  /** When true, applies elevated visual prominence for tasks/diligence (Primary deals) */
+  isPrimaryDeal?: boolean;
   onSectionChange?: (section: string) => void;
   onTaskToggle?: (taskId: number, currentlyCompleted: boolean) => void;
   onTaskClick?: (task: Task) => void;
@@ -967,6 +969,7 @@ export function DealSidebar({
   lpMode,
   currentUserId,
   activeSection,
+  isPrimaryDeal = false,
   onSectionChange,
   onTaskToggle,
   onTaskClick,
@@ -990,12 +993,31 @@ export function DealSidebar({
     onSectionChange?.(section);
   };
 
-  // Count open tasks
+  // Count open tasks and overdue
   const openTaskCount = tasks.overdue.length + tasks.dueThisWeek.length + tasks.backlog.length;
+  const overdueCount = tasks.overdue.length;
+
+  // Count missing critical documents
+  const missingCriticalCount = documentChecklist.items.filter(
+    (item) => !item.present && CRITICAL_DOC_KINDS.includes(item.kind)
+  ).length;
 
   const sections = [
-    { key: "actions", label: "Actions", icon: CheckSquare, count: openTaskCount },
-    { key: "diligence", label: "Diligence", icon: FileText },
+    {
+      key: "actions",
+      label: "Actions",
+      icon: CheckSquare,
+      count: openTaskCount,
+      // For Primary deals, show overdue count with urgent styling
+      urgentCount: isPrimaryDeal ? overdueCount : 0,
+    },
+    {
+      key: "diligence",
+      label: "Diligence",
+      icon: FileText,
+      // For Primary deals, show missing critical docs with urgent styling
+      urgentCount: isPrimaryDeal ? missingCriticalCount : 0,
+    },
     { key: "activity", label: "Activity", icon: Clock },
     ...(!lpMode ? [{ key: "edges", label: "Edges", icon: Shield, count: edges.length }] : []),
   ];
@@ -1007,6 +1029,9 @@ export function DealSidebar({
         {sections.map((section) => {
           const Icon = section.icon;
           const isActive = internalSection === section.key;
+          const urgentCount = "urgentCount" in section ? (section.urgentCount as number) : 0;
+          const hasUrgent = urgentCount > 0;
+          const normalCount = "count" in section ? (section.count as number | undefined) : undefined;
           return (
             <button
               key={section.key}
@@ -1019,9 +1044,16 @@ export function DealSidebar({
             >
               <Icon className="h-4 w-4" />
               {section.label}
-              {section.count !== undefined && section.count > 0 && (
+              {/* Urgent count badge (overdue tasks or missing critical docs) */}
+              {hasUrgent && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-500 text-white font-medium animate-pulse">
+                  {urgentCount}
+                </span>
+              )}
+              {/* Normal count badge (only show if no urgent badge) */}
+              {normalCount !== undefined && normalCount > 0 && !hasUrgent && (
                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-600"}`}>
-                  {section.count}
+                  {normalCount}
                 </span>
               )}
             </button>

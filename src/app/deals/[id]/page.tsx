@@ -21,6 +21,7 @@ import { EdgeSlideOut } from "./_components/EdgeSlideOut";
 import { OutreachTargetModal } from "./_components/OutreachTargetModal";
 import { EditableDealDetails } from "./_components/EditableDealDetails";
 import { EntityLinksSection } from "./_components/EntityLinksSection";
+import { RoundDetailsSection } from "./_components/RoundDetailsSection";
 // Import shared components
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
 import { useLPMode } from "@/contexts/LPModeContext";
@@ -678,30 +679,39 @@ export default function DealDetailPage() {
         <div className="col-span-2 space-y-6">
           {/* Tab Navigation */}
           <div className="flex border-b">
-            {[
-              { key: "targets", label: "Outreach Targets", count: deal.targets.length },
-              { key: "interests", label: "Interests", count: deal.interests.length },
-              { key: "blocks", label: "Blocks", count: deal.blocks.length },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as typeof activeTab)}
-                className={`flex items-center gap-2 px-4 py-2 text-sm border-b-2 transition-colors ${
-                  activeTab === tab.key
-                    ? "border-slate-900 text-slate-900 font-medium"
-                    : "border-transparent text-muted-foreground hover:text-slate-600"
-                }`}
-              >
-                {tab.label}
-                <Badge variant="secondary" className="text-xs">
-                  {tab.count}
-                </Badge>
-              </button>
-            ))}
+            {(() => {
+              const isPrimaryDeal = deal.kind === "primary";
+              const tabs = isPrimaryDeal
+                ? [
+                    { key: "targets", label: "Outreach Targets", count: deal.targets.length },
+                    { key: "interests", label: "Interests", count: deal.interests.length },
+                  ]
+                : [
+                    { key: "targets", label: "Outreach Targets", count: deal.targets.length },
+                    { key: "interests", label: "Interests", count: deal.interests.length },
+                    { key: "blocks", label: "Blocks", count: deal.blocks.length },
+                  ];
+              return tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as typeof activeTab)}
+                  className={`flex items-center gap-2 px-4 py-2 text-sm border-b-2 transition-colors ${
+                    activeTab === tab.key
+                      ? "border-slate-900 text-slate-900 font-medium"
+                      : "border-transparent text-muted-foreground hover:text-slate-600"
+                  }`}
+                >
+                  {tab.label}
+                  <Badge variant="secondary" className="text-xs">
+                    {tab.count}
+                  </Badge>
+                </button>
+              ));
+            })()}
           </div>
 
           {/* Tab Content */}
-          {activeTab === "blocks" && (
+          {activeTab === "blocks" && deal.kind !== "primary" && (
             <BlocksSection
               blocks={deal.blocks}
               dealId={deal.id}
@@ -719,6 +729,7 @@ export default function DealDetailPage() {
               onInterestClick={(interest) => setSelectedInterest(interest)}
               onAddInterest={() => setShowAddInterest(true)}
               onInterestsUpdated={refreshDeal}
+              isPrimaryDeal={deal.kind === "primary"}
             />
           )}
 
@@ -729,6 +740,26 @@ export default function DealDetailPage() {
               onTargetUpdated={refreshDeal}
               onAddTarget={() => setShowAddTarget(true)}
               onTargetClick={(target) => setSelectedTarget(target)}
+            />
+          )}
+
+          {/* Round Details - Only shown for Primary deals, positioned after tabs */}
+          {deal.kind === "primary" && (
+            <RoundDetailsSection
+              deal={{
+                id: deal.id,
+                name: deal.name,
+                target: deal.target,
+                valuation: deal.valuation,
+                sharePrice: deal.sharePrice,
+                shareClass: deal.shareClass,
+                expectedClose: deal.expectedClose,
+                deadline: deal.deadline,
+                structureNotes: deal.structureNotes,
+                softCircled: deal.softCircled,
+                committed: deal.committed,
+                wired: deal.wired,
+              }}
             />
           )}
 
@@ -747,6 +778,7 @@ export default function DealDetailPage() {
                 lpMode={lpMode}
                 currentUserId={currentUserId}
                 activeSection={sidebarSection}
+                isPrimaryDeal={deal.kind === "primary"}
                 onSectionChange={setSidebarSection}
                 onTaskToggle={handleTaskToggle}
                 onTaskClick={(task) => setSelectedTask(task)}
@@ -800,8 +832,8 @@ export default function DealDetailPage() {
         </div>
       </div>
 
-      {/* Block Slide-out */}
-      {(selectedBlock || showAddBlock) && (
+      {/* Block Slide-out - Only for non-Primary deals */}
+      {deal.kind !== "primary" && (selectedBlock || showAddBlock) && (
         <BlockSlideOut
           block={selectedBlock}
           dealId={deal.id}
@@ -819,7 +851,7 @@ export default function DealDetailPage() {
         <InterestSlideOut
           interest={selectedInterest}
           dealId={deal.id}
-          blocks={deal.blocks}
+          blocks={deal.kind === "primary" ? [] : deal.blocks}
           onClose={() => {
             setSelectedInterest(null);
             setShowAddInterest(false);

@@ -77,6 +77,8 @@ interface InterestsSectionProps {
   onInterestClick?: (interest: Interest) => void;
   onAddInterest?: () => void;
   onInterestsUpdated?: () => void;
+  /** When true, hides block-related columns (for Primary deals) */
+  isPrimaryDeal?: boolean;
 }
 
 function formatCurrency(cents: number | null) {
@@ -206,8 +208,17 @@ export function InterestsSection({
   onInterestClick,
   onAddInterest,
   onInterestsUpdated,
+  isPrimaryDeal = false,
 }: InterestsSectionProps) {
   const [viewMode, setViewMode] = useState<"table" | "card">("card");
+
+  // Filter out block column for Primary deals
+  const columns = useMemo(() => {
+    if (isPrimaryDeal) {
+      return INTEREST_COLUMNS.filter(col => col.id !== "block");
+    }
+    return INTEREST_COLUMNS;
+  }, [isPrimaryDeal]);
 
   const {
     filteredData,
@@ -221,7 +232,7 @@ export function InterestsSection({
     getSortDirection,
     getEnumCounts,
     filters,
-  } = useTableFiltering(interests, INTEREST_COLUMNS);
+  } = useTableFiltering(interests, columns);
 
   // Derive funnel active stage from current status enum filter
   const statusFilter = filters.get("status");
@@ -306,7 +317,7 @@ export function InterestsSection({
           <Table>
             <TableHeader>
               <TableRow>
-                {INTEREST_COLUMNS.map((col) => (
+                {columns.map((col) => (
                   <FilterableHeader
                     key={col.id}
                     column={col}
@@ -321,7 +332,7 @@ export function InterestsSection({
               </TableRow>
               <ActiveFiltersBar
                 filters={activeFilters}
-                colSpan={INTEREST_COLUMNS.length}
+                colSpan={columns.length}
                 onClearFilter={clearFilter}
                 onClearAll={clearAllFilters}
               />
@@ -329,7 +340,7 @@ export function InterestsSection({
             <TableBody>
               {filteredData.length === 0 && hasActiveFilters ? (
                 <TableRow>
-                  <TableCell colSpan={INTEREST_COLUMNS.length} className="text-center py-8">
+                  <TableCell colSpan={columns.length} className="text-center py-8">
                     <div className="text-sm text-slate-400">No results match your filters</div>
                     <button
                       onClick={clearAllFilters}
@@ -389,18 +400,20 @@ export function InterestsSection({
                   <TableCell className="text-right tabular-nums font-medium">
                     {formatCurrency(interest.committedCents)}
                   </TableCell>
-                  <TableCell>
-                    {interest.allocatedBlock ? (
-                      <div className="text-sm">
-                        <div className="font-medium">{interest.allocatedBlock.seller || "—"}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatCurrency(interest.allocatedBlock.priceCents)}/sh
+                  {!isPrimaryDeal && (
+                    <TableCell>
+                      {interest.allocatedBlock ? (
+                        <div className="text-sm">
+                          <div className="font-medium">{interest.allocatedBlock.seller || "—"}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatCurrency(interest.allocatedBlock.priceCents)}/sh
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">Not mapped</span>
-                    )}
-                  </TableCell>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">Not mapped</span>
+                      )}
+                    </TableCell>
+                  )}
                   <TableCell>
                     <FollowUpCell
                       task={interest.nextTask}
@@ -455,13 +468,16 @@ export function InterestsSection({
 
               <div className="mt-3 pt-3 border-t space-y-2">
                 <div className="flex items-center justify-between">
-                  {interest.allocatedBlock ? (
-                    <span className="text-xs text-muted-foreground">
-                      Block: {interest.allocatedBlock.seller || "—"} ({formatCurrency(interest.allocatedBlock.priceCents)}/sh)
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Not mapped to block</span>
+                  {!isPrimaryDeal && (
+                    interest.allocatedBlock ? (
+                      <span className="text-xs text-muted-foreground">
+                        Block: {interest.allocatedBlock.seller || "—"} ({formatCurrency(interest.allocatedBlock.priceCents)}/sh)
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Not mapped to block</span>
+                    )
                   )}
+                  {isPrimaryDeal && <span />}
                   {interest.isStale && (
                     <span className="flex items-center gap-1 text-[11px] text-amber-600">
                       <AlertCircle className="h-3 w-3" />
