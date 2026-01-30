@@ -99,4 +99,81 @@ After running tests, check browser console:
 
 ---
 
+## Document Upload Verification (S3 + ActiveStorage)
+
+After S3 is configured, verify these document flows work correctly:
+
+### Upload Tests
+
+1. **Documents Page Upload**
+   - Go to /documents
+   - Click upload, select a PDF
+   - **Expected**: Upload completes, document appears in list
+   - **Expected**: Refresh page - document persists
+
+2. **Deal Sidebar Upload**
+   - Go to /deals/[id]
+   - Click Documents section, upload a file
+   - **Expected**: Upload completes, links to Deal automatically
+   - **Expected**: Document appears in Documents page with Deal link
+
+3. **Block Slide-out Upload**
+   - Open a Block from a Deal page
+   - Expand Documents section, upload a file
+   - **Expected**: Upload completes, auto-links to Block and Deal
+   - **Expected**: No duplicate document records
+
+4. **Interest Slide-out Upload**
+   - Open an Interest from a Deal page
+   - Expand Documents section, upload a file
+   - **Expected**: Upload completes, auto-links to Interest and Deal
+
+### Preview Tests
+
+1. **PDF Preview**
+   - Upload a PDF document
+   - Click the document in preview panel
+   - **Expected**: PDF opens inline (no download prompt)
+   - **Expected**: No CORS errors in console
+
+2. **Image Preview**
+   - Upload a PNG/JPG image
+   - View in document preview
+   - **Expected**: Image displays inline
+   - **Expected**: No "Access Denied" errors
+
+### Download Tests
+
+1. **Download Button**
+   - Click download on any document
+   - **Expected**: File downloads with correct filename
+   - **Expected**: Content-Type header is correct
+
+### Persistence Tests
+
+1. **Database Persistence**
+   - Upload a document
+   - Refresh the page
+   - **Expected**: Document still exists
+
+2. **S3 Persistence**
+   - Upload a document
+   - Wait 10 minutes, refresh
+   - Click preview/download
+   - **Expected**: File is accessible (signed URLs regenerated)
+
+### Error Handling Tests
+
+1. **Upload Failure**
+   - Disconnect network, try to upload
+   - **Expected**: Toast error appears
+   - **Expected**: No partial records in database
+
+2. **Invalid File**
+   - Try to upload a very large file (>50MB)
+   - **Expected**: Error message shown
+   - **Expected**: No orphaned blobs
+
+---
+
 Last updated: January 2026

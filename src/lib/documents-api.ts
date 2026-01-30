@@ -117,6 +117,19 @@ export interface DocumentFilters {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+// Helper to parse error responses from the API
+async function parseApiError(res: Response, defaultMessage: string): Promise<Error> {
+  try {
+    const data = await res.json();
+    const message = data.error || data.message || (data.errors && data.errors[0]) || defaultMessage;
+    const error = new Error(message);
+    (error as Error & { status?: number }).status = res.status;
+    return error;
+  } catch {
+    return new Error(defaultMessage);
+  }
+}
+
 export async function fetchDocuments(filters: DocumentFilters = {}): Promise<DocumentsResponse> {
   const params = new URLSearchParams();
 
@@ -144,13 +157,13 @@ export async function fetchDocuments(filters: DocumentFilters = {}): Promise<Doc
   if (filters.perPage) params.append('per_page', filters.perPage.toString());
 
   const res = await fetch(`${API_BASE}/api/documents?${params.toString()}`);
-  if (!res.ok) throw new Error('Failed to fetch documents');
+  if (!res.ok) throw await parseApiError(res, 'Failed to fetch documents');
   return res.json();
 }
 
 export async function fetchDocument(id: number): Promise<DocumentDetail> {
   const res = await fetch(`${API_BASE}/api/documents/${id}`);
-  if (!res.ok) throw new Error('Failed to fetch document');
+  if (!res.ok) throw await parseApiError(res, 'Failed to fetch document');
   return res.json();
 }
 
@@ -160,7 +173,7 @@ export async function updateDocument(id: number, data: Partial<DocumentDetail>):
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to update document');
+  if (!res.ok) throw await parseApiError(res, 'Failed to update document');
   return res.json();
 }
 
@@ -168,7 +181,7 @@ export async function deleteDocument(id: number): Promise<void> {
   const res = await fetch(`${API_BASE}/api/documents/${id}`, {
     method: 'DELETE',
   });
-  if (!res.ok) throw new Error('Failed to delete document');
+  if (!res.ok) throw await parseApiError(res, 'Failed to delete document');
 }
 
 export async function uploadDocument(
@@ -204,7 +217,7 @@ export async function uploadDocument(
     method: 'POST',
     body: formData,
   });
-  if (!res.ok) throw new Error('Failed to upload document');
+  if (!res.ok) throw await parseApiError(res, 'Failed to upload document');
   return res.json();
 }
 
@@ -220,7 +233,7 @@ export async function uploadNewVersion(
     method: 'POST',
     body: formData,
   });
-  if (!res.ok) throw new Error('Failed to upload new version');
+  if (!res.ok) throw await parseApiError(res, 'Failed to upload new version');
   return res.json();
 }
 
@@ -240,7 +253,7 @@ export async function createDocumentLink(
       relationship,
     }),
   });
-  if (!res.ok) throw new Error('Failed to create document link');
+  if (!res.ok) throw await parseApiError(res, 'Failed to create document link');
   return res.json();
 }
 
@@ -248,7 +261,7 @@ export async function deleteDocumentLink(linkId: number): Promise<void> {
   const res = await fetch(`${API_BASE}/api/document_links/${linkId}`, {
     method: 'DELETE',
   });
-  if (!res.ok) throw new Error('Failed to delete document link');
+  if (!res.ok) throw await parseApiError(res, 'Failed to delete document link');
 }
 
 // Category, status, and sensitivity options
