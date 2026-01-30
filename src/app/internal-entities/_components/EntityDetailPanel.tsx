@@ -30,6 +30,8 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { LinkedObjectsSection } from "./LinkedObjectsSection";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { UniversalDocumentUploader } from "@/components/documents/UniversalDocumentUploader";
 import {
   type InternalEntityDetail,
   type BankAccountMasked,
@@ -42,6 +44,10 @@ import {
   getStatusColor,
   getEntityTypeColor,
   formatEinWithDash,
+  ENTITY_TYPES,
+  ENTITY_STATUSES,
+  TAX_CLASSIFICATIONS,
+  US_STATES,
 } from "@/lib/internal-entities-api";
 
 interface EntityDetailPanelProps {
@@ -73,6 +79,7 @@ export function EntityDetailPanel({
   const [revealedBankAccounts, setRevealedBankAccounts] = useState<Map<number, { routing: string; account: string }>>(new Map());
   const [revealingBankId, setRevealingBankId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
 
   const toggleSection = (section: string) => {
     const newExpanded = new Set(expandedSections);
@@ -266,14 +273,30 @@ export function EntityDetailPanel({
           </div>
         </div>
 
-        {/* Status and Type Badges */}
+        {/* Status and Type Badges - Clickable to edit */}
         <div className="flex items-center gap-2">
-          <span className={`px-3 py-1.5 text-xs font-medium rounded-full border ${statusColor}`}>
-            {entity.statusLabel}
-          </span>
-          <span className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${typeColor}`}>
-            {entity.entityTypeLabel}
-          </span>
+          <EditableSelectBadge
+            value={entity.status}
+            label={entity.statusLabel}
+            options={ENTITY_STATUSES}
+            colorClass={statusColor}
+            rounded="full"
+            onSave={async (value) => {
+              const updated = await updateInternalEntity(entity.id, { status: value });
+              onUpdate(updated);
+            }}
+          />
+          <EditableSelectBadge
+            value={entity.entityType}
+            label={entity.entityTypeLabel}
+            options={ENTITY_TYPES}
+            colorClass={typeColor}
+            rounded="lg"
+            onSave={async (value) => {
+              const updated = await updateInternalEntity(entity.id, { entityType: value });
+              onUpdate(updated);
+            }}
+          />
         </div>
       </div>
 
@@ -305,15 +328,25 @@ export function EntityDetailPanel({
               }}
             />
             <div className="grid grid-cols-2 gap-4">
-              <InfoField
+              <EditableSelectField
                 label="Jurisdiction"
                 icon={<Building2 className="h-3.5 w-3.5" />}
-                value={entity.fullJurisdiction || "—"}
+                value={entity.jurisdictionState || ""}
+                options={US_STATES}
+                placeholder="Select state"
+                onSave={async (value) => {
+                  const updated = await updateInternalEntity(entity.id, { jurisdictionState: value || undefined });
+                  onUpdate(updated);
+                }}
               />
-              <InfoField
+              <EditableDateField
                 label="Formation Date"
                 icon={<Calendar className="h-3.5 w-3.5" />}
-                value={entity.formationDate ? new Date(entity.formationDate).toLocaleDateString() : "—"}
+                value={entity.formationDate || ""}
+                onSave={async (value) => {
+                  const updated = await updateInternalEntity(entity.id, { formationDate: value || undefined });
+                  onUpdate(updated);
+                }}
               />
             </div>
             <EditableField
@@ -413,54 +446,38 @@ export function EntityDetailPanel({
           onToggle={() => toggleSection("tax")}
         >
           <div className="space-y-4">
-            {/* EIN Card */}
-            <div className="p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-100">
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">EIN</label>
-                {entity.einPresent && (
-                  <button
-                    onClick={handleRevealEin}
-                    disabled={revealingEin}
-                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-all duration-200 disabled:opacity-50"
-                  >
-                    {revealingEin ? (
-                      <span className="h-3 w-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                    ) : revealedEin ? (
-                      <EyeOff className="h-3.5 w-3.5" />
-                    ) : (
-                      <Eye className="h-3.5 w-3.5" />
-                    )}
-                    {revealedEin ? "Hide" : "Reveal"}
-                  </button>
-                )}
-              </div>
-              {entity.einPresent ? (
-                <button
-                  onClick={handleCopyEin}
-                  className="group flex items-center gap-2 text-left"
-                  title="Click to copy"
-                >
-                  <span className="font-mono text-lg font-medium text-slate-900">
-                    {revealedEin ? formatEinWithDash(revealedEin) : formatEinWithDash(entity.einMasked)}
-                  </span>
-                  <Copy className="h-4 w-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-              ) : (
-                <span className="font-mono text-lg text-slate-400">Not set</span>
-              )}
-            </div>
+            {/* EIN Card - Editable */}
+            <EditableEinField
+              entityId={entity.id}
+              einMasked={entity.einMasked}
+              einPresent={entity.einPresent}
+              revealedEin={revealedEin}
+              revealingEin={revealingEin}
+              onReveal={handleRevealEin}
+              onCopy={handleCopyEin}
+              onUpdate={onUpdate}
+            />
 
             <div className="grid grid-cols-2 gap-4">
-              <InfoField
+              <EditableSelectField
                 label="Tax Classification"
-                value={entity.taxClassificationLabel || "—"}
+                value={entity.taxClassification || ""}
+                options={TAX_CLASSIFICATIONS}
+                placeholder="Select classification"
+                onSave={async (value) => {
+                  const updated = await updateInternalEntity(entity.id, { taxClassification: value || undefined });
+                  onUpdate(updated);
+                }}
               />
-              {entity.sCorpEffectiveDate && (
-                <InfoField
-                  label="S-Corp Effective"
-                  value={new Date(entity.sCorpEffectiveDate).toLocaleDateString()}
-                />
-              )}
+              <EditableDateField
+                label="S-Corp Effective"
+                value={entity.sCorpEffectiveDate || ""}
+                placeholder="Not applicable"
+                onSave={async (value) => {
+                  const updated = await updateInternalEntity(entity.id, { sCorpEffectiveDate: value || undefined });
+                  onUpdate(updated);
+                }}
+              />
             </div>
 
             <EditableField
@@ -584,6 +601,15 @@ export function EntityDetailPanel({
           icon={<FileText className="h-4 w-4" />}
           isExpanded={expandedSections.has("documents")}
           onToggle={() => toggleSection("documents")}
+          action={
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowUploadDialog(true); }}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Upload
+            </button>
+          }
         >
           {(entity.documents ?? []).length === 0 ? (
             <div className="text-center py-8">
@@ -689,6 +715,32 @@ export function EntityDetailPanel({
           )}
         </div>
       </div>
+
+      {/* Document Upload Dialog */}
+      <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Upload Document for {entity.displayName}</DialogTitle>
+          </DialogHeader>
+          <UniversalDocumentUploader
+            defaultLinks={[
+              {
+                linkableType: "InternalEntity",
+                linkableId: entity.id,
+                linkableLabel: entity.displayName,
+                relationship: "general",
+              },
+            ]}
+            onSuccess={() => {
+              setShowUploadDialog(false);
+              onRefresh();
+              toast.success("Document uploaded and linked");
+            }}
+            onCancel={() => setShowUploadDialog(false)}
+            compact
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -951,6 +1003,439 @@ function BankAccountCard({
 
       {account.nickname && (
         <p className="mt-3 text-xs text-slate-500 pt-3 border-t border-slate-100">{account.nickname}</p>
+      )}
+    </div>
+  );
+}
+
+// Editable Select Badge Component (for status/type in header)
+interface EditableSelectBadgeProps {
+  value: string;
+  label: string;
+  options: { value: string; label: string }[];
+  colorClass: string;
+  rounded?: "full" | "lg";
+  onSave: (value: string) => Promise<void>;
+}
+
+function EditableSelectBadge({
+  value,
+  label,
+  options,
+  colorClass,
+  rounded = "lg",
+  onSave,
+}: EditableSelectBadgeProps) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setEditing(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const handleSelect = async (newValue: string) => {
+    if (newValue === value) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave(newValue);
+      setEditing(false);
+      toast.success("Updated successfully");
+    } catch {
+      toast.error("Failed to update");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <div ref={ref} className="relative">
+        <div className={`px-3 py-1.5 text-xs font-medium rounded-${rounded} border ${colorClass} flex items-center gap-1`}>
+          {saving ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <span>{label}</span>
+          )}
+          <ChevronDown className="h-3 w-3" />
+        </div>
+        <div className="absolute z-20 mt-1 min-w-[140px] bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => handleSelect(option.value)}
+              disabled={saving}
+              className={`w-full px-3 py-2 text-left text-xs font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 ${
+                option.value === value ? "bg-indigo-50 text-indigo-700" : "text-slate-700"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setEditing(true)}
+      className={`px-3 py-1.5 text-xs font-medium rounded-${rounded} border ${colorClass} hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1`}
+      title="Click to edit"
+    >
+      <span>{label}</span>
+      <Edit2 className="h-2.5 w-2.5 opacity-50" />
+    </button>
+  );
+}
+
+// Editable Select Field Component (for dropdowns)
+interface EditableSelectFieldProps {
+  label: string;
+  icon?: React.ReactNode;
+  value: string;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+  onSave: (value: string) => Promise<void>;
+}
+
+function EditableSelectField({
+  label,
+  icon,
+  value,
+  options,
+  placeholder,
+  onSave,
+}: EditableSelectFieldProps) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setEditing(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const selectedOption = options.find((o) => o.value === value);
+  const displayValue = selectedOption?.label || placeholder || "—";
+
+  const handleSelect = async (newValue: string) => {
+    if (newValue === value) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave(newValue);
+      setEditing(false);
+      toast.success("Updated successfully");
+    } catch {
+      toast.error("Failed to update");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div ref={ref}>
+      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+        {label}
+      </label>
+      {editing ? (
+        <div className="relative">
+          <select
+            value={value}
+            onChange={(e) => handleSelect(e.target.value)}
+            disabled={saving}
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 bg-white appearance-none cursor-pointer disabled:opacity-50"
+            autoFocus
+          >
+            <option value="">{placeholder || "Select..."}</option>
+            {options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+          {saving && (
+            <Loader2 className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-indigo-600" />
+          )}
+        </div>
+      ) : (
+        <button
+          onClick={() => setEditing(true)}
+          className="w-full flex items-center justify-between group text-left py-1.5 px-1 -mx-1 rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <div className="flex items-center gap-2 text-sm text-slate-700">
+            {icon && <span className="text-slate-400">{icon}</span>}
+            <span className={value ? "text-slate-700" : "text-slate-400"}>{displayValue}</span>
+          </div>
+          <Edit2 className="h-3.5 w-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Editable Date Field Component
+interface EditableDateFieldProps {
+  label: string;
+  icon?: React.ReactNode;
+  value: string;
+  placeholder?: string;
+  onSave: (value: string) => Promise<void>;
+}
+
+function EditableDateField({
+  label,
+  icon,
+  value,
+  placeholder,
+  onSave,
+}: EditableDateFieldProps) {
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value ? value.split("T")[0] : "");
+  const [saving, setSaving] = useState(false);
+
+  const displayValue = value
+    ? new Date(value).toLocaleDateString()
+    : placeholder || "—";
+
+  const handleSave = async () => {
+    if (editValue === (value ? value.split("T")[0] : "")) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave(editValue);
+      setEditing(false);
+      toast.success("Updated successfully");
+    } catch {
+      toast.error("Failed to update");
+      setEditValue(value ? value.split("T")[0] : "");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <div>
+        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+          {label}
+        </label>
+        <div className="flex items-center gap-2">
+          <input
+            type="date"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300"
+            autoFocus
+          />
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="h-9 w-9 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          </button>
+          <button
+            onClick={() => {
+              setEditValue(value ? value.split("T")[0] : "");
+              setEditing(false);
+            }}
+            className="h-9 w-9 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+        {label}
+      </label>
+      <button
+        onClick={() => {
+          setEditValue(value ? value.split("T")[0] : "");
+          setEditing(true);
+        }}
+        className="w-full flex items-center justify-between group text-left py-1.5 px-1 -mx-1 rounded-lg hover:bg-slate-50 transition-colors"
+      >
+        <div className="flex items-center gap-2 text-sm">
+          {icon && <span className="text-slate-400">{icon}</span>}
+          <span className={value ? "text-slate-700" : "text-slate-400"}>{displayValue}</span>
+        </div>
+        <Edit2 className="h-3.5 w-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+      </button>
+    </div>
+  );
+}
+
+// Editable EIN Field Component
+interface EditableEinFieldProps {
+  entityId: number;
+  einMasked: string | null;
+  einPresent: boolean;
+  revealedEin: string | null;
+  revealingEin: boolean;
+  onReveal: () => void;
+  onCopy: () => void;
+  onUpdate: (entity: InternalEntityDetail) => void;
+}
+
+function EditableEinField({
+  entityId,
+  einMasked,
+  einPresent,
+  revealedEin,
+  revealingEin,
+  onReveal,
+  onCopy,
+  onUpdate,
+}: EditableEinFieldProps) {
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    // Clean the EIN (remove dashes and spaces)
+    const cleanedEin = editValue.replace(/[\s-]/g, "");
+
+    // Validate: must be 9 digits or empty
+    if (cleanedEin && (cleanedEin.length !== 9 || !/^\d+$/.test(cleanedEin))) {
+      toast.error("EIN must be 9 digits");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const updated = await updateInternalEntity(entityId, { ein: cleanedEin || undefined });
+      onUpdate(updated);
+      setEditing(false);
+      setEditValue("");
+      toast.success(cleanedEin ? "EIN updated" : "EIN removed");
+    } catch {
+      toast.error("Failed to update EIN");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const formatInput = (value: string) => {
+    // Remove non-digits
+    const digits = value.replace(/\D/g, "").slice(0, 9);
+    // Format as XX-XXXXXXX
+    if (digits.length > 2) {
+      return `${digits.slice(0, 2)}-${digits.slice(2)}`;
+    }
+    return digits;
+  };
+
+  if (editing) {
+    return (
+      <div className="p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-100">
+        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
+          EIN
+        </label>
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={editValue}
+            onChange={(e) => setEditValue(formatInput(e.target.value))}
+            placeholder="XX-XXXXXXX"
+            className="flex-1 px-3 py-2 font-mono text-lg border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300"
+            autoFocus
+          />
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="h-10 w-10 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          </button>
+          <button
+            onClick={() => {
+              setEditValue("");
+              setEditing(false);
+            }}
+            className="h-10 w-10 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <p className="text-xs text-slate-400 mt-2">Enter 9 digits, leave blank to remove</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-100">
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">EIN</label>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setEditing(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all duration-200"
+          >
+            <Edit2 className="h-3.5 w-3.5" />
+            Edit
+          </button>
+          {einPresent && (
+            <button
+              onClick={onReveal}
+              disabled={revealingEin}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-all duration-200 disabled:opacity-50"
+            >
+              {revealingEin ? (
+                <span className="h-3 w-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+              ) : revealedEin ? (
+                <EyeOff className="h-3.5 w-3.5" />
+              ) : (
+                <Eye className="h-3.5 w-3.5" />
+              )}
+              {revealedEin ? "Hide" : "Reveal"}
+            </button>
+          )}
+        </div>
+      </div>
+      {einPresent ? (
+        <button
+          onClick={onCopy}
+          className="group flex items-center gap-2 text-left"
+          title="Click to copy"
+        >
+          <span className="font-mono text-lg font-medium text-slate-900">
+            {revealedEin ? formatEinWithDash(revealedEin) : formatEinWithDash(einMasked)}
+          </span>
+          <Copy className="h-4 w-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </button>
+      ) : (
+        <button
+          onClick={() => setEditing(true)}
+          className="font-mono text-lg text-slate-400 hover:text-indigo-600 transition-colors"
+        >
+          Click to add EIN
+        </button>
       )}
     </div>
   );
