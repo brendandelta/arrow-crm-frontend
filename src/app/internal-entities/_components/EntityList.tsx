@@ -45,7 +45,7 @@ export function EntityList({
     );
   }
 
-  if (entities.length === 0) {
+  if (!entities || entities.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center p-12">
@@ -165,7 +165,7 @@ function EntityCard({ entity, isActive, onClick, index }: EntityCardProps) {
           </div>
 
           {/* Stats Row */}
-          {(entity.stats.bankAccountsCount > 0 || entity.stats.signersCount > 0 || entity.stats.documentsCount > 0) && (
+          {entity.stats && (entity.stats.bankAccountsCount > 0 || entity.stats.signersCount > 0 || entity.stats.documentsCount > 0) && (
             <div className="flex items-center gap-4 pt-3 border-t border-slate-100">
               {entity.stats.bankAccountsCount > 0 && (
                 <span className="flex items-center gap-1.5 text-xs text-slate-500">
