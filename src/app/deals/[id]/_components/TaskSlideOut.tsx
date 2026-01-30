@@ -14,6 +14,7 @@ import {
   ListTree,
   Check,
 } from "lucide-react";
+import { type UserOption, fetchUsers } from "@/lib/tasks-api";
 
 interface Owner {
   id: number;
@@ -44,12 +45,6 @@ interface TaskSlideOutProps {
   onDelete?: (taskId: number) => void;
 }
 
-const TEAM_MEMBERS = [
-  { id: 22, firstName: "Gabe", lastName: "Borden" },
-  { id: 23, firstName: "Chris", lastName: "Clifford" },
-  { id: 24, firstName: "Brendan", lastName: "Conn" },
-];
-
 function formatDate(dateStr: string | null | undefined) {
   if (!dateStr) return "";
   return dateStr.split("T")[0];
@@ -72,6 +67,17 @@ export function TaskSlideOut({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Fetch users dynamically instead of hardcoding
+  const [users, setUsers] = useState<UserOption[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+
+  useEffect(() => {
+    fetchUsers()
+      .then(setUsers)
+      .catch(console.error)
+      .finally(() => setLoadingUsers(false));
+  }, []);
 
   const [formData, setFormData] = useState({
     subject: task?.subject || "",
@@ -168,6 +174,15 @@ export function TaskSlideOut({
     (t) => !t.isSubtask && (!task || t.id !== task.id)
   );
 
+  // Helper to get user name
+  const getUserName = (user: UserOption) => {
+    if (user.fullName) return user.fullName;
+    return `${user.firstName} ${user.lastName}`.trim();
+  };
+
+  // Show first 5 users for quick assign
+  const quickAssignUsers = users.slice(0, 5);
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div className="absolute inset-0 bg-black/20" onClick={onClose} />
@@ -252,34 +267,43 @@ export function TaskSlideOut({
                 <User className="h-3.5 w-3.5 text-slate-400" />
                 <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Assigned To</span>
               </div>
-              <select
-                value={formData.assignedToId}
-                onChange={(e) => setFormData({ ...formData, assignedToId: e.target.value })}
-                className={selectClass}
-              >
-                <option value="">Unassigned</option>
-                {TEAM_MEMBERS.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.firstName} {member.lastName}
-                  </option>
-                ))}
-              </select>
-              {/* Quick assign pills */}
-              <div className="flex items-center gap-1.5 mt-2 px-3">
-                {TEAM_MEMBERS.map((member) => (
-                  <button
-                    key={member.id}
-                    onClick={() => setFormData({ ...formData, assignedToId: member.id.toString() })}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
-                      formData.assignedToId === member.id.toString()
-                        ? "bg-slate-900 text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
+              {loadingUsers ? (
+                <div className="px-3 py-2 flex items-center gap-2 text-sm text-slate-400">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading team...
+                </div>
+              ) : (
+                <>
+                  <select
+                    value={formData.assignedToId}
+                    onChange={(e) => setFormData({ ...formData, assignedToId: e.target.value })}
+                    className={selectClass}
                   >
-                    {member.firstName}
-                  </button>
-                ))}
-              </div>
+                    <option value="">Unassigned</option>
+                    {users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {getUserName(user)}
+                      </option>
+                    ))}
+                  </select>
+                  {/* Quick assign pills */}
+                  <div className="flex items-center gap-1.5 mt-2 px-3 flex-wrap">
+                    {quickAssignUsers.map((user) => (
+                      <button
+                        key={user.id}
+                        onClick={() => setFormData({ ...formData, assignedToId: user.id.toString() })}
+                        className={`px-2.5 py-1 text-xs font-medium rounded-full transition-colors ${
+                          formData.assignedToId === user.id.toString()
+                            ? "bg-slate-900 text-white"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        {user.firstName}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Task Type */}
