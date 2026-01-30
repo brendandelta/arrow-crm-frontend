@@ -155,7 +155,7 @@ export function MembersDialog({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 min-h-0 overflow-y-auto p-6">
           {/* Add Member Form */}
           {showAddForm ? (
             <div className="p-4 border rounded-lg bg-slate-50 mb-4">

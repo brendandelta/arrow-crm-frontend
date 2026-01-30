@@ -253,7 +253,7 @@ export function ProjectFiltersRail({
       </div>
 
       {/* Filters content */}
-      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-4">
         {/* Quick Scopes */}
         <div className="space-y-0.5">
           <QuickScope

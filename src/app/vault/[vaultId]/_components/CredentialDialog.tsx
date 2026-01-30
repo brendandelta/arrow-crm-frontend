@@ -175,7 +175,7 @@ export function CredentialDialog({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
           {/* Basic Info */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">

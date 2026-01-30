@@ -330,7 +330,7 @@ export function EdgeSlideOut({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 min-h-0 overflow-y-auto p-6">
           <div className="space-y-1">
             {/* Edge Type */}
             <div className="py-2">

@@ -34,7 +34,7 @@ export function DocumentsList({
 }: DocumentsListProps) {
   if (loading && documents.length === 0) {
     return (
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2">
         {[...Array(8)].map((_, i) => (
           <DocumentRowSkeleton key={i} />
         ))}
@@ -57,7 +57,7 @@ export function DocumentsList({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 min-h-0 overflow-y-auto">
       <div className="divide-y divide-slate-100">
         {documents.map((doc) => (
           <DocumentRow

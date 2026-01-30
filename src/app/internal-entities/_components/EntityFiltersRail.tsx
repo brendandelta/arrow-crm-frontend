@@ -247,7 +247,7 @@ export function EntityFiltersRail({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {/* Quick Scopes */}
         <div className="px-4 py-4 border-b border-slate-100">
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3 px-1">Quick Filters</p>

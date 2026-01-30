@@ -225,7 +225,7 @@ export function MeetingModal({ meetingId, onClose }: MeetingModalProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 text-slate-400 animate-spin" />
