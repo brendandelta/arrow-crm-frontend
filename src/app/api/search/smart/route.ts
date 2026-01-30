@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+
+// Lazy-load OpenAI client to avoid build-time errors
+let openaiClient: OpenAI | null = null;
+function getOpenAIClient(): OpenAI | null {
+  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === "sk-...") {
+    return null;
+  }
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openaiClient;
+}
 
 interface SmartSearchRequest {
   query: string;
@@ -45,7 +55,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === "sk-...") {
+    const openai = getOpenAIClient();
+    if (!openai) {
       return NextResponse.json(
         { error: "OpenAI API key not configured" },
         { status: 503 }
