@@ -117,6 +117,28 @@ export interface DocumentFilters {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+// Helper to get auth headers from session storage
+function getAuthHeaders(): Record<string, string> {
+  if (typeof window === 'undefined') return {};
+
+  const session = localStorage.getItem('arrow_session');
+  if (!session) {
+    console.warn('[Documents API] No session found');
+    return {};
+  }
+
+  try {
+    const data = JSON.parse(session);
+    if (data.backendUserId) {
+      return { 'X-User-Id': data.backendUserId.toString() };
+    }
+    console.warn('[Documents API] Session missing backendUserId');
+  } catch {
+    console.error('[Documents API] Invalid session data');
+  }
+  return {};
+}
+
 // Helper to parse error responses from the API
 async function parseApiError(res: Response, defaultMessage: string): Promise<Error> {
   try {
@@ -156,13 +178,17 @@ export async function fetchDocuments(filters: DocumentFilters = {}): Promise<Doc
   if (filters.page) params.append('page', filters.page.toString());
   if (filters.perPage) params.append('per_page', filters.perPage.toString());
 
-  const res = await fetch(`${API_BASE}/api/documents?${params.toString()}`);
+  const res = await fetch(`${API_BASE}/api/documents?${params.toString()}`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) throw await parseApiError(res, 'Failed to fetch documents');
   return res.json();
 }
 
 export async function fetchDocument(id: number): Promise<DocumentDetail> {
-  const res = await fetch(`${API_BASE}/api/documents/${id}`);
+  const res = await fetch(`${API_BASE}/api/documents/${id}`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) throw await parseApiError(res, 'Failed to fetch document');
   return res.json();
 }
@@ -170,7 +196,7 @@ export async function fetchDocument(id: number): Promise<DocumentDetail> {
 export async function updateDocument(id: number, data: Partial<DocumentDetail>): Promise<DocumentDetail> {
   const res = await fetch(`${API_BASE}/api/documents/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw await parseApiError(res, 'Failed to update document');
@@ -180,6 +206,7 @@ export async function updateDocument(id: number, data: Partial<DocumentDetail>):
 export async function deleteDocument(id: number): Promise<void> {
   const res = await fetch(`${API_BASE}/api/documents/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!res.ok) throw await parseApiError(res, 'Failed to delete document');
 }
@@ -215,6 +242,7 @@ export async function uploadDocument(
 
   const res = await fetch(`${API_BASE}/api/documents`, {
     method: 'POST',
+    headers: getAuthHeaders(),
     body: formData,
   });
   if (!res.ok) throw await parseApiError(res, 'Failed to upload document');
@@ -231,6 +259,7 @@ export async function uploadNewVersion(
 
   const res = await fetch(`${API_BASE}/api/documents/${documentId}/new_version`, {
     method: 'POST',
+    headers: getAuthHeaders(),
     body: formData,
   });
   if (!res.ok) throw await parseApiError(res, 'Failed to upload new version');
@@ -245,7 +274,7 @@ export async function createDocumentLink(
 ): Promise<DocumentLink> {
   const res = await fetch(`${API_BASE}/api/document_links`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
     body: JSON.stringify({
       document_id: documentId,
       linkable_type: linkableType,
@@ -260,6 +289,7 @@ export async function createDocumentLink(
 export async function deleteDocumentLink(linkId: number): Promise<void> {
   const res = await fetch(`${API_BASE}/api/document_links/${linkId}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!res.ok) throw await parseApiError(res, 'Failed to delete document link');
 }
