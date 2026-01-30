@@ -8,15 +8,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <CustomizableSidebar />
 
-      {/* Main content wrapper */}
-      <div className="flex-1 flex flex-col min-h-screen bg-slate-50">
+      {/* Main content wrapper - page scroll, not inner scroll */}
+      <div className="flex-1 min-h-screen bg-slate-50 p-3 pl-0">
         {/* Mobile sidebar trigger */}
         <div className="fixed top-4 left-4 z-50 md:hidden">
           <SidebarTrigger className="h-9 w-9 rounded-lg bg-white shadow-md border border-slate-200" />
         </div>
 
-        {/* Main content card */}
-        <main className="flex-1 m-2 bg-white rounded-xl border border-slate-200/50 shadow-sm overflow-auto">
+        {/* Main content card with built-in padding */}
+        <main className="min-h-[calc(100vh-1.5rem)] bg-white rounded-xl border border-slate-200/50 shadow-sm px-6 py-4">
           {children}
         </main>
       </div>
