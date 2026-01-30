@@ -182,7 +182,7 @@ export default function DashboardPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5" />
 
         <div className="relative bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
-          <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="max-w-7xl mx-auto px-8 py-5">
             <div className="flex items-center justify-between">
               {/* Title section */}
               <div className="flex items-center gap-4">
@@ -230,7 +230,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Main content */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="max-w-7xl mx-auto px-8 py-6">
         {/* Truth Bar - always at top */}
         {isModuleVisible("truth_bar") && (
           <div className="mb-6">
