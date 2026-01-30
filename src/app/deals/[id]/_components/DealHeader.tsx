@@ -27,11 +27,17 @@ interface DealHeaderProps {
   kind: string;
   priority: number;
   owner: Owner | null;
+  // Secondary deal metrics
   softCircled: number;
   totalCommitted: number;
   wired: number;
   inventory: number;
   coverageRatio: number | null;
+  // Primary deal metrics
+  target?: number | null;
+  valuation?: number | null;
+  committed?: number;
+  // Common
   expectedClose: string | null;
   daysUntilClose: number | null;
   driveUrl: string | null;
@@ -94,6 +100,9 @@ export function DealHeader({
   wired,
   inventory,
   coverageRatio,
+  target,
+  valuation,
+  committed,
   expectedClose,
   daysUntilClose,
   driveUrl,
@@ -243,31 +252,85 @@ export function DealHeader({
 
       {/* Metrics Bar */}
       <div className="flex items-center gap-6 py-3 px-4 bg-slate-50 rounded-lg">
-        <MetricItem label="Soft Circled" value={formatCurrency(softCircled)} color="text-blue-600" />
-        <div className="w-px h-8 bg-slate-200" />
-        <MetricItem
-          label="Committed"
-          value={formatCurrency(totalCommitted)}
-          color="text-purple-600"
-        />
-        <div className="w-px h-8 bg-slate-200" />
-        <MetricItem label="Wired" value={formatCurrency(wired)} color="text-emerald-600" />
-        <div className="w-px h-8 bg-slate-200" />
-        <MetricItem label="Inventory" value={formatCurrency(inventory)} />
-        <div className="w-px h-8 bg-slate-200" />
-        <MetricItem
-          label="Coverage"
-          value={coverageRatio !== null ? `${coverageRatio}%` : "—"}
-          color={
-            coverageRatio === null
-              ? undefined
-              : coverageRatio >= 80
-              ? "text-green-600"
-              : coverageRatio >= 50
-              ? "text-amber-600"
-              : "text-red-600"
-          }
-        />
+        {kind === "primary" ? (
+          <>
+            {/* Primary Deal Metrics - Fundraising focused */}
+            <MetricItem
+              label="Target"
+              value={target ? formatCurrency(target) : "—"}
+              color="text-slate-600"
+            />
+            <div className="w-px h-8 bg-slate-200" />
+            <MetricItem
+              label="Committed"
+              value={formatCurrency(committed || 0)}
+              color="text-purple-600"
+            />
+            <div className="w-px h-8 bg-slate-200" />
+            <MetricItem
+              label="Soft Circled"
+              value={formatCurrency(softCircled)}
+              color="text-blue-600"
+            />
+            <div className="w-px h-8 bg-slate-200" />
+            {(() => {
+              const totalRaised = (committed || 0) + softCircled;
+              const progressPercent = target && target > 0
+                ? Math.min(100, Math.round((totalRaised / target) * 100))
+                : 0;
+              return (
+                <MetricItem
+                  label="Progress"
+                  value={target ? `${progressPercent}%` : "—"}
+                  color={
+                    !target
+                      ? undefined
+                      : progressPercent >= 100
+                      ? "text-emerald-600"
+                      : progressPercent >= 50
+                      ? "text-blue-600"
+                      : "text-amber-600"
+                  }
+                />
+              );
+            })()}
+            <div className="w-px h-8 bg-slate-200" />
+            <MetricItem
+              label="Valuation"
+              value={valuation ? formatCurrency(valuation) : "—"}
+              color="text-slate-600"
+            />
+          </>
+        ) : (
+          <>
+            {/* Secondary Deal Metrics - Block/Inventory focused */}
+            <MetricItem label="Soft Circled" value={formatCurrency(softCircled)} color="text-blue-600" />
+            <div className="w-px h-8 bg-slate-200" />
+            <MetricItem
+              label="Committed"
+              value={formatCurrency(totalCommitted)}
+              color="text-purple-600"
+            />
+            <div className="w-px h-8 bg-slate-200" />
+            <MetricItem label="Wired" value={formatCurrency(wired)} color="text-emerald-600" />
+            <div className="w-px h-8 bg-slate-200" />
+            <MetricItem label="Inventory" value={formatCurrency(inventory)} />
+            <div className="w-px h-8 bg-slate-200" />
+            <MetricItem
+              label="Coverage"
+              value={coverageRatio !== null ? `${coverageRatio}%` : "—"}
+              color={
+                coverageRatio === null
+                  ? undefined
+                  : coverageRatio >= 80
+                  ? "text-green-600"
+                  : coverageRatio >= 50
+                  ? "text-amber-600"
+                  : "text-red-600"
+              }
+            />
+          </>
+        )}
       </div>
     </div>
   );

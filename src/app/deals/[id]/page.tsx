@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 // Import page-specific components
 import { DealHeader } from "./_components/DealHeader";
 import { TruthPanel } from "./_components/TruthPanel";
+import { PrimaryTruthPanel } from "./_components/PrimaryTruthPanel";
 import { BlocksSection } from "./_components/BlocksSection";
 import { InterestsSection } from "./_components/InterestsSection";
 import { ActivityFeed } from "./_components/ActivityFeed";
@@ -642,6 +643,9 @@ export default function DealDetailPage() {
         wired={deal.wired}
         inventory={deal.inventory}
         coverageRatio={deal.coverageRatio}
+        target={deal.target}
+        valuation={deal.valuation}
+        committed={deal.committed}
         expectedClose={deal.expectedClose}
         daysUntilClose={deal.daysUntilClose}
         driveUrl={deal.driveUrl}
@@ -652,8 +656,24 @@ export default function DealDetailPage() {
         onBack={() => router.back()}
       />
 
-      {/* Truth Panel */}
-      {deal.truthPanel && (
+      {/* Truth Panel - Different for Primary vs Secondary deals */}
+      {deal.kind === "primary" ? (
+        <PrimaryTruthPanel
+          target={deal.target}
+          committed={deal.committed}
+          softCircled={deal.softCircled}
+          leadInvestor={(deal.customFields?.primary as { lead_investor?: string })?.lead_investor ?? null}
+          interestsCount={deal.interests.length}
+          committedInterestsCount={deal.interests.filter((i) => i.status === "committed").length}
+          missingDoc={deal.truthPanel?.missingDoc ?? null}
+          documentCompletionPercent={deal.documentChecklist?.completionPercent ?? 100}
+          nextDeadline={deal.truthPanel?.nextDeadline ?? null}
+          overdueTasksCount={deal.tasksSummary?.overdue ?? 0}
+          onMissingDocClick={handleMissingDocClick}
+          onDeadlineClick={handleDeadlineClick}
+          onTasksClick={handleBlockingClick}
+        />
+      ) : deal.truthPanel ? (
         <TruthPanel
           bestPrice={deal.truthPanel.bestPrice}
           biggestConstraint={deal.truthPanel.biggestConstraint}
@@ -669,7 +689,7 @@ export default function DealDetailPage() {
           onDeadlineClick={handleDeadlineClick}
           onBlockingClick={handleBlockingClick}
         />
-      )}
+      ) : null}
 
       {/* Deal Details - Inline Editable */}
       <EditableDealDetails
