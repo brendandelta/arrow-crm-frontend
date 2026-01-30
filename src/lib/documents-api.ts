@@ -232,13 +232,8 @@ export async function uploadDocument(
   if (metadata.docType) formData.append('doc_type', metadata.docType);
   if (metadata.status) formData.append('status', metadata.status);
   if (metadata.sensitivity) formData.append('sensitivity', metadata.sensitivity);
-  if (metadata.links) {
-    metadata.links.forEach((link, i) => {
-      formData.append(`links[${i}][linkable_type]`, link.linkableType);
-      formData.append(`links[${i}][linkable_id]`, link.linkableId.toString());
-      if (link.relationship) formData.append(`links[${i}][relationship]`, link.relationship);
-    });
-  }
+  // Don't include links in form data - we'll create them separately after upload
+  const linksToCreate = metadata.links || [];
 
   const res = await fetch(`${API_BASE}/api/documents`, {
     method: 'POST',
@@ -246,7 +241,25 @@ export async function uploadDocument(
     body: formData,
   });
   if (!res.ok) throw await parseApiError(res, 'Failed to upload document');
-  return res.json();
+
+  const doc: DocumentDetail = await res.json();
+
+  // Create links after successful upload
+  for (const link of linksToCreate) {
+    try {
+      await createDocumentLink(doc.id, link.linkableType, link.linkableId, link.relationship || 'general');
+    } catch (e) {
+      console.error('Failed to create document link:', e);
+      // Don't fail the whole upload if link creation fails
+    }
+  }
+
+  // Refetch to get updated links
+  if (linksToCreate.length > 0) {
+    return fetchDocument(doc.id);
+  }
+
+  return doc;
 }
 
 export async function uploadNewVersion(
