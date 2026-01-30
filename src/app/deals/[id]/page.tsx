@@ -613,7 +613,7 @@ export default function DealDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="px-8 py-6 flex items-center justify-center h-64">
         <span className="text-muted-foreground">Loading...</span>
       </div>
     );
@@ -621,14 +621,14 @@ export default function DealDetailPage() {
 
   if (!deal) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="px-8 py-6 flex items-center justify-center h-64">
         <span className="text-muted-foreground">Deal not found</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="px-8 py-6 space-y-6">
       {/* Header */}
       <DealHeader
         name={deal.name}
