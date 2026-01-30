@@ -26,6 +26,12 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { EntityLinksSection } from "./EntityLinksSection";
+import { UniversalDocumentUploader } from "@/components/documents/UniversalDocumentUploader";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface Person {
   id: number;
@@ -826,6 +832,41 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
                   compact
                 />
               </div>
+            )}
+
+            {/* Documents Upload */}
+            {!isNew && block && (
+              <Collapsible className="py-3 border-t">
+                <CollapsibleTrigger className="flex items-center gap-2 w-full px-3 text-left">
+                  <FileText className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Documents</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400 ml-auto transition-transform group-data-[state=open]:rotate-90" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="px-3 pt-3">
+                  <UniversalDocumentUploader
+                    parentType="Block"
+                    parentId={block.id}
+                    dealId={dealId}
+                    defaultLinks={[
+                      {
+                        linkableType: "Block",
+                        linkableId: block.id,
+                        linkableLabel: block.seller?.name || `Block #${block.id}`,
+                        relationship: "deal_material",
+                      },
+                      {
+                        linkableType: "Deal",
+                        linkableId: dealId,
+                        linkableLabel: "Parent Deal",
+                        relationship: "deal_material",
+                      },
+                    ]}
+                    compact
+                    showCancel={false}
+                    uploadButtonText="Upload"
+                  />
+                </CollapsibleContent>
+              </Collapsible>
             )}
 
             {/* Share Class */}

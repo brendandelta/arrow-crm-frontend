@@ -9,7 +9,6 @@ import { DocumentsFiltersRail } from "./_components/DocumentsFiltersRail";
 import { DocumentsList } from "./_components/DocumentsList";
 import { DocumentPreviewPanel } from "./_components/DocumentPreviewPanel";
 import { UploadDocumentDialog } from "./_components/UploadDocumentDialog";
-import { LinkDocumentDialog } from "./_components/LinkDocumentDialog";
 import {
   fetchDocuments,
   fetchDocument,
@@ -17,7 +16,6 @@ import {
   type DocumentDetail,
   type DocumentFilters,
   type DocumentFacets,
-  type DocumentLink,
 } from "@/lib/documents-api";
 import { getPageIdentity } from "@/lib/page-registry";
 import { cn } from "@/lib/utils";
@@ -81,7 +79,6 @@ export default function DocumentsPage() {
 
   // Dialogs
   const [showUploadDialog, setShowUploadDialog] = useState(false);
-  const [showLinkDialog, setShowLinkDialog] = useState(false);
 
   // Saved views
   const [savedViews, setSavedViews] = useState<SavedView[]>([]);
@@ -269,43 +266,6 @@ export default function DocumentsPage() {
     setActiveDocument(doc);
   }, []);
 
-  const handleLinkSuccess = useCallback(
-    (link: DocumentLink) => {
-      if (activeDocument) {
-        const updatedDoc = {
-          ...activeDocument,
-          links: [...activeDocument.links, link],
-        };
-        handleDocumentUpdate(updatedDoc);
-      }
-    },
-    [activeDocument, handleDocumentUpdate]
-  );
-
-  const handleNavigateToLink = useCallback(
-    (link: DocumentLink) => {
-      let path = "";
-      switch (link.linkableType) {
-        case "Deal":
-          path = `/deals/${link.linkableId}`;
-          break;
-        case "Organization":
-          path = `/organizations/${link.linkableId}`;
-          break;
-        case "Person":
-          path = `/people/${link.linkableId}`;
-          break;
-        case "InternalEntity":
-          path = `/internal-entities/${link.linkableId}`;
-          break;
-      }
-      if (path) {
-        router.push(path);
-      }
-    },
-    [router]
-  );
-
   const handleSelectSavedView = useCallback((view: SavedView) => {
     setFilters(view.filters);
     toast.success(`Loaded view: ${view.name}`);
@@ -418,8 +378,6 @@ export default function DocumentsPage() {
               // For new version, we'd show a file picker dialog
               toast.info("New version upload coming soon");
             }}
-            onAddLinkClick={() => setShowLinkDialog(true)}
-            onNavigateToLink={handleNavigateToLink}
           />
         )}
       </div>
@@ -430,15 +388,6 @@ export default function DocumentsPage() {
         onOpenChange={setShowUploadDialog}
         onSuccess={handleUploadSuccess}
       />
-
-      {activeDocumentId && (
-        <LinkDocumentDialog
-          open={showLinkDialog}
-          onOpenChange={setShowLinkDialog}
-          documentId={activeDocumentId}
-          onSuccess={handleLinkSuccess}
-        />
-      )}
     </div>
   );
 }

@@ -14,8 +14,15 @@ import {
   FileText,
   Target,
   Link2,
+  ChevronRight,
 } from "lucide-react";
 import { EntityLinksSection } from "./EntityLinksSection";
+import { UniversalDocumentUploader } from "@/components/documents/UniversalDocumentUploader";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface Person {
   id: number;
@@ -451,6 +458,41 @@ export function InterestSlideOut({
                   compact
                 />
               </div>
+            )}
+
+            {/* Documents Upload */}
+            {!isNew && interest && (
+              <Collapsible className="py-3 border-t">
+                <CollapsibleTrigger className="flex items-center gap-2 w-full px-3 text-left">
+                  <FileText className="h-3.5 w-3.5 text-slate-400" />
+                  <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Documents</span>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400 ml-auto transition-transform group-data-[state=open]:rotate-90" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="px-3 pt-3">
+                  <UniversalDocumentUploader
+                    parentType="Interest"
+                    parentId={interest.id}
+                    dealId={dealId}
+                    defaultLinks={[
+                      {
+                        linkableType: "Interest",
+                        linkableId: interest.id,
+                        linkableLabel: interest.investor?.name || `Interest #${interest.id}`,
+                        relationship: "deal_material",
+                      },
+                      {
+                        linkableType: "Deal",
+                        linkableId: dealId,
+                        linkableLabel: "Parent Deal",
+                        relationship: "deal_material",
+                      },
+                    ]}
+                    compact
+                    showCancel={false}
+                    uploadButtonText="Upload"
+                  />
+                </CollapsibleContent>
+              </Collapsible>
             )}
 
             {/* Contact Info (read-only) */}

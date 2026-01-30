@@ -28,6 +28,13 @@ import { SecondaryOverviewSection } from "./_components/SecondaryOverviewSection
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
 import { useLPMode } from "@/contexts/LPModeContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { UniversalDocumentUploader } from "@/components/documents/UniversalDocumentUploader";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Types
 interface Company {
@@ -329,6 +336,7 @@ export default function DealDetailPage() {
   const [selectedTarget, setSelectedTarget] = useState<DealTarget | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<DealEdge | null>(null);
   const [showAddEdge, setShowAddEdge] = useState(false);
+  const [showDocumentUpload, setShowDocumentUpload] = useState(false);
   const [activeTab, setActiveTab] = useState<"blocks" | "interests" | "targets">("targets");
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [sidebarSection, setSidebarSection] = useState<string | undefined>(undefined);
@@ -840,11 +848,11 @@ export default function DealDetailPage() {
                 onTaskClick={(task) => setSelectedTask(task)}
                 onAddTask={() => setShowAddTask(true)}
                 onTaskStatusChange={handleTaskStatusChange}
-                onDocumentUpload={(kind) => {
-                  // Could open upload modal
+                onDocumentUpload={() => {
+                  setShowDocumentUpload(true);
                 }}
                 onAddDocument={() => {
-                  // Could open document upload modal
+                  setShowDocumentUpload(true);
                 }}
                 onAddEdge={() => setShowAddEdge(true)}
                 onEdgeClick={(edge) => setSelectedEdge(edge)}
@@ -1027,6 +1035,34 @@ export default function DealDetailPage() {
           }}
         />
       )}
+
+      {/* Document Upload Modal */}
+      <Dialog open={showDocumentUpload} onOpenChange={setShowDocumentUpload}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Upload Document</DialogTitle>
+          </DialogHeader>
+          <UniversalDocumentUploader
+            parentType="Deal"
+            parentId={deal.id}
+            dealId={deal.id}
+            defaultLinks={[
+              {
+                linkableType: "Deal",
+                linkableId: deal.id,
+                linkableLabel: deal.name,
+                relationship: "deal_material",
+              },
+            ]}
+            onSuccess={() => {
+              setShowDocumentUpload(false);
+              refreshDeal();
+            }}
+            onCancel={() => setShowDocumentUpload(false)}
+            compact
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

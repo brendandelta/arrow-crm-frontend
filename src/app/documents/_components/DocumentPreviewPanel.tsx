@@ -33,12 +33,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { DocumentDetail, DocumentLink } from "@/lib/documents-api";
 import {
   updateDocument,
-  deleteDocumentLink,
   formatFileSize,
   DOCUMENT_CATEGORIES,
   DOCUMENT_STATUSES,
   DOCUMENT_SENSITIVITIES,
 } from "@/lib/documents-api";
+import { DocumentLinksEditor } from "@/components/documents/DocumentLinksEditor";
 
 interface DocumentPreviewPanelProps {
   document: DocumentDetail | null;
@@ -46,8 +46,6 @@ interface DocumentPreviewPanelProps {
   onClose: () => void;
   onUpdate: (doc: DocumentDetail) => void;
   onNewVersionClick: () => void;
-  onAddLinkClick: () => void;
-  onNavigateToLink: (link: DocumentLink) => void;
 }
 
 export function DocumentPreviewPanel({
@@ -56,8 +54,6 @@ export function DocumentPreviewPanel({
   onClose,
   onUpdate,
   onNewVersionClick,
-  onAddLinkClick,
-  onNavigateToLink,
 }: DocumentPreviewPanelProps) {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -96,24 +92,6 @@ export function DocumentPreviewPanel({
       } catch {
         onUpdate(document);
         toast.error("Failed to update document");
-      }
-    },
-    [document, onUpdate]
-  );
-
-  const handleRemoveLink = useCallback(
-    async (linkId: number) => {
-      if (!document) return;
-
-      const updatedLinks = document.links.filter((l) => l.id !== linkId);
-      onUpdate({ ...document, links: updatedLinks });
-
-      try {
-        await deleteDocumentLink(linkId);
-        toast.success("Link removed");
-      } catch {
-        onUpdate(document);
-        toast.error("Failed to remove link");
       }
     },
     [document, onUpdate]
@@ -389,35 +367,13 @@ export function DocumentPreviewPanel({
         {/* Links Card */}
         <div className="px-4 pb-4">
           <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Linked To
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onAddLinkClick}
-                className="h-7 text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
-              >
-                <Link2 className="h-3.5 w-3.5 mr-1" />
-                Add link
-              </Button>
-            </div>
-
-            {document.links.length === 0 ? (
-              <p className="text-sm text-slate-400 italic">No links yet</p>
-            ) : (
-              <div className="space-y-2">
-                {document.links.map((link) => (
-                  <LinkItem
-                    key={link.id}
-                    link={link}
-                    onNavigate={() => onNavigateToLink(link)}
-                    onRemove={() => handleRemoveLink(link.id)}
-                  />
-                ))}
-              </div>
-            )}
+            <DocumentLinksEditor
+              documentId={document.id}
+              links={document.links}
+              onLinksChange={(updatedLinks) => {
+                onUpdate({ ...document, links: updatedLinks });
+              }}
+            />
           </div>
         </div>
 

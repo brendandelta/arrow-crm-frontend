@@ -2,11 +2,12 @@
 
 export interface DocumentLink {
   id: number;
-  linkableType: 'Deal' | 'Organization' | 'Person' | 'InternalEntity';
+  linkableType: 'Deal' | 'Block' | 'Interest' | 'Organization' | 'Person' | 'InternalEntity';
   linkableId: number;
   relationship: string;
   relationshipLabel?: string;
   label: string;
+  linkableLabel?: string;
   visibility?: string;
   visibilityLabel?: string;
 }
@@ -290,6 +291,8 @@ export const DOCUMENT_RELATIONSHIPS = [
 
 export const LINKABLE_TYPES = [
   { value: 'Deal', label: 'Deal', icon: 'Briefcase' },
+  { value: 'Block', label: 'Block', icon: 'Package' },
+  { value: 'Interest', label: 'Interest', icon: 'TrendingUp' },
   { value: 'Organization', label: 'Organization', icon: 'Building2' },
   { value: 'Person', label: 'Person', icon: 'User' },
   { value: 'InternalEntity', label: 'Internal Entity', icon: 'Shield' },
@@ -310,4 +313,177 @@ export function getFileIconType(doc: DocumentSummary | DocumentDetail): 'pdf' | 
   if ('isSpreadsheet' in doc && doc.isSpreadsheet) return 'spreadsheet';
   if ('isDocument' in doc && doc.isDocument) return 'document';
   return 'other';
+}
+
+// ============ Entity Search Types ============
+
+export interface SearchResult {
+  id: number;
+  label: string;
+  subtitle?: string;
+  type: string;
+}
+
+export interface DealSearchResult extends SearchResult {
+  type: 'Deal';
+  status?: string;
+  companyName?: string;
+}
+
+export interface BlockSearchResult extends SearchResult {
+  type: 'Block';
+  dealName?: string;
+  sellerName?: string;
+  status?: string;
+}
+
+export interface InterestSearchResult extends SearchResult {
+  type: 'Interest';
+  dealName?: string;
+  investorName?: string;
+  status?: string;
+}
+
+export interface OrganizationSearchResult extends SearchResult {
+  type: 'Organization';
+  kind?: string;
+}
+
+export interface PersonSearchResult extends SearchResult {
+  type: 'Person';
+  title?: string;
+  orgName?: string;
+}
+
+export interface InternalEntitySearchResult extends SearchResult {
+  type: 'InternalEntity';
+  entityType?: string;
+}
+
+// ============ Entity Search Functions ============
+
+export async function searchDeals(query: string): Promise<DealSearchResult[]> {
+  const params = new URLSearchParams({ q: query, per_page: '20' });
+  const res = await fetch(`${API_BASE}/api/deals?${params.toString()}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.deals || data || []).map((d: { id: number; name: string; status?: string; company?: { name: string } }) => ({
+    id: d.id,
+    label: d.name,
+    subtitle: d.company?.name || d.status,
+    type: 'Deal' as const,
+    status: d.status,
+    companyName: d.company?.name,
+  }));
+}
+
+export async function searchBlocks(query: string, dealId?: number): Promise<BlockSearchResult[]> {
+  const params = new URLSearchParams({ per_page: '20' });
+  if (dealId) params.append('deal_id', dealId.toString());
+  const res = await fetch(`${API_BASE}/api/blocks?${params.toString()}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  const blocks = data.blocks || data || [];
+  return blocks
+    .filter((b: { seller?: { name: string } }) =>
+      !query || b.seller?.name?.toLowerCase().includes(query.toLowerCase())
+    )
+    .map((b: { id: number; seller?: { name: string }; deal?: { name: string }; status?: string }) => ({
+      id: b.id,
+      label: `Block: ${b.seller?.name || 'Unknown Seller'}`,
+      subtitle: b.deal?.name || b.status,
+      type: 'Block' as const,
+      dealName: b.deal?.name,
+      sellerName: b.seller?.name,
+      status: b.status,
+    }));
+}
+
+export async function searchInterests(query: string, dealId?: number): Promise<InterestSearchResult[]> {
+  const params = new URLSearchParams({ per_page: '20' });
+  if (dealId) params.append('deal_id', dealId.toString());
+  const res = await fetch(`${API_BASE}/api/interests?${params.toString()}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  const interests = data.interests || data || [];
+  return interests
+    .filter((i: { investor?: { name: string } }) =>
+      !query || i.investor?.name?.toLowerCase().includes(query.toLowerCase())
+    )
+    .map((i: { id: number; investor?: { name: string }; deal?: { name: string }; status?: string }) => ({
+      id: i.id,
+      label: `Interest: ${i.investor?.name || 'Unknown Investor'}`,
+      subtitle: i.deal?.name || i.status,
+      type: 'Interest' as const,
+      dealName: i.deal?.name,
+      investorName: i.investor?.name,
+      status: i.status,
+    }));
+}
+
+export async function searchOrganizations(query: string): Promise<OrganizationSearchResult[]> {
+  const params = new URLSearchParams({ q: query, per_page: '20' });
+  const res = await fetch(`${API_BASE}/api/organizations?${params.toString()}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.organizations || data || []).map((o: { id: number; name: string; kind?: string }) => ({
+    id: o.id,
+    label: o.name,
+    subtitle: o.kind,
+    type: 'Organization' as const,
+    kind: o.kind,
+  }));
+}
+
+export async function searchPeople(query: string): Promise<PersonSearchResult[]> {
+  const params = new URLSearchParams({ q: query, per_page: '20' });
+  const res = await fetch(`${API_BASE}/api/people?${params.toString()}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.people || data || []).map((p: { id: number; firstName: string; lastName: string; title?: string; organization?: { name: string } }) => ({
+    id: p.id,
+    label: `${p.firstName} ${p.lastName}`,
+    subtitle: p.title || p.organization?.name,
+    type: 'Person' as const,
+    title: p.title,
+    orgName: p.organization?.name,
+  }));
+}
+
+export async function searchInternalEntities(query: string): Promise<InternalEntitySearchResult[]> {
+  const params = new URLSearchParams({ q: query, per_page: '20' });
+  const res = await fetch(`${API_BASE}/api/internal_entities?${params.toString()}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data.internalEntities || data.internal_entities || data || []).map((e: { id: number; name?: string; displayName?: string; entityType?: string }) => ({
+    id: e.id,
+    label: e.displayName || e.name || `Entity #${e.id}`,
+    subtitle: e.entityType,
+    type: 'InternalEntity' as const,
+    entityType: e.entityType,
+  }));
+}
+
+// Generic search function that routes to the appropriate search
+export async function searchEntities(
+  type: string,
+  query: string,
+  options?: { dealId?: number }
+): Promise<SearchResult[]> {
+  switch (type) {
+    case 'Deal':
+      return searchDeals(query);
+    case 'Block':
+      return searchBlocks(query, options?.dealId);
+    case 'Interest':
+      return searchInterests(query, options?.dealId);
+    case 'Organization':
+      return searchOrganizations(query);
+    case 'Person':
+      return searchPeople(query);
+    case 'InternalEntity':
+      return searchInternalEntities(query);
+    default:
+      return [];
+  }
 }
