@@ -176,7 +176,7 @@ export function AttachmentSelector({
               )}
             >
               <CheckSquare className="h-4 w-4 text-slate-500" />
-              <span className="flex-1 text-left">General Task</span>
+              <span className="flex-1 text-left">Get Shit Done</span>
               {value.type === "general" && <Check className="h-4 w-4 text-cyan-600" />}
             </button>
             <button

@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Building2,
   FolderKanban,
+  LayoutList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,8 @@ interface TasksHeaderProps {
   onCreateTask: () => void;
   groupBy?: GroupByType;
   onGroupByChange?: (groupBy: GroupByType) => void;
+  subGroupByAssociation?: boolean;
+  onSubGroupChange?: (enabled: boolean) => void;
 }
 
 export function TasksHeader({
@@ -48,6 +51,8 @@ export function TasksHeader({
   onCreateTask,
   groupBy = "deal",
   onGroupByChange,
+  subGroupByAssociation = false,
+  onSubGroupChange,
 }: TasksHeaderProps) {
   const [localSearch, setLocalSearch] = useState(searchQuery);
 
@@ -239,6 +244,22 @@ export function TasksHeader({
               Projects
             </button>
           </div>
+        )}
+
+        {/* Sub-group toggle - only show when grouped by deals */}
+        {activeTab === "grouped" && groupBy === "deal" && onSubGroupChange && (
+          <button
+            onClick={() => onSubGroupChange(!subGroupByAssociation)}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
+              subGroupByAssociation
+                ? "bg-slate-900 text-white"
+                : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80"
+            )}
+          >
+            <LayoutList className="h-3.5 w-3.5" />
+            Sub-group
+          </button>
         )}
       </div>
     </div>

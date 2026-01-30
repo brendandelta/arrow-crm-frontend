@@ -45,10 +45,34 @@ export interface Task {
   organizationId: number | null;
   deal: { id: number; name: string } | null;
   project: { id: number; name: string } | null;
+  person: { id: number; firstName: string; lastName: string } | null;
+  organization: { id: number; name: string } | null;
+  // Polymorphic association (taskable)
+  taskableType: TaskableType | null;
+  taskableId: number | null;
+  // Resolved taskable object from backend
+  taskable?: {
+    id: number;
+    type: TaskableType;
+    label: string;
+    // For DealTarget, includes the underlying person/org
+    targetType?: "Person" | "Organization";
+    targetId?: number;
+    targetName?: string;
+  } | null;
+  // Direct association object (alternative resolution)
+  association?: {
+    type: "person" | "organization" | "block" | "interest" | "deal" | "project" | "deal_target";
+    id: number;
+    label: string;
+  } | null;
   subtasks?: Task[];
   createdAt: string;
   updatedAt: string;
 }
+
+// Polymorphic taskable types
+export type TaskableType = "DealTarget" | "Block" | "Interest" | "Deal" | "Project";
 
 export interface TaskStats {
   total: number;
@@ -183,7 +207,7 @@ export const TASK_PRIORITIES: { value: number; label: string; color: string }[] 
 ];
 
 export const ATTACHMENT_TYPES: { value: AttachmentType; label: string; icon: string }[] = [
-  { value: "general", label: "General", icon: "CheckSquare" },
+  { value: "general", label: "Get Shit Done", icon: "CheckSquare" },
   { value: "deal", label: "Deal", icon: "Building2" },
   { value: "project", label: "Project", icon: "FolderKanban" },
 ];
@@ -235,7 +259,7 @@ export function getPriorityLabel(priority: number): string {
 
 export function getAttachmentLabel(type: AttachmentType): string {
   const found = ATTACHMENT_TYPES.find((a) => a.value === type);
-  return found?.label || "General";
+  return found?.label || "Get Shit Done";
 }
 
 export function isOverdue(dueAt: string | null): boolean {
@@ -417,14 +441,72 @@ export async function fetchTasksByDeal(): Promise<TaskGroup[]> {
   const res = await fetch(`${API_BASE}/api/tasks/grouped_by_deal`);
   if (!res.ok) return [];
   const data = await res.json();
-  return data.groups || data;
+  const groups = data.groups || data;
+
+  // Transform API response to TaskGroup format
+  // API returns: { deal: { id, name, status, company }, openCount, overdueCount, tasks }
+  // Filter out "general" (Get Shit Done) tasks - they should only appear in GSD filter or All Tasks view
+  return groups
+    .map((g: {
+      deal?: { id: number; name: string; status?: string; company?: string } | null;
+      groupName?: string;
+      openCount?: number;
+      overdueCount?: number;
+      tasks: Task[];
+    }) => {
+      // Only include tasks that are actually attached to a deal (not general tasks)
+      const dealTasks = (g.tasks ?? []).filter(
+        (t: Task) => t.attachmentType === "deal" || t.dealId != null
+      );
+      const overdueCount = dealTasks.filter((t: Task) => t.overdue).length;
+
+      return {
+        id: g.deal?.id ?? "unattached",
+        name: g.deal?.name ?? g.groupName ?? "Unattached Tasks",
+        company: g.deal?.company,
+        status: g.deal?.status,
+        taskCount: dealTasks.length,
+        overdueCount,
+        tasks: dealTasks,
+      };
+    })
+    // Only include groups that have a valid deal ID (filter out unattached/general task groups)
+    .filter((g: TaskGroup) => g.id !== "unattached" && g.tasks.length > 0);
 }
 
 export async function fetchTasksByProject(): Promise<TaskGroup[]> {
   const res = await fetch(`${API_BASE}/api/tasks/grouped_by_project`);
   if (!res.ok) return [];
   const data = await res.json();
-  return data.groups || data;
+  const groups = data.groups || data;
+
+  // Transform API response to TaskGroup format
+  // API returns: { project: { id, name }, openCount, overdueCount, tasks }
+  // Filter out "general" (Get Shit Done) tasks - they should only appear in GSD filter or All Tasks view
+  return groups
+    .map((g: {
+      project?: { id: number; name: string } | null;
+      groupName?: string;
+      openCount?: number;
+      overdueCount?: number;
+      tasks: Task[];
+    }) => {
+      // Only include tasks that are actually attached to a project (not general tasks)
+      const projectTasks = (g.tasks ?? []).filter(
+        (t: Task) => t.attachmentType === "project" || t.projectId != null
+      );
+      const overdueCount = projectTasks.filter((t: Task) => t.overdue).length;
+
+      return {
+        id: g.project?.id ?? "unattached",
+        name: g.project?.name ?? g.groupName ?? "Unattached Tasks",
+        taskCount: projectTasks.length,
+        overdueCount,
+        tasks: projectTasks,
+      };
+    })
+    // Only include groups that have a valid project ID (filter out unattached/general task groups)
+    .filter((g: TaskGroup) => g.id !== "unattached" && g.tasks.length > 0);
 }
 
 export async function createTask(data: CreateTaskData): Promise<Task> {

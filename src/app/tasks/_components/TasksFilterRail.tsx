@@ -308,7 +308,7 @@ export function TasksFilterRail({
           />
           <QuickView
             icon={<CheckSquare className="h-4 w-4" />}
-            label="General"
+            label="Get Shit Done"
             count={stats?.byAttachment?.general}
             active={attachmentFilter === "general"}
             onClick={() => onAttachmentFilterChange("general")}

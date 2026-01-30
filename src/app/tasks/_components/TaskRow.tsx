@@ -17,6 +17,7 @@ import { PriorityBadge } from "./PrioritySelect";
 import { StatusBadge } from "./StatusSelect";
 import { AttachmentBadge } from "./AttachmentSelector";
 import { AssigneePill } from "./AssigneeSelect";
+import { DealChip, AssociationChip, getTaskAssociation } from "./TaskChips";
 import {
   type Task,
   type AttachmentType,
@@ -33,6 +34,8 @@ interface TaskRowProps {
   onEdit?: (task: Task) => void;
   showAttachment?: boolean;
   showAssignee?: boolean;
+  showDealChip?: boolean; // Show clickable deal name chip
+  showAssociation?: boolean; // Show person/org/block association chip
   compact?: boolean;
 }
 
@@ -45,6 +48,8 @@ export const TaskRow = memo(function TaskRow({
   onEdit,
   showAttachment = true,
   showAssignee = true,
+  showDealChip = false,
+  showAssociation = false,
   compact = false,
 }: TaskRowProps) {
   const [completing, setCompleting] = useState(false);
@@ -151,8 +156,26 @@ export const TaskRow = memo(function TaskRow({
         "flex items-center gap-1.5 flex-shrink-0 transition-opacity",
         !isHovered && "opacity-80"
       )}>
-        {/* Attachment */}
-        {showAttachment && task.attachmentType !== "general" && (
+        {/* Deal chip - clickable link to deal */}
+        {showDealChip && task.deal && (
+          <DealChip deal={task.deal} size="sm" />
+        )}
+
+        {/* Association chip - person/org/block/interest */}
+        {showAssociation && (() => {
+          const association = getTaskAssociation(task);
+          return association ? (
+            <AssociationChip
+              type={association.type}
+              label={association.label}
+              href={association.href}
+              size="sm"
+            />
+          ) : null;
+        })()}
+
+        {/* Attachment - fallback when not showing deal chip */}
+        {showAttachment && !showDealChip && task.attachmentType !== "general" && (
           <AttachmentBadge
             type={task.attachmentType as AttachmentType}
             name={task.attachmentName}

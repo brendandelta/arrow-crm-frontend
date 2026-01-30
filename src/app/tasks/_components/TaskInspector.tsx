@@ -29,6 +29,7 @@ import {
   Sheet,
   SheetContent,
   SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
 import {
   Collapsible,
@@ -675,6 +676,9 @@ export function TaskInspector({
   return (
     <Sheet open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <SheetContent className="w-[420px] sm:max-w-[420px] p-0">
+        <SheetTitle className="sr-only">
+          {task ? `Task: ${task.subject}` : "Task Details"}
+        </SheetTitle>
         {content}
       </SheetContent>
     </Sheet>

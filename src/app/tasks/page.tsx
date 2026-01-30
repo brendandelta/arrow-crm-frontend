@@ -67,6 +67,7 @@ export default function TasksPage() {
   const [attachmentFilter, setAttachmentFilter] = useState<AttachmentType | "all">("all");
   const [filterRailCollapsed, setFilterRailCollapsed] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupByType>("deal");
+  const [subGroupByAssociation, setSubGroupByAssociation] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Inspector state
@@ -514,6 +515,7 @@ export default function TasksPage() {
             tasks={group.tasks}
             variant={groupBy}
             overdueCount={group.overdueCount}
+            subGroupByAssociation={groupBy === "deal" && subGroupByAssociation}
             onTaskClick={handleTaskClick}
             onTaskComplete={handleTaskComplete}
             onTaskUncomplete={handleTaskUncomplete}
@@ -581,6 +583,8 @@ export default function TasksPage() {
         onCreateTask={() => setShowCreateDialog(true)}
         groupBy={groupBy}
         onGroupByChange={setGroupBy}
+        subGroupByAssociation={subGroupByAssociation}
+        onSubGroupChange={setSubGroupByAssociation}
       />
 
       {/* Main content */}

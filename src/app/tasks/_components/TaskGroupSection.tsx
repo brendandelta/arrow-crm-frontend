@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -12,6 +12,11 @@ import {
   Plus,
   Building2,
   FolderKanban,
+  User,
+  Landmark,
+  Layers,
+  HandCoins,
+  Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +28,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { TaskRow, TaskRowSkeleton } from "./TaskRow";
+import { getTaskAssociation, type AssociationType } from "./TaskChips";
 import { type Task, createTask } from "@/lib/tasks-api";
 
 type GroupVariant = "overdue" | "dueToday" | "dueThisWeek" | "upcoming" | "noDueDate" | "deal" | "project" | "default";
@@ -154,8 +160,8 @@ export function TaskGroupSection({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex items-center justify-between w-full group">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between w-full group">
+        <CollapsibleTrigger className="flex items-center gap-2 flex-1">
           {open ? (
             <ChevronDown className="h-4 w-4 text-slate-400" />
           ) : (
@@ -173,7 +179,7 @@ export function TaskGroupSection({
               {overdueCount} overdue
             </Badge>
           )}
-        </div>
+        </CollapsibleTrigger>
         {showAddTask && (
           <Button
             variant="ghost"
@@ -190,7 +196,7 @@ export function TaskGroupSection({
             Add task
           </Button>
         )}
-      </CollapsibleTrigger>
+      </div>
 
       <CollapsibleContent className="mt-1 space-y-0.5">
         {loading ? (
@@ -252,6 +258,7 @@ interface EntityGroupSectionProps {
   tasks: Task[];
   variant: "deal" | "project";
   overdueCount?: number;
+  subGroupByAssociation?: boolean;
   onTaskClick?: (task: Task) => void;
   onTaskComplete?: (task: Task) => void;
   onTaskUncomplete?: (task: Task) => void;
@@ -267,6 +274,7 @@ export function EntityGroupSection({
   tasks,
   variant,
   overdueCount,
+  subGroupByAssociation = false,
   onTaskClick,
   onTaskComplete,
   onTaskUncomplete,
@@ -281,6 +289,35 @@ export function EntityGroupSection({
 
   const style = GROUP_STYLES[variant];
   const Icon = style.icon;
+
+  // Sub-group tasks by association type when enabled
+  const subGroups = useMemo(() => {
+    if (!subGroupByAssociation) return null;
+
+    const groups: Record<string, { label: string; icon: React.ElementType; color: string; tasks: Task[] }> = {
+      outreach: { label: "Outreach", icon: User, color: "text-amber-500", tasks: [] },
+      organization: { label: "Organizations", icon: Landmark, color: "text-slate-400", tasks: [] },
+      dealLevel: { label: "Deal Tasks", icon: Target, color: "text-blue-500", tasks: [] },
+    };
+
+    for (const task of tasks) {
+      const association = getTaskAssociation(task);
+      if (association?.type === "person") {
+        groups.outreach.tasks.push(task);
+      } else if (association?.type === "organization") {
+        groups.organization.tasks.push(task);
+      } else {
+        groups.dealLevel.tasks.push(task);
+      }
+    }
+
+    // Return only non-empty groups in desired order
+    return [
+      groups.outreach,
+      groups.organization,
+      groups.dealLevel,
+    ].filter(g => g.tasks.length > 0);
+  }, [tasks, subGroupByAssociation]);
 
   const handleAddTask = useCallback(async () => {
     if (!newTaskSubject.trim() || creating) return;
@@ -315,8 +352,8 @@ export function EntityGroupSection({
   return (
     <div className="border border-slate-200/60 rounded-xl bg-white overflow-hidden">
       <Collapsible open={open} onOpenChange={setOpen}>
-        <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 group hover:bg-slate-50/50 transition-colors">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between w-full px-4 py-3 group hover:bg-slate-50/50 transition-colors">
+          <CollapsibleTrigger className="flex items-center gap-3 flex-1">
             {open ? (
               <ChevronDown className="h-4 w-4 text-slate-400" />
             ) : (
@@ -338,7 +375,7 @@ export function EntityGroupSection({
                 <span className="text-xs text-slate-500">{subtitle}</span>
               )}
             </div>
-          </div>
+          </CollapsibleTrigger>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="h-5 px-1.5 text-[10px] bg-slate-100 text-slate-600">
               {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
@@ -363,22 +400,54 @@ export function EntityGroupSection({
               Add
             </Button>
           </div>
-        </CollapsibleTrigger>
+        </div>
 
         <CollapsibleContent>
           <div className="border-t border-slate-100 px-2 py-1">
-            {tasks.map((task) => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                onClick={onTaskClick}
-                onComplete={onTaskComplete}
-                onUncomplete={onTaskUncomplete}
-                onDelete={onTaskDelete}
-                onEdit={onTaskClick}
-                showAttachment={false}
-              />
-            ))}
+            {subGroups ? (
+              // Render sub-grouped tasks
+              subGroups.map((subGroup, idx) => {
+                const SubIcon = subGroup.icon;
+                return (
+                  <div key={subGroup.label} className={cn(idx > 0 && "mt-2 pt-2 border-t border-slate-100")}>
+                    {/* Sub-group header */}
+                    <div className="flex items-center gap-2 px-3 py-1.5 mb-1">
+                      <SubIcon className={cn("h-3.5 w-3.5", subGroup.color)} />
+                      <span className="text-xs font-medium text-slate-500">{subGroup.label}</span>
+                      <span className="text-xs text-slate-400">({subGroup.tasks.length})</span>
+                    </div>
+                    {subGroup.tasks.map((task) => (
+                      <TaskRow
+                        key={task.id}
+                        task={task}
+                        onClick={onTaskClick}
+                        onComplete={onTaskComplete}
+                        onUncomplete={onTaskUncomplete}
+                        onDelete={onTaskDelete}
+                        onEdit={onTaskClick}
+                        showAttachment={false}
+                        showAssociation={false}
+                      />
+                    ))}
+                  </div>
+                );
+              })
+            ) : (
+              // Render flat list of tasks
+              tasks.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  onClick={onTaskClick}
+                  onComplete={onTaskComplete}
+                  onUncomplete={onTaskUncomplete}
+                  onDelete={onTaskDelete}
+                  onEdit={onTaskClick}
+                  showAttachment={false}
+                  showAssociation={true}
+                />
+              ))
+            )}
 
             {/* Inline add task input */}
             {showAddInput && (

@@ -1025,17 +1025,20 @@ interface InlineAddTaskFormProps {
 function InlineAddTaskForm({ dealId, targetId, onCancel, onSuccess }: InlineAddTaskFormProps) {
   const [subject, setSubject] = useState("");
   const [dueAt, setDueAt] = useState("");
+  const [showMore, setShowMore] = useState(false);
   const [priority, setPriority] = useState("normal");
   const [assignedToId, setAssignedToId] = useState<string>("");
   const [users, setUsers] = useState<{ id: number; firstName: string; lastName: string }[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users`)
-      .then((res) => res.json())
-      .then((data) => setUsers(data))
-      .catch(() => {});
-  }, []);
+    if (showMore && users.length === 0) {
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users`)
+        .then((res) => res.json())
+        .then((data) => setUsers(data))
+        .catch(() => {});
+    }
+  }, [showMore, users.length]);
 
   const handleSubmit = async () => {
     if (!subject.trim()) return;
@@ -1069,58 +1072,123 @@ function InlineAddTaskForm({ dealId, targetId, onCancel, onSuccess }: InlineAddT
     if (e.key === "Escape") onCancel();
   };
 
+  // Quick date options
+  const quickDates = [
+    { label: "Today", days: 0 },
+    { label: "Tomorrow", days: 1 },
+    { label: "In 3d", days: 3 },
+    { label: "In 1w", days: 7 },
+  ];
+
+  const getDateForDays = (days: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toISOString().split("T")[0];
+  };
+
   return (
-    <div className="mt-2 p-3 bg-slate-50/80 rounded-lg border border-slate-200 space-y-2">
+    <div className="mt-2 p-3 bg-white rounded-xl border border-slate-200 shadow-sm space-y-3">
+      {/* Header */}
+      <div className="text-[12px] font-semibold text-slate-700">
+        New outreach task
+      </div>
+
+      {/* Subject */}
       <input
         type="text"
-        placeholder="What needs to be done?"
+        placeholder="What needs to happen?"
         value={subject}
         onChange={(e) => setSubject(e.target.value)}
         onKeyDown={handleKeyDown}
-        className="w-full text-[13px] px-3 py-2 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 placeholder:text-slate-300"
+        className="w-full text-[13px] px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 focus:bg-white placeholder:text-slate-300 transition-all"
         autoFocus
       />
-      <div className="flex items-center gap-2 flex-wrap">
+
+      {/* Due date quick picks */}
+      <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
-          <CalendarClock className="h-3 w-3 text-slate-300" />
+          <CalendarClock className="h-3 w-3 text-slate-400" />
+          <span className="text-[11px] text-slate-400">Due</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {quickDates.map((opt) => {
+            const target = getDateForDays(opt.days);
+            const isActive = dueAt === target;
+            return (
+              <button
+                key={opt.days}
+                type="button"
+                onClick={() => setDueAt(isActive ? "" : target)}
+                className={`text-[11px] px-2 py-1 rounded-md font-medium transition-colors ${
+                  isActive
+                    ? "bg-indigo-500 text-white"
+                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
           <input
             type="date"
             value={dueAt}
             onChange={(e) => setDueAt(e.target.value)}
-            className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
+            className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-1.5 py-1 text-slate-600 ml-auto w-[110px]"
           />
         </div>
-        <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value)}
-          className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
-        >
-          <option value="low">Low</option>
-          <option value="normal">Normal</option>
-          <option value="high">High</option>
-        </select>
-        <select
-          value={assignedToId}
-          onChange={(e) => setAssignedToId(e.target.value)}
-          className="text-[11px] bg-white border border-slate-200 rounded-md px-2 py-1 text-slate-600"
-        >
-          <option value="">Assign to...</option>
-          {users.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.firstName} {u.lastName}
-            </option>
-          ))}
-        </select>
       </div>
-      <div className="flex items-center gap-2 pt-0.5">
+
+      {/* Expandable priority & assign */}
+      {!showMore ? (
         <button
+          type="button"
+          onClick={() => setShowMore(true)}
+          className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <ChevronDown className="h-3 w-3" />
+          Priority & assign
+        </button>
+      ) : (
+        <div className="flex items-center gap-2 animate-in slide-in-from-top-1 fade-in duration-150">
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+            className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2 py-1.5 text-slate-600"
+          >
+            <option value="low">Low priority</option>
+            <option value="normal">Normal</option>
+            <option value="high">High priority</option>
+          </select>
+          <select
+            value={assignedToId}
+            onChange={(e) => setAssignedToId(e.target.value)}
+            className="text-[11px] bg-slate-50 border border-slate-200 rounded-md px-2 py-1.5 text-slate-600 flex-1"
+          >
+            <option value="">Assign to...</option>
+            {users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.firstName} {u.lastName}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          type="button"
           onClick={handleSubmit}
           disabled={!subject.trim() || submitting}
-          className="px-3 py-1.5 text-[12px] font-medium text-white bg-slate-800 rounded-md hover:bg-slate-700 disabled:opacity-40 transition-colors shadow-sm"
+          className="flex-1 px-3 py-1.5 text-[12px] font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 disabled:opacity-40 transition-colors shadow-sm"
         >
-          {submitting ? "Saving..." : "Add Task"}
+          {submitting ? "Saving..." : "Add task"}
         </button>
-        <button onClick={onCancel} className="px-3 py-1.5 text-[12px] text-slate-400 hover:text-slate-600 transition-colors">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-3 py-1.5 text-[12px] text-slate-400 hover:text-slate-600 transition-colors"
+        >
           Cancel
         </button>
       </div>
