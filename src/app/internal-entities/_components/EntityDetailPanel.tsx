@@ -503,7 +503,7 @@ export function EntityDetailPanel({
             </button>
           }
         >
-          {entity.bankAccounts.length === 0 ? (
+          {(entity.bankAccounts ?? []).length === 0 ? (
             <div className="text-center py-8">
               <div className="h-12 w-12 mx-auto mb-3 rounded-xl bg-slate-50 flex items-center justify-center">
                 <Wallet className="h-6 w-6 text-slate-300" />
@@ -512,7 +512,7 @@ export function EntityDetailPanel({
             </div>
           ) : (
             <div className="space-y-3">
-              {entity.bankAccounts.map((account) => (
+              {(entity.bankAccounts ?? []).map((account) => (
                 <BankAccountCard
                   key={account.id}
                   account={account}
@@ -542,7 +542,7 @@ export function EntityDetailPanel({
             </button>
           }
         >
-          {entity.signers.length === 0 ? (
+          {(entity.signers ?? []).length === 0 ? (
             <div className="text-center py-8">
               <div className="h-12 w-12 mx-auto mb-3 rounded-xl bg-slate-50 flex items-center justify-center">
                 <Users className="h-6 w-6 text-slate-300" />
@@ -551,7 +551,7 @@ export function EntityDetailPanel({
             </div>
           ) : (
             <div className="space-y-2">
-              {entity.signers.map((signer) => (
+              {(entity.signers ?? []).map((signer) => (
                 <div
                   key={signer.id}
                   className="group flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100/80 rounded-xl transition-colors"
@@ -585,7 +585,7 @@ export function EntityDetailPanel({
           isExpanded={expandedSections.has("documents")}
           onToggle={() => toggleSection("documents")}
         >
-          {entity.documents.length === 0 ? (
+          {(entity.documents ?? []).length === 0 ? (
             <div className="text-center py-8">
               <div className="h-12 w-12 mx-auto mb-3 rounded-xl bg-slate-50 flex items-center justify-center">
                 <FileText className="h-6 w-6 text-slate-300" />
@@ -594,7 +594,7 @@ export function EntityDetailPanel({
             </div>
           ) : (
             <div className="space-y-2">
-              {entity.documents.map((doc) => (
+              {(entity.documents ?? []).map((doc) => (
                 <Link
                   key={doc.id}
                   href={`/documents?id=${doc.id}`}
@@ -612,7 +612,7 @@ export function EntityDetailPanel({
                   <ExternalLink className="h-4 w-4 text-slate-300 group-hover:text-indigo-400 transition-colors" />
                 </Link>
               ))}
-              {entity.documentsCount > entity.documents.length && (
+              {entity.documentsCount > (entity.documents ?? []).length && (
                 <Link
                   href={`/documents?linkableType=InternalEntity&linkableId=${entity.id}`}
                   className="block text-center text-sm text-indigo-600 hover:text-indigo-700 font-medium py-3 hover:bg-indigo-50 rounded-xl transition-colors"
@@ -625,7 +625,7 @@ export function EntityDetailPanel({
         </CollapsibleSection>
 
         {/* Linked Deals Section */}
-        {entity.linkedDeals.length > 0 && (
+        {(entity.linkedDeals ?? []).length > 0 && (
           <CollapsibleSection
             title="Linked Deals"
             icon={<Briefcase className="h-4 w-4" />}
@@ -633,7 +633,7 @@ export function EntityDetailPanel({
             onToggle={() => toggleSection("deals")}
           >
             <div className="space-y-2">
-              {entity.linkedDeals.map((deal) => (
+              {(entity.linkedDeals ?? []).map((deal) => (
                 <Link
                   key={deal.id}
                   href={`/deals/${deal.id}`}
