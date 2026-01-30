@@ -257,7 +257,22 @@ export async function fetchInternalEntities(filters: EntityFilters = {}): Promis
 
   const res = await authFetch(`${API_BASE}/api/internal_entities?${params.toString()}`);
   if (!res.ok) throw new Error('Failed to fetch internal entities');
-  return res.json();
+  const data = await res.json();
+
+  // Defensive handling for malformed API responses
+  return {
+    internalEntities: Array.isArray(data?.internalEntities) ? data.internalEntities : [],
+    facets: {
+      entityType: Array.isArray(data?.facets?.entityType) ? data.facets.entityType : [],
+      status: Array.isArray(data?.facets?.status) ? data.facets.status : [],
+      jurisdictionState: Array.isArray(data?.facets?.jurisdictionState) ? data.facets.jurisdictionState : [],
+    },
+    pageInfo: {
+      page: data?.pageInfo?.page ?? 1,
+      perPage: data?.pageInfo?.perPage ?? 50,
+      total: data?.pageInfo?.total ?? 0,
+    },
+  };
 }
 
 // Fetch single internal entity
