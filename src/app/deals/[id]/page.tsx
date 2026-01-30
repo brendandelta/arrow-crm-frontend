@@ -22,6 +22,7 @@ import { OutreachTargetModal } from "./_components/OutreachTargetModal";
 import { EditableDealDetails } from "./_components/EditableDealDetails";
 import { EntityLinksSection } from "./_components/EntityLinksSection";
 import { RoundDetailsSection } from "./_components/RoundDetailsSection";
+import { SecondaryOverviewSection } from "./_components/SecondaryOverviewSection";
 // Import shared components
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
 import { useLPMode } from "@/contexts/LPModeContext";
@@ -232,11 +233,14 @@ interface Deal {
   inventory: number;
   coverageRatio: number | null;
   target: number | null;
+  minRaise: number | null;
+  maxRaise: number | null;
   valuation: number | null;
   sharePrice: number | null;
   shareClass: string | null;
   expectedClose: string | null;
   deadline: string | null;
+  customFields: Record<string, unknown> | null;
   daysUntilClose: number | null;
   sourcedAt: string | null;
   qualifiedAt: string | null;
@@ -485,29 +489,46 @@ export default function DealDetailPage() {
     dataRoomUrl: string | null;
     deckUrl: string | null;
     ownerId: number | null;
+    // New fields for Primary/Secondary terms
+    target: number | null;
+    minRaise: number | null;
+    maxRaise: number | null;
+    shareClass: string | null;
+    structureNotes: string | null;
+    customFields: Record<string, unknown>;
   }>) => {
+    const payload: Record<string, unknown> = {};
+
+    // Only include fields that are explicitly set
+    if (data.priority !== undefined) payload.priority = data.priority;
+    if (data.status !== undefined) payload.status = data.status;
+    if (data.confidence !== undefined) payload.confidence = data.confidence;
+    if (data.sharePrice !== undefined) payload.share_price_cents = data.sharePrice;
+    if (data.valuation !== undefined) payload.valuation_cents = data.valuation;
+    if (data.source !== undefined) payload.source = data.source;
+    if (data.sourceDetail !== undefined) payload.source_detail = data.sourceDetail;
+    if (data.expectedClose !== undefined) payload.expected_close = data.expectedClose;
+    if (data.deadline !== undefined) payload.deadline = data.deadline;
+    if (data.tags !== undefined) payload.tags = data.tags;
+    if (data.notes !== undefined) payload.internal_notes = data.notes;
+    if (data.driveUrl !== undefined) payload.drive_url = data.driveUrl;
+    if (data.dataRoomUrl !== undefined) payload.data_room_url = data.dataRoomUrl;
+    if (data.deckUrl !== undefined) payload.deck_url = data.deckUrl;
+    if (data.ownerId !== undefined) payload.owner_id = data.ownerId;
+    // New fields
+    if (data.target !== undefined) payload.target_cents = data.target;
+    if (data.minRaise !== undefined) payload.min_raise_cents = data.minRaise;
+    if (data.maxRaise !== undefined) payload.max_raise_cents = data.maxRaise;
+    if (data.shareClass !== undefined) payload.share_class = data.shareClass;
+    if (data.structureNotes !== undefined) payload.structure_notes = data.structureNotes;
+    if (data.customFields !== undefined) payload.custom_fields = data.customFields;
+
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/${params.id}`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          priority: data.priority,
-          status: data.status,
-          confidence: data.confidence,
-          share_price_cents: data.sharePrice,
-          valuation_cents: data.valuation,
-          source: data.source,
-          source_detail: data.sourceDetail,
-          expected_close: data.expectedClose,
-          deadline: data.deadline,
-          tags: data.tags,
-          internal_notes: data.notes,
-          drive_url: data.driveUrl,
-          data_room_url: data.dataRoomUrl,
-          deck_url: data.deckUrl,
-          owner_id: data.ownerId !== undefined ? data.ownerId : undefined,
-        }),
+        body: JSON.stringify(payload),
       }
     );
     if (!res.ok) {
@@ -750,6 +771,8 @@ export default function DealDetailPage() {
                 id: deal.id,
                 name: deal.name,
                 target: deal.target,
+                minRaise: deal.minRaise,
+                maxRaise: deal.maxRaise,
                 valuation: deal.valuation,
                 sharePrice: deal.sharePrice,
                 shareClass: deal.shareClass,
@@ -759,7 +782,20 @@ export default function DealDetailPage() {
                 softCircled: deal.softCircled,
                 committed: deal.committed,
                 wired: deal.wired,
+                customFields: deal.customFields as { primary?: Record<string, unknown> } | undefined,
               }}
+              onSave={handleDealUpdate}
+            />
+          )}
+
+          {/* Secondary Overview - Only shown for Secondary deals */}
+          {deal.kind !== "primary" && (
+            <SecondaryOverviewSection
+              deal={{
+                id: deal.id,
+                customFields: deal.customFields as { secondary?: Record<string, unknown> } | undefined,
+              }}
+              onSave={handleDealUpdate}
             />
           )}
 
