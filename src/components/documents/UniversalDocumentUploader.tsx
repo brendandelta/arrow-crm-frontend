@@ -37,6 +37,7 @@ import {
   formatFileSize,
 } from "@/lib/documents-api";
 import type { DocumentDetail, SearchResult } from "@/lib/documents-api";
+import { toastApiError } from "@/lib/api-error";
 
 // ============ Types ============
 
@@ -369,9 +370,8 @@ export function UniversalDocumentUploader({
       toast.success("Document uploaded successfully");
       onSuccess?.(doc);
       resetForm();
-    } catch (error) {
-      toast.error("Failed to upload document");
-      console.error(error);
+    } catch (err) {
+      toastApiError(err, { entity: "document", action: "create" });
     } finally {
       setUploading(false);
     }

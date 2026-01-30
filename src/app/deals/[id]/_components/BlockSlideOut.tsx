@@ -25,6 +25,7 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
+import { toast } from "sonner";
 import { EntityLinksSection } from "./EntityLinksSection";
 import { UniversalDocumentUploader } from "@/components/documents/UniversalDocumentUploader";
 import {
@@ -32,6 +33,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { apiFetch, toastApiError } from "@/lib/api-error";
 
 interface Person {
   id: number;
@@ -206,25 +208,23 @@ function PersonSearchInput({ onSelect, excludeIds, placeholder }: {
       if (newPerson.email.trim()) {
         payload.emails = [{ address: newPerson.email.trim(), label: "work" }];
       }
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/people`, {
+      const data = await apiFetch<{ id: number }>("/api/people", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: payload,
       });
-      if (res.ok) {
-        const data = await res.json();
-        onSelect({
-          id: data.id,
-          firstName: newPerson.firstName.trim(),
-          lastName: newPerson.lastName.trim(),
-          email: newPerson.email.trim() || undefined,
-        });
-        setQuery("");
-        setOpen(false);
-        setCreating(false);
-        setNewPerson({ firstName: "", lastName: "", email: "" });
-      }
-    } catch {}
+      onSelect({
+        id: data.id,
+        firstName: newPerson.firstName.trim(),
+        lastName: newPerson.lastName.trim(),
+        email: newPerson.email.trim() || undefined,
+      });
+      setQuery("");
+      setOpen(false);
+      setCreating(false);
+      setNewPerson({ firstName: "", lastName: "", email: "" });
+    } catch (err) {
+      toastApiError(err, { entity: "contact", action: "create" });
+    }
     setSaving(false);
   };
 
@@ -371,20 +371,18 @@ function OrgSearchInput({ value, onSelect, onClear }: {
     if (!newOrg.name.trim()) return;
     setSaving(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/organizations`, {
+      const data = await apiFetch<{ id: number; name: string }>("/api/organizations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newOrg.name.trim(), kind: newOrg.kind }),
+        body: { name: newOrg.name.trim(), kind: newOrg.kind },
       });
-      if (res.ok) {
-        const data = await res.json();
-        onSelect({ id: data.id, name: data.name });
-        setQuery("");
-        setOpen(false);
-        setCreating(false);
-        setNewOrg({ name: "", kind: "company" });
-      }
-    } catch {}
+      onSelect({ id: data.id, name: data.name });
+      setQuery("");
+      setOpen(false);
+      setCreating(false);
+      setNewOrg({ name: "", kind: "company" });
+    } catch (err) {
+      toastApiError(err, { entity: "organization", action: "create" });
+    }
     setSaving(false);
   };
 
@@ -553,24 +551,16 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
         block_contacts: blockContactsPayload,
       };
 
-      const url = isNew
-        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blocks`
-        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blocks/${block.id}`;
-
-      const res = await fetch(url, {
+      const endpoint = isNew ? "/api/blocks" : `/api/blocks/${block.id}`;
+      const updated = await apiFetch<Block>(endpoint, {
         method: isNew ? "POST" : "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: payload,
       });
 
-      if (res.ok) {
-        const updated = await res.json();
-        onSave(updated);
-      } else {
-        console.error("Failed to save block");
-      }
+      toast.success(isNew ? "Block created" : "Block saved");
+      onSave(updated);
     } catch (err) {
-      console.error("Failed to save:", err);
+      toastApiError(err, { entity: "block", action: isNew ? "create" : "save" });
     }
     setSaving(false);
   };
@@ -579,16 +569,12 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
     if (!block || !onDelete) return;
     setDeleting(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blocks/${block.id}`,
-        { method: "DELETE" }
-      );
-      if (res.ok) {
-        onDelete(block.id);
-        onClose();
-      }
+      await apiFetch(`/api/blocks/${block.id}`, { method: "DELETE" });
+      toast.success("Block deleted");
+      onDelete(block.id);
+      onClose();
     } catch (err) {
-      console.error("Failed to delete:", err);
+      toastApiError(err, { entity: "block", action: "delete" });
     }
     setDeleting(false);
   };

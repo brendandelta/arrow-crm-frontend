@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { X, Loader2, Search, ChevronDown, ChevronRight, Plus, Target, Briefcase } from "lucide-react";
 import { DEAL_PRIORITIES } from "./priority";
+import { apiFetch, toastApiError } from "@/lib/api-error";
 
 interface User {
   id: number;
@@ -116,10 +117,11 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
 
   // Load users on mount
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/users`)
-      .then((res) => res.json())
+    apiFetch<User[]>("/api/users")
       .then((data) => setUsers(Array.isArray(data) ? data : []))
-      .catch(() => {});
+      .catch(() => {
+        // Silent fail for user list - not critical
+      });
   }, []);
 
   // Escape key handler
@@ -259,20 +261,13 @@ export function CreateDealModal({ onClose }: CreateDealModalProps) {
         }
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals`, {
+      const data = await apiFetch<{ id: number }>("/api/deals", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: payload,
       });
-
-      const data = await res.json();
-      if (!res.ok) {
-        console.error("Deal creation failed:", res.status, data);
-        throw new Error("Failed to create deal");
-      }
       router.push(`/deals/${data.id}`);
     } catch (err) {
-      console.error("Failed to create deal:", err);
+      toastApiError(err, { entity: "deal", action: "create" });
       setSaving(false);
     }
   }

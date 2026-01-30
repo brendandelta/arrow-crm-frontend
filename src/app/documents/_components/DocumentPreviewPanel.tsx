@@ -39,6 +39,7 @@ import {
   DOCUMENT_SENSITIVITIES,
 } from "@/lib/documents-api";
 import { DocumentLinksEditor } from "@/components/documents/DocumentLinksEditor";
+import { toastApiError } from "@/lib/api-error";
 
 interface DocumentPreviewPanelProps {
   document: DocumentDetail | null;
@@ -69,10 +70,10 @@ export function DocumentPreviewPanel({
       try {
         await updateDocument(document.id, { [field]: value });
         toast.success("Document updated");
-      } catch {
+      } catch (err) {
         // Revert on error
         onUpdate(document);
-        toast.error("Failed to update document");
+        toastApiError(err, { entity: "document", action: "update" });
       }
       setEditingField(null);
     },
@@ -89,9 +90,9 @@ export function DocumentPreviewPanel({
       try {
         await updateDocument(document.id, { [field]: value });
         toast.success("Document updated");
-      } catch {
+      } catch (err) {
         onUpdate(document);
-        toast.error("Failed to update document");
+        toastApiError(err, { entity: "document", action: "update" });
       }
     },
     [document, onUpdate]

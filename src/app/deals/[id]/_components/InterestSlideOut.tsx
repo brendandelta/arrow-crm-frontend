@@ -16,6 +16,7 @@ import {
   Link2,
   ChevronRight,
 } from "lucide-react";
+import { toast } from "sonner";
 import { EntityLinksSection } from "./EntityLinksSection";
 import { UniversalDocumentUploader } from "@/components/documents/UniversalDocumentUploader";
 import {
@@ -23,6 +24,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { apiFetch, toastApiError } from "@/lib/api-error";
 
 interface Person {
   id: number;
@@ -180,24 +182,16 @@ export function InterestSlideOut({
         internal_notes: formData.internalNotes || null,
       };
 
-      const url = isNew
-        ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/interests`
-        : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/interests/${interest.id}`;
-
-      const res = await fetch(url, {
+      const endpoint = isNew ? "/api/interests" : `/api/interests/${interest.id}`;
+      const updated = await apiFetch<Interest>(endpoint, {
         method: isNew ? "POST" : "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: payload,
       });
 
-      if (res.ok) {
-        const updated = await res.json();
-        onSave(updated);
-      } else {
-        console.error("Failed to save interest");
-      }
+      toast.success(isNew ? "Interest created" : "Interest saved");
+      onSave(updated);
     } catch (err) {
-      console.error("Failed to save:", err);
+      toastApiError(err, { entity: "interest", action: isNew ? "create" : "save" });
     }
     setSaving(false);
   };
@@ -206,16 +200,12 @@ export function InterestSlideOut({
     if (!interest || !onDelete) return;
     setDeleting(true);
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/interests/${interest.id}`,
-        { method: "DELETE" }
-      );
-      if (res.ok) {
-        onDelete(interest.id);
-        onClose();
-      }
+      await apiFetch(`/api/interests/${interest.id}`, { method: "DELETE" });
+      toast.success("Interest deleted");
+      onDelete(interest.id);
+      onClose();
     } catch (err) {
-      console.error("Failed to delete:", err);
+      toastApiError(err, { entity: "interest", action: "delete" });
     }
     setDeleting(false);
   };

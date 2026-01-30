@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ import {
   type UserOption,
   createTask,
 } from "@/lib/tasks-api";
+import { toastApiError } from "@/lib/api-error";
 
 interface CreateTaskDialogProps {
   open: boolean;
@@ -114,10 +116,11 @@ export function CreateTaskDialog({
         taskableType: attachment.taskableType,
         taskableId: attachment.taskableId,
       });
+      toast.success("Task created");
       onTaskCreated?.(newTask);
       onClose();
-    } catch (error) {
-      console.error("Failed to create task:", error);
+    } catch (err) {
+      toastApiError(err, { entity: "task", action: "create" });
     } finally {
       setCreating(false);
     }

@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "sonner";
 import { AppShell } from "@/components/AppShell";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,11 +31,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          <AppShell>
-            {children}
-          </AppShell>
-        </Providers>
+        <ErrorBoundary>
+          <Providers>
+            <AppShell>
+              {children}
+            </AppShell>
+          </Providers>
+        </ErrorBoundary>
         <Toaster position="top-right" richColors />
       </body>
     </html>
