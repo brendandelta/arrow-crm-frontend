@@ -259,9 +259,14 @@ export async function fetchInternalEntities(filters: EntityFilters = {}): Promis
   if (!res.ok) throw new Error('Failed to fetch internal entities');
   const data = await res.json();
 
-  // Defensive handling for malformed API responses
+  // Defensive handling for API responses
+  // Handle both wrapped format {internalEntities: [...]} and raw array format [...]
+  const entities = Array.isArray(data)
+    ? data
+    : (Array.isArray(data?.internalEntities) ? data.internalEntities : []);
+
   return {
-    internalEntities: Array.isArray(data?.internalEntities) ? data.internalEntities : [],
+    internalEntities: entities,
     facets: {
       entityType: Array.isArray(data?.facets?.entityType) ? data.facets.entityType : [],
       status: Array.isArray(data?.facets?.status) ? data.facets.status : [],
@@ -270,7 +275,7 @@ export async function fetchInternalEntities(filters: EntityFilters = {}): Promis
     pageInfo: {
       page: data?.pageInfo?.page ?? 1,
       perPage: data?.pageInfo?.perPage ?? 50,
-      total: data?.pageInfo?.total ?? 0,
+      total: data?.pageInfo?.total ?? entities.length,
     },
   };
 }
