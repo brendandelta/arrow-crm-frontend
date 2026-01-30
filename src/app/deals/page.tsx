@@ -394,6 +394,7 @@ export default function DealsPage() {
       })
       .catch((err) => {
         console.error("Failed to fetch deals:", err);
+        toast.error("Failed to load deals");
         setLoading(false);
       });
   }, []);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import {
   Phone,
   Mail,
@@ -233,6 +234,7 @@ export function DealTargetsSection({ targets, dealId, onTargetUpdated, onAddTarg
       onTargetUpdated();
     } catch (err) {
       console.error("Failed to update target status:", err);
+      toast.error("Failed to update target status");
     }
   };
 
@@ -478,6 +480,7 @@ function TargetRow({
       onTargetUpdated();
     } catch (err) {
       console.error("Failed to save notes:", err);
+      toast.error("Failed to save notes");
     }
     setSavingNotes(false);
     setEditingNotes(false);
@@ -492,6 +495,7 @@ function TargetRow({
       onTargetUpdated();
     } catch (err) {
       console.error("Failed to delete target:", err);
+      toast.error("Failed to remove target");
       setDeleting(false);
       setConfirmDelete(false);
     }
@@ -783,6 +787,7 @@ function TaskCheckboxItem({ task, formatDate, onComplete, isPrimary }: {
       onComplete();
     } catch (err) {
       console.error("Failed to complete task:", err);
+      toast.error("Failed to complete task");
       setCompleted(false);
     }
     setCompleting(false);
@@ -909,6 +914,7 @@ function InlineLogEventForm({ dealId, targetId, initialKind = "call", onCancel, 
       onSuccess();
     } catch (err) {
       console.error("Failed to log event:", err);
+      toast.error("Failed to log event");
     }
     setSubmitting(false);
   };
@@ -1063,6 +1069,7 @@ function InlineAddTaskForm({ dealId, targetId, onCancel, onSuccess }: InlineAddT
       onSuccess();
     } catch (err) {
       console.error("Failed to create task:", err);
+      toast.error("Failed to create task");
     }
     setSubmitting(false);
   };

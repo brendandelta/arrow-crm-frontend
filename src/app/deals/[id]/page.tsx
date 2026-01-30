@@ -27,6 +27,7 @@ import { SecondaryOverviewSection } from "./_components/SecondaryOverviewSection
 // Import shared components
 import { RiskFlagsPanel } from "@/components/deals/RiskFlagIndicator";
 import { useLPMode } from "@/contexts/LPModeContext";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { UniversalDocumentUploader } from "@/components/documents/UniversalDocumentUploader";
 import {
@@ -350,6 +351,7 @@ export default function DealDetailPage() {
       })
       .catch((err) => {
         console.error("Failed to fetch deal:", err);
+        toast.error("Failed to load deal");
         setLoading(false);
       });
   }, [params.id]);
