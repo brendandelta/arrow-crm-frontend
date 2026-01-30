@@ -173,19 +173,19 @@ export function EntityFiltersRail({
     filters.hasDocuments !== undefined;
 
   // Convert facet values to display format
-  const entityTypeFacets: FacetItem[] = facets.entityType.map((f) => ({
+  const entityTypeFacets: FacetItem[] = (facets?.entityType ?? []).map((f) => ({
     value: f.value,
     count: f.count,
     label: ENTITY_TYPES.find((t) => t.value === f.value)?.label || f.value,
   }));
 
-  const statusFacets: FacetItem[] = facets.status.map((f) => ({
+  const statusFacets: FacetItem[] = (facets?.status ?? []).map((f) => ({
     value: f.value,
     count: f.count,
     label: ENTITY_STATUSES.find((s) => s.value === f.value)?.label || f.value,
   }));
 
-  const jurisdictionFacets: FacetItem[] = facets.jurisdictionState.map((f) => ({
+  const jurisdictionFacets: FacetItem[] = (facets?.jurisdictionState ?? []).map((f) => ({
     value: f.value,
     count: f.count,
     label: US_STATES.find((s) => s.value === f.value)?.label || f.value,
