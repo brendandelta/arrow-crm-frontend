@@ -199,9 +199,9 @@ export default function InternalEntitiesPage() {
               status: entity.status,
               statusLabel: entity.statusLabel,
               stats: {
-                bankAccountsCount: entity.bankAccounts.filter(b => b.status === 'active').length,
-                signersCount: entity.signers.length,
-                documentsCount: entity.documentsCount,
+                bankAccountsCount: (entity.bankAccounts ?? []).filter(b => b.status === 'active').length,
+                signersCount: (entity.signers ?? []).length,
+                documentsCount: entity.documentsCount ?? 0,
               },
             }
           : e
@@ -227,9 +227,9 @@ export default function InternalEntitiesPage() {
         einMasked: entity.einMasked,
         einLast4: entity.einLast4,
         stats: {
-          bankAccountsCount: entity.bankAccounts.filter(b => b.status === 'active').length,
-          signersCount: entity.signers.length,
-          documentsCount: entity.documentsCount,
+          bankAccountsCount: (entity.bankAccounts ?? []).filter(b => b.status === 'active').length,
+          signersCount: (entity.signers ?? []).length,
+          documentsCount: entity.documentsCount ?? 0,
         },
         createdAt: entity.createdAt,
         updatedAt: entity.updatedAt,
