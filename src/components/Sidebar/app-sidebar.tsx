@@ -75,12 +75,6 @@ const data = {
       title: "Tasks",
       url: "/tasks",
       icon: CheckSquare,
-      items: [
-        { title: "All Tasks", url: "/tasks" },
-        { title: "My Tasks", url: "/tasks/my" },
-        { title: "By Deal", url: "/tasks/by-deal" },
-        { title: "By Project", url: "/tasks/by-project" },
-      ],
     },
     {
       title: "Projects",

@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Building2, FolderKanban, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -77,17 +76,24 @@ export default function TasksPage() {
   // Create dialog state
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  // Initialize from localStorage and URL
+  // Initialize from URL params (for redirects) or localStorage
   useEffect(() => {
+    // URL params take precedence (for legacy route redirects)
+    const urlTab = searchParams.get("tab") as TasksTab | null;
+    const urlView = searchParams.get("view") as ViewType | null;
+    const urlGroupBy = searchParams.get("groupBy") as GroupByType | null;
+
+    // Load from localStorage as fallback
     const storedTab = loadTasksTab() as TasksTab;
     const storedView = loadTasksView() as ViewType;
     const storedCollapsed = loadFilterRailCollapsed();
     const storedGroupBy = loadGroupBy() as GroupByType;
 
-    setActiveTab(storedTab);
-    setActiveView(storedView);
+    // Apply URL params if present, otherwise use stored values
+    setActiveTab(urlTab || storedTab);
+    setActiveView(urlView || storedView);
     setFilterRailCollapsed(storedCollapsed);
-    setGroupBy(storedGroupBy);
+    setGroupBy(urlGroupBy || storedGroupBy);
 
     // Check URL for task ID
     const taskId = searchParams.get("task");
@@ -498,9 +504,9 @@ export default function TasksPage() {
 
     return (
       <div className="space-y-4">
-        {groups.map((group) => (
+        {groups.map((group, index) => (
           <EntityGroupSection
-            key={group.id}
+            key={`${groupBy}-${group.id ?? index}`}
             id={group.id}
             name={group.name}
             subtitle={group.company}
@@ -573,6 +579,8 @@ export default function TasksPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onCreateTask={() => setShowCreateDialog(true)}
+        groupBy={groupBy}
+        onGroupByChange={setGroupBy}
       />
 
       {/* Main content */}
@@ -596,33 +604,6 @@ export default function TasksPage() {
         <div className="flex-1 flex overflow-hidden">
           <ScrollArea className="flex-1">
             <div className="p-6">
-              {/* Grouped mode controls */}
-              {activeTab === "grouped" && (
-                <div className="flex items-center gap-2 mb-6">
-                  <span className="text-sm text-slate-500">Group by:</span>
-                  <div className="flex gap-1">
-                    <Button
-                      variant={groupBy === "deal" ? "secondary" : "ghost"}
-                      size="sm"
-                      onClick={() => setGroupBy("deal")}
-                      className="gap-1.5"
-                    >
-                      <Building2 className="h-4 w-4" />
-                      Deals
-                    </Button>
-                    <Button
-                      variant={groupBy === "project" ? "secondary" : "ghost"}
-                      size="sm"
-                      onClick={() => setGroupBy("project")}
-                      className="gap-1.5"
-                    >
-                      <FolderKanban className="h-4 w-4" />
-                      Projects
-                    </Button>
-                  </div>
-                </div>
-              )}
-
               {/* Content based on tab */}
               {activeTab === "queue" && renderQueueContent()}
               {activeTab === "grouped" && renderGroupedContent()}

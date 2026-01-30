@@ -1,13 +1,21 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { Search, Plus, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Search,
+  Plus,
+  X,
+  ListTodo,
+  Layers,
+  CheckCircle2,
+  Building2,
+  FolderKanban,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPageIdentity } from "@/lib/page-registry";
 import { type TaskStats } from "@/lib/tasks-api";
 
@@ -16,6 +24,7 @@ const theme = pageIdentity?.theme;
 const PageIcon = pageIdentity?.icon;
 
 export type TasksTab = "queue" | "grouped" | "completed";
+export type GroupByType = "deal" | "project";
 
 interface TasksHeaderProps {
   stats: TaskStats | null;
@@ -25,6 +34,8 @@ interface TasksHeaderProps {
   activeTab: TasksTab;
   onTabChange: (tab: TasksTab) => void;
   onCreateTask: () => void;
+  groupBy?: GroupByType;
+  onGroupByChange?: (groupBy: GroupByType) => void;
 }
 
 export function TasksHeader({
@@ -35,6 +46,8 @@ export function TasksHeader({
   activeTab,
   onTabChange,
   onCreateTask,
+  groupBy = "deal",
+  onGroupByChange,
 }: TasksHeaderProps) {
   const [localSearch, setLocalSearch] = useState(searchQuery);
 
@@ -55,6 +68,26 @@ export function TasksHeader({
     setLocalSearch("");
     onSearchChange("");
   };
+
+  const tabs = [
+    {
+      id: "queue" as TasksTab,
+      label: "Queue",
+      icon: ListTodo,
+      count: stats?.open,
+    },
+    {
+      id: "grouped" as TasksTab,
+      label: "Grouped",
+      icon: Layers,
+    },
+    {
+      id: "completed" as TasksTab,
+      label: "Completed",
+      icon: CheckCircle2,
+      count: stats?.completed,
+    },
+  ];
 
   return (
     <div className="bg-white/80 backdrop-blur-md border-b border-slate-200/60">
@@ -142,45 +175,71 @@ export function TasksHeader({
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="px-6">
-        <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as TasksTab)}>
-          <TabsList className="bg-transparent p-0 h-auto gap-6">
-            <TabsTrigger
-              value="queue"
+      {/* Premium pill-style tabs */}
+      <div className="px-6 pb-4 flex items-center gap-4">
+        <div className="inline-flex items-center rounded-lg bg-slate-100/80 p-1 gap-1">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => onTabChange(tab.id)}
+                className={cn(
+                  "inline-flex items-center gap-2 px-3.5 py-2 rounded-md text-sm font-medium transition-all duration-200",
+                  isActive
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                )}
+              >
+                <Icon className={cn("h-4 w-4", isActive ? "text-cyan-600" : "text-slate-400")} />
+                {tab.label}
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span
+                    className={cn(
+                      "ml-1 px-1.5 py-0.5 rounded-full text-xs tabular-nums",
+                      isActive
+                        ? "bg-cyan-100 text-cyan-700"
+                        : "bg-slate-200/80 text-slate-500"
+                    )}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Group by toggle - only show when grouped tab is active */}
+        {activeTab === "grouped" && onGroupByChange && (
+          <div className="inline-flex items-center rounded-lg bg-slate-100/80 p-1 gap-1">
+            <button
+              onClick={() => onGroupByChange("deal")}
               className={cn(
-                "bg-transparent px-0 pb-3 pt-0 rounded-none border-b-2 border-transparent",
-                "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-                "data-[state=active]:border-cyan-600 data-[state=active]:text-slate-900",
-                "text-slate-500 hover:text-slate-700"
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
+                groupBy === "deal"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
               )}
             >
-              Queue
-            </TabsTrigger>
-            <TabsTrigger
-              value="grouped"
+              <Building2 className={cn("h-3.5 w-3.5", groupBy === "deal" ? "text-blue-600" : "text-slate-400")} />
+              Deals
+            </button>
+            <button
+              onClick={() => onGroupByChange("project")}
               className={cn(
-                "bg-transparent px-0 pb-3 pt-0 rounded-none border-b-2 border-transparent",
-                "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-                "data-[state=active]:border-cyan-600 data-[state=active]:text-slate-900",
-                "text-slate-500 hover:text-slate-700"
+                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200",
+                groupBy === "project"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
               )}
             >
-              Grouped
-            </TabsTrigger>
-            <TabsTrigger
-              value="completed"
-              className={cn(
-                "bg-transparent px-0 pb-3 pt-0 rounded-none border-b-2 border-transparent",
-                "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
-                "data-[state=active]:border-cyan-600 data-[state=active]:text-slate-900",
-                "text-slate-500 hover:text-slate-700"
-              )}
-            >
-              Completed
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+              <FolderKanban className={cn("h-3.5 w-3.5", groupBy === "project" ? "text-purple-600" : "text-slate-400")} />
+              Projects
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
