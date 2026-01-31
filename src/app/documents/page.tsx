@@ -229,6 +229,15 @@ export default function DocumentsPage() {
     );
   }, []);
 
+  const handleDocumentDelete = useCallback((docId: number) => {
+    // Remove from list
+    setDocuments((prev) => prev.filter((d) => d.id !== docId));
+    setTotalCount((prev) => prev - 1);
+    // Close preview
+    setActiveDocumentId(null);
+    setActiveDocument(null);
+  }, []);
+
   const handleUploadSuccess = useCallback((doc: DocumentDetail) => {
     // Add to beginning of list
     setDocuments((prev) => [
@@ -374,6 +383,7 @@ export default function DocumentsPage() {
             loading={loadingDocument}
             onClose={handleClosePreview}
             onUpdate={handleDocumentUpdate}
+            onDelete={handleDocumentDelete}
             onNewVersionClick={() => {
               // For new version, we'd show a file picker dialog
               toast.info("New version upload coming soon");

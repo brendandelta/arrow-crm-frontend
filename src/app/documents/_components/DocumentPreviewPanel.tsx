@@ -29,10 +29,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { DocumentDetail, DocumentLink } from "@/lib/documents-api";
 import {
   updateDocument,
+  deleteDocument,
   formatFileSize,
   DOCUMENT_CATEGORIES,
   DOCUMENT_STATUSES,
@@ -46,6 +57,7 @@ interface DocumentPreviewPanelProps {
   loading: boolean;
   onClose: () => void;
   onUpdate: (doc: DocumentDetail) => void;
+  onDelete: (docId: number) => void;
   onNewVersionClick: () => void;
 }
 
@@ -54,10 +66,13 @@ export function DocumentPreviewPanel({
   loading,
   onClose,
   onUpdate,
+  onDelete,
   onNewVersionClick,
 }: DocumentPreviewPanelProps) {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const handleInlineEdit = useCallback(
     async (field: string, value: string) => {
@@ -112,6 +127,22 @@ export function DocumentPreviewPanel({
     navigator.clipboard.writeText(url);
     toast.success("Link copied to clipboard");
   }, [document]);
+
+  const handleDelete = useCallback(async () => {
+    if (!document) return;
+
+    setDeleting(true);
+    try {
+      await deleteDocument(document.id);
+      toast.success("Document deleted");
+      setShowDeleteConfirm(false);
+      onDelete(document.id);
+    } catch (err) {
+      toastApiError(err, { entity: "document", action: "delete" });
+    } finally {
+      setDeleting(false);
+    }
+  }, [document, onDelete]);
 
   if (!document && !loading) {
     return (
@@ -222,6 +253,16 @@ export function DocumentPreviewPanel({
         >
           <Upload className="h-3.5 w-3.5" />
           New version
+        </Button>
+        <div className="flex-1" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowDeleteConfirm(true)}
+          className="gap-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+          Delete
         </Button>
       </div>
 
@@ -415,6 +456,29 @@ export function DocumentPreviewPanel({
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete &ldquo;{document.title}&rdquo;?
+              This action cannot be undone and will remove the document and all its versions.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
