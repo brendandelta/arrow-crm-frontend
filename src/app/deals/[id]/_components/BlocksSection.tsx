@@ -33,6 +33,7 @@ interface MappedInterest {
 
 interface Block {
   id: number;
+  name?: string | null;
   seller: { id: number; name: string; kind: string } | null;
   sellerType?: string | null;
   contact?: { id: number; firstName: string; lastName: string; email?: string; title?: string; phone?: string } | null;
@@ -127,6 +128,13 @@ const HEAT_OPTIONS = [
 ];
 
 const BLOCK_COLUMNS: ColumnDef<Block>[] = [
+  {
+    id: "name",
+    label: "Name",
+    filterType: "text",
+    accessor: (row) => row.name || row.seller?.name || null,
+    sortLabels: ["A → Z", "Z → A"],
+  },
   {
     id: "seller",
     label: "Seller",
@@ -324,6 +332,11 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
                       )}
                     </TableCell>
                     <TableCell>
+                      <div className="font-medium">
+                        {block.name || block.seller?.name || "Unnamed Block"}
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       {block.seller ? (
                         <div>
                           <div className="font-medium">{block.seller.name}</div>
@@ -391,7 +404,7 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
                   {/* Expanded Row - Mapped Interests */}
                   {expandedBlockId === block.id && block.mappedInterests && (
                     <TableRow>
-                      <TableCell colSpan={10} className="bg-slate-50 p-0">
+                      <TableCell colSpan={11} className="bg-slate-50 p-0">
                         <div className="p-3 pl-10">
                           <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
                             Mapped Interests
@@ -433,11 +446,14 @@ export function BlocksSection({ blocks, dealId, onBlockClick, onAddBlock, onBloc
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <div className="font-medium">{block.seller?.name || "No seller"}</div>
-                  {block.contact && (
+                  <div className="font-medium">{block.name || block.seller?.name || "Unnamed Block"}</div>
+                  {block.seller && !block.name && block.contact && (
                     <div className="text-sm text-muted-foreground">
                       {block.contact.firstName} {block.contact.lastName}
                     </div>
+                  )}
+                  {block.name && block.seller && (
+                    <div className="text-sm text-muted-foreground">{block.seller.name}</div>
                   )}
                 </div>
                 <HeatBadge heat={block.heat} label={block.heatLabel} />

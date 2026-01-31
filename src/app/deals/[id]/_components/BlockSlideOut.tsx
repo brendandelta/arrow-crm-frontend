@@ -69,6 +69,7 @@ interface MappedInterest {
 
 interface Block {
   id: number;
+  name?: string | null;
   seller: { id: number; name: string; kind: string } | null;
   sellerType?: string | null;
   contact?: Person | null;
@@ -494,6 +495,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
   );
 
   const [formData, setFormData] = useState({
+    name: block?.name || "",
     sellerId: block?.seller?.id || null as number | null,
     sellerName: block?.seller?.name || "",
     shareClass: block?.shareClass || "",
@@ -531,6 +533,7 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
       ];
 
       const payload = {
+        name: formData.name || null,
         deal_id: dealId,
         seller_id: formData.sellerId,
         share_class: formData.shareClass || null,
@@ -613,6 +616,21 @@ export function BlockSlideOut({ block, dealId, onClose, onSave, onDelete }: Bloc
         {/* Content */}
         <div className="flex-1 min-h-0 overflow-y-auto p-6">
           <div className="space-y-1">
+            {/* Block Name */}
+            <div className="py-2 mb-2">
+              <div className="flex items-center gap-2 mb-1 px-3">
+                <FileText className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Block Name</span>
+              </div>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className={inputClass}
+                placeholder="e.g., Series B - Direct, Employee Block A"
+              />
+            </div>
+
             {/* Status */}
             <div className="py-2">
               <div className="flex items-center gap-2 mb-2 px-3">
