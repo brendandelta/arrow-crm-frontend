@@ -153,9 +153,9 @@ export function FilterableHeader<T>({
         {sortable ? (
           <button
             onClick={() => onSortToggle(column.id)}
-            className={`flex items-center gap-1 transition-colors ${
+            className={`flex items-center gap-1 text-xs font-medium transition-colors ${
               isActive
-                ? "text-blue-600"
+                ? "text-slate-900"
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
@@ -164,7 +164,7 @@ export function FilterableHeader<T>({
             {sortDirection === "desc" && <ArrowDown className="h-3 w-3" />}
           </button>
         ) : (
-          <span className={isActive ? "text-blue-600" : "text-slate-500"}>
+          <span className={`text-xs font-medium ${isActive ? "text-slate-900" : "text-slate-500"}`}>
             {column.label}
           </span>
         )}
@@ -174,38 +174,38 @@ export function FilterableHeader<T>({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className={`relative p-1 rounded transition-all ${
+                className={`relative p-0.5 rounded transition-all ${
                   hasFilter
-                    ? "text-blue-600"
-                    : "text-slate-400 opacity-0 group-hover/header:opacity-60 hover:!opacity-100"
+                    ? "text-slate-900"
+                    : "text-slate-300 opacity-0 group-hover/header:opacity-100 hover:text-slate-500"
                 }`}
               >
-                <ListFilter className="h-3.5 w-3.5" />
+                <ListFilter className="h-3 w-3" />
                 {hasFilter && (
-                  <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-blue-500" />
+                  <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-slate-900" />
                 )}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align={column.align === "right" ? "end" : "start"}
-              className="w-64 rounded-xl shadow-lg p-0"
+              className="w-56 rounded-lg border border-slate-200 shadow-md p-0"
               onCloseAutoFocus={(e) => e.preventDefault()}
             >
               {/* Sort section */}
               {sortable && (
-                <div className="bg-slate-50/80 px-3 py-2 border-b border-slate-100">
-                  <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mb-1.5">
+                <div className="px-3 py-2.5 border-b border-slate-100">
+                  <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-2">
                     Sort
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1.5">
                     <button
                       onClick={() =>
                         onSortSet(column.id, sortDirection === "asc" ? null : "asc")
                       }
-                      className={`flex-1 text-[12px] px-2 py-1 rounded-md font-medium transition-colors ${
+                      className={`flex-1 text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
                         sortDirection === "asc"
-                          ? "bg-blue-500 text-white"
-                          : "text-slate-600 hover:bg-slate-100"
+                          ? "bg-slate-900 text-white"
+                          : "bg-slate-50 text-slate-600 hover:bg-slate-100"
                       }`}
                       onPointerDown={(e) => e.stopPropagation()}
                     >
@@ -215,10 +215,10 @@ export function FilterableHeader<T>({
                       onClick={() =>
                         onSortSet(column.id, sortDirection === "desc" ? null : "desc")
                       }
-                      className={`flex-1 text-[12px] px-2 py-1 rounded-md font-medium transition-colors ${
+                      className={`flex-1 text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
                         sortDirection === "desc"
-                          ? "bg-blue-500 text-white"
-                          : "text-slate-600 hover:bg-slate-100"
+                          ? "bg-slate-900 text-white"
+                          : "bg-slate-50 text-slate-600 hover:bg-slate-100"
                       }`}
                       onPointerDown={(e) => e.stopPropagation()}
                     >
@@ -229,15 +229,15 @@ export function FilterableHeader<T>({
               )}
 
               {/* Filter section */}
-              <div className="p-3 space-y-2">
-                <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">
+              <div className="px-3 py-2.5 space-y-2">
+                <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
                   Filter
                 </div>
                 {renderFilter()}
                 {hasFilter && (
                   <button
                     onClick={() => onFilterChange(column.id, null)}
-                    className="text-[11px] text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                    className="text-xs text-slate-500 hover:text-slate-700 font-medium transition-colors"
                     onPointerDown={(e) => e.stopPropagation()}
                   >
                     Clear filter

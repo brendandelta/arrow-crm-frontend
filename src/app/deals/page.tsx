@@ -11,8 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, ChevronRight, ChevronDown, Plus, CircleDollarSign } from "lucide-react";
-import { KPIStrip } from "./_components/KPIStrip";
+import { Search, ChevronRight, ChevronDown, Plus, CircleDollarSign, TrendingUp, DollarSign, Target, AlertTriangle, Banknote } from "lucide-react";
 import { ExpandedRowContent } from "./_components/ExpandableTableRow";
 import { ViewToggle } from "./_components/ViewToggle";
 import { StatusBadge } from "./_components/StatusBadge";
@@ -323,6 +322,16 @@ function buildDealColumns(allOwners: Owner[]): ColumnDef<Deal>[] {
 
 const TOTAL_COLS = 12; // expand + 11 data columns
 
+// Format cents to readable currency (matches FlowMetrics)
+function fmtCents(cents: number) {
+  if (!cents || cents === 0) return "$0";
+  const d = cents / 100;
+  if (d >= 1_000_000_000) return `$${(d / 1e9).toFixed(1).replace(/\.0$/, "")}B`;
+  if (d >= 1_000_000) return `$${(d / 1e6).toFixed(1).replace(/\.0$/, "")}M`;
+  if (d >= 1_000) return `$${(d / 1e3).toFixed(1).replace(/\.0$/, "")}K`;
+  return `$${d.toFixed(0)}`;
+}
+
 export default function DealsPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -505,6 +514,49 @@ export default function DealsPage() {
     }
   }, [deals]);
 
+  const handleOwnerChange = useCallback(async (dealId: number, ownerId: number | null) => {
+    const oldDeals = deals;
+    const newOwner = ownerId ? allOwners.find((o) => o.id === ownerId) || null : null;
+    setDeals((prev) =>
+      prev.map((d) => (d.id === dealId ? { ...d, owner: newOwner } : d))
+    );
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/${dealId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ownerId }),
+        }
+      );
+      if (!res.ok) throw new Error("API error");
+    } catch {
+      setDeals(oldDeals);
+      toast.error("Failed to update deal owner");
+    }
+  }, [deals, allOwners]);
+
+  const handleCloseDateChange = useCallback(async (dealId: number, date: string | null) => {
+    const oldDeals = deals;
+    setDeals((prev) =>
+      prev.map((d) => (d.id === dealId ? { ...d, expectedClose: date } : d))
+    );
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/deals/${dealId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ expectedClose: date }),
+        }
+      );
+      if (!res.ok) throw new Error("API error");
+    } catch {
+      setDeals(oldDeals);
+      toast.error("Failed to update close date");
+    }
+  }, [deals]);
+
   const toggleExpanded = (dealId: number) => {
     if (expandedDealId === dealId) {
       setExpandedDealId(null);
@@ -514,172 +566,85 @@ export default function DealsPage() {
     }
   };
 
-  // KPI strip click drives column filters
-  const handleKPIFilterClick = (filter: string) => {
-    if (filter === "live") {
-      const currentFilter = activeFilters.find((f) => f.columnId === "status");
-      const currentSelected =
-        currentFilter?.filterValue.type === "enum"
-          ? currentFilter.filterValue.selected
-          : new Set<string>();
-      if (currentSelected.has("live")) {
-        const next = new Set(currentSelected);
-        next.delete("live");
-        if (next.size === 0) {
-          clearFilter("status");
-        } else {
-          setFilter("status", { type: "enum", selected: next });
-        }
-      } else {
-        setFilter("status", { type: "enum", selected: new Set(["live"]) });
-      }
-    } else if (filter === "atRisk") {
-      const currentFilter = activeFilters.find((f) => f.columnId === "risk");
-      const isFiltered = !!currentFilter;
-      if (isFiltered) {
-        clearFilter("risk");
-      } else {
-        setFilter("risk", {
-          type: "enum",
-          selected: new Set(["danger", "warning"]),
-        });
-      }
-    }
-  };
-
-  // Determine if "live" KPI is active
-  const liveKPIActive = useMemo(() => {
-    const statusFilter = activeFilters.find((f) => f.columnId === "status");
-    if (!statusFilter || statusFilter.filterValue.type !== "enum") return false;
-    return statusFilter.filterValue.selected.has("live") && statusFilter.filterValue.selected.size === 1;
-  }, [activeFilters]);
-
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
-      {/* Premium Header */}
-      <div className="relative bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm">
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-50/50 via-transparent to-slate-50/50 pointer-events-none" />
-        <div className="relative px-8 py-5">
-          <div className="flex items-center justify-between">
-            {/* Title Section */}
-            <div className="flex items-center gap-4">
-              <div className="relative group">
-                <div className={cn(
-                  "absolute -inset-1 rounded-2xl blur-md opacity-40 group-hover:opacity-60 transition-opacity",
-                  theme && `bg-gradient-to-br ${theme.gradient}`
-                )} />
-                <div className={cn(
-                  "relative h-11 w-11 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-[1.02]",
-                  theme && `bg-gradient-to-br ${theme.gradient}`
-                )}>
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent to-white/20" />
-                  <Icon className="relative h-5 w-5 text-white drop-shadow-sm" />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
-                  Deals
-                </h1>
-                <p className="text-sm text-slate-500 mt-0.5">
-                  {loading ? (
-                    <span className="inline-block w-32 h-4 bg-slate-100 rounded animate-pulse" />
-                  ) : stats ? (
-                    <span className="flex items-center gap-2">
-                      <span>{deals.length} total deals</span>
-                      <span className="text-slate-300">·</span>
-                      <span className="text-emerald-600">{stats.liveCount} live</span>
-                      <span className="text-slate-300">·</span>
-                      <span className="text-amber-600">{stats.atRiskCount} at risk</span>
-                    </span>
-                  ) : (
-                    <span>{deals.length} deals</span>
-                  )}
+    <div className="h-[calc(100vh-1.5rem)] flex flex-col bg-[#FAFBFC]">
+      {/* Header */}
+      <div className="px-8 py-5 border-b border-slate-200/60">
+        <div className="flex items-center justify-between">
+          {/* Title */}
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "h-9 w-9 rounded-lg flex items-center justify-center",
+              theme && `bg-gradient-to-br ${theme.gradient}`
+            )}>
+              <Icon className="h-4.5 w-4.5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-slate-900">Deals</h1>
+              {!loading && stats && (
+                <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                  <span>{deals.length} total</span>
+                  <span className="text-slate-300">·</span>
+                  <span className="text-emerald-600">{stats.liveCount} live</span>
+                  <span className="text-slate-300">·</span>
+                  <span className="text-amber-600">{stats.atRiskCount} at risk</span>
                 </p>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-3">
-              {/* Search - Table view only */}
-              {viewMode === "table" && (
-                <div className="relative group">
-                  <div className={cn(
-                    "absolute inset-0 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity",
-                    theme && `bg-gradient-to-r ${theme.gradient}`
-                  )} style={{ opacity: 0.15 }} />
-                  <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <input
-                      type="text"
-                      placeholder="Search deals, companies..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className={cn(
-                        "w-72 h-11 pl-11 pr-4 text-sm rounded-xl transition-all duration-200",
-                        "bg-slate-50 border border-slate-200/80",
-                        "placeholder:text-slate-400",
-                        "focus:outline-none focus:bg-white focus:border-emerald-300 focus:ring-4 focus:ring-emerald-500/10"
-                      )}
-                    />
-                  </div>
-                </div>
               )}
-
-              {/* View Toggle */}
-              <ViewToggle activeView={viewMode} onViewChange={setViewMode} />
-
-              {/* New Deal Button */}
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className={cn(
-                  "group relative flex items-center gap-2.5 h-11 px-5",
-                  "text-white text-sm font-medium rounded-xl",
-                  "shadow-lg active:scale-[0.98] transition-all duration-200",
-                  theme && `bg-gradient-to-b ${theme.gradient} ${theme.shadow}`,
-                  theme && "hover:shadow-xl"
-                )}
-              >
-                <Plus className="h-4 w-4" />
-                <span>New Deal</span>
-              </button>
             </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            {viewMode === "table" && (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search deals..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-56 h-9 pl-9 pr-3 text-sm rounded-lg bg-slate-50 border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-slate-300"
+                />
+              </div>
+            )}
+
+            <ViewToggle activeView={viewMode} onViewChange={setViewMode} />
+
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className={cn(
+                "flex items-center gap-2 h-9 px-4 text-white text-sm font-medium rounded-lg transition-colors",
+                theme && `bg-gradient-to-br ${theme.gradient} hover:opacity-90`
+              )}
+            >
+              <Plus className="h-4 w-4" />
+              <span>New Deal</span>
+            </button>
           </div>
         </div>
-
-        {/* KPI Strip - Table view only */}
-        {viewMode === "table" && stats && (
-          <div className="px-8 pb-4">
-            <KPIStrip
-              stats={{
-                liveCount: stats.liveCount,
-                totalSoftCircled: stats.totalSoftCircled,
-                totalCommitted: stats.totalCommitted,
-                totalWired: stats.totalWired,
-                atRiskCount: stats.atRiskCount,
-                overdueTasksCount: stats.overdueTasksCount,
-              }}
-              onFilterClick={handleKPIFilterClick}
-              activeFilter={liveKPIActive ? "live" : undefined}
-            />
-          </div>
-        )}
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 min-h-0 overflow-auto">
         {viewMode === "mindmap" ? (
-          <MindMapView />
+          <div className="h-full p-4">
+            <MindMapView />
+          </div>
         ) : viewMode === "flow" ? (
-          <FlowView
-            deals={deals}
-            stats={stats}
-            loading={loading}
-            onStatusChange={handleStatusChange}
-            onPriorityChange={handlePriorityChange}
-            onCreateDeal={() => setShowCreateModal(true)}
-            owners={allOwners}
-            currentUserId={user?.backendUserId}
-          />
+          <div className="h-full px-6 py-4">
+            <FlowView
+              deals={deals}
+              stats={stats}
+              loading={loading}
+              onStatusChange={handleStatusChange}
+              onPriorityChange={handlePriorityChange}
+              onOwnerChange={handleOwnerChange}
+              onCloseDateChange={handleCloseDateChange}
+              onCreateDeal={() => setShowCreateModal(true)}
+              owners={allOwners}
+              currentUserId={user?.backendUserId}
+            />
+          </div>
         ) : loading ? (
           <div className="flex items-center justify-center h-64 text-muted-foreground">
             <div className="flex items-center gap-2">
@@ -689,8 +654,117 @@ export default function DealsPage() {
           </div>
         ) : (
           /* Table View */
-          <div className="px-8 py-6">
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="h-full px-6 py-4 flex flex-col gap-3">
+            {/* KPI Metrics Strip - matching Flow view */}
+            {stats && (
+              <div className="space-y-2 shrink-0">
+                {/* Primary KPI cards */}
+                <div className="grid grid-cols-5 gap-2">
+                  {[
+                    {
+                      key: "live",
+                      label: "Live",
+                      value: String(stats.liveCount),
+                      icon: TrendingUp,
+                      accent: "text-emerald-600",
+                      bg: "bg-emerald-50",
+                      ring: "ring-emerald-200",
+                    },
+                    {
+                      key: "softCircled",
+                      label: "Soft Circled",
+                      value: fmtCents(stats.totalSoftCircled),
+                      icon: Target,
+                      accent: "text-blue-600",
+                      bg: "bg-blue-50",
+                      ring: "ring-blue-200",
+                    },
+                    {
+                      key: "committed",
+                      label: "Committed",
+                      value: fmtCents(stats.totalCommitted),
+                      icon: DollarSign,
+                      accent: "text-violet-600",
+                      bg: "bg-violet-50",
+                      ring: "ring-violet-200",
+                    },
+                    {
+                      key: "wired",
+                      label: "Wired",
+                      value: fmtCents(stats.totalWired),
+                      icon: Banknote,
+                      accent: "text-emerald-600",
+                      bg: "bg-emerald-50",
+                      ring: "ring-emerald-200",
+                    },
+                    {
+                      key: "atRisk",
+                      label: "At Risk",
+                      value: String(stats.atRiskCount),
+                      icon: AlertTriangle,
+                      accent: "text-red-600",
+                      bg: "bg-red-50",
+                      ring: "ring-red-200",
+                    },
+                  ].map((kpi) => {
+                    const KpiIcon = kpi.icon;
+                    return (
+                      <div
+                        key={kpi.key}
+                        className="flex items-center gap-2.5 rounded-lg border bg-white border-slate-200 hover:border-slate-300 px-3 py-2 transition-all"
+                      >
+                        <div className={`p-1.5 rounded-md ${kpi.bg}`}>
+                          <KpiIcon className={`h-3.5 w-3.5 ${kpi.accent}`} />
+                        </div>
+                        <div>
+                          <div className="text-[11px] text-muted-foreground leading-none">
+                            {kpi.label}
+                          </div>
+                          <div className="text-base font-semibold tabular-nums leading-tight">
+                            {kpi.value}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Secondary inline stats */}
+                <div className="flex items-center gap-4 px-1 text-[11px] text-muted-foreground">
+                  <span>
+                    <strong className="font-medium text-foreground">{stats.totalDeals}</strong>{" "}
+                    total deals
+                  </span>
+                  <span className="text-slate-300">|</span>
+                  <span>
+                    <strong className="font-medium text-foreground">
+                      {fmtCents(deals.reduce((s, d) => s + (d.blocksValue || 0), 0))}
+                    </strong>{" "}
+                    pipeline
+                  </span>
+                  <span className="text-slate-300">|</span>
+                  <span>
+                    <strong className="font-medium text-foreground">
+                      {fmtCents(deals.filter((d) => d.status === "closed").reduce((s, d) => s + (d.blocksValue || 0), 0))}
+                    </strong>{" "}
+                    closed
+                  </span>
+                  {deals.filter((d) => d.status === "sourcing").length > 0 && (
+                    <>
+                      <span className="text-slate-300">|</span>
+                      <span>
+                        <strong className="font-medium text-foreground">
+                          {((deals.filter((d) => d.status === "closed").length / deals.filter((d) => d.status === "sourcing").length) * 100).toFixed(0)}%
+                        </strong>{" "}
+                        conversion
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex-1 min-h-0 rounded-lg border border-slate-200 bg-white overflow-auto">
               <Table>
             <TableHeader>
               <TableRow>

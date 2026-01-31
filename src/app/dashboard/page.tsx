@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { LayoutDashboard, Command } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Command } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -21,6 +21,12 @@ import { EventsModule } from "./_components/EventsModule";
 import { AlertsModule } from "./_components/AlertsModule";
 import { CommandPalette, useCommandPalette } from "./_components/CommandPalette";
 import { DashboardPreferences as DashboardPreferencesPanel } from "./_components/DashboardPreferences";
+import { getPageIdentity } from "@/lib/page-registry";
+
+// Get page identity for theming
+const pageIdentity = getPageIdentity("dashboard");
+const theme = pageIdentity?.theme;
+const Icon = pageIdentity?.icon;
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -95,204 +101,129 @@ export default function DashboardPage() {
     [preferences.hiddenModules]
   );
 
-  // Render modules in order
-  const renderModule = useCallback(
-    (moduleId: string) => {
-      if (!isModuleVisible(moduleId)) return null;
-
-      switch (moduleId) {
-        case "truth_bar":
-          return (
-            <TruthBar
-              key={moduleId}
-              metrics={data?.truthBar || null}
-              loading={loading}
-            />
-          );
-        case "attention":
-          return (
-            <AttentionModule
-              key={moduleId}
-              items={data?.attentionItems || []}
-              loading={loading}
-              timeframe={filters.timeframe}
-              scope={filters.scope}
-              onTimeframeChange={handleTimeframeChange}
-              onScopeChange={handleScopeChange}
-            />
-          );
-        case "active_deals":
-          return (
-            <ActiveDealsModule
-              key={moduleId}
-              deals={data?.activeDeals || []}
-              loading={loading}
-            />
-          );
-        case "capital":
-          return (
-            <CapitalModule
-              key={moduleId}
-              entities={data?.capitalByEntity || []}
-              loading={loading}
-            />
-          );
-        case "relationships":
-          return (
-            <RelationshipsModule
-              key={moduleId}
-              signals={data?.relationshipSignals || []}
-              loading={loading}
-            />
-          );
-        case "events":
-          return (
-            <EventsModule
-              key={moduleId}
-              events={data?.upcomingEvents || []}
-              loading={loading}
-            />
-          );
-        case "alerts":
-          // Only render alerts if there are any
-          if (!loading && (!data?.alerts || data.alerts.length === 0)) return null;
-          return (
-            <AlertsModule
-              key={moduleId}
-              alerts={data?.alerts || []}
-              loading={loading}
-              onDismiss={handleDismissAlert}
-            />
-          );
-        default:
-          return null;
-      }
-    },
-    [data, loading, filters, handleTimeframeChange, handleScopeChange, handleDismissAlert, isModuleVisible]
-  );
-
-  // Separate truth bar from other modules (it's always at top)
-  const orderedModules = useMemo(() => {
-    return preferences.moduleOrder.filter((id) => id !== "truth_bar");
-  }, [preferences.moduleOrder]);
+  // Stats for header
+  const attentionCount = data?.attentionItems?.length || 0;
+  const criticalCount = data?.attentionItems?.filter((i) => i.severity === "critical").length || 0;
+  const alertCount = data?.alerts?.length || 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50/80">
-      {/* Header with glass morphism */}
-      <div className="sticky top-0 z-30">
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-pink-500/5" />
-
-        <div className="relative bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
-          <div className="max-w-7xl mx-auto px-8 py-5">
-            <div className="flex items-center justify-between">
-              {/* Title section */}
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full" />
-                  <div className="relative h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-                    <LayoutDashboard className="h-5 w-5 text-white" />
-                  </div>
-                </div>
-                <div>
-                  <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
-                  <p className="text-sm text-slate-500">
-                    Your command center for Arrow Fund operations
-                  </p>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-3">
-                {/* Command Palette trigger */}
-                <button
-                  onClick={() => setCommandOpen(true)}
-                  className={cn(
-                    "flex items-center gap-2 px-3 py-1.5 rounded-lg",
-                    "bg-slate-100/80 hover:bg-slate-200/80 transition-colors",
-                    "text-sm text-slate-600"
-                  )}
-                >
-                  <Command className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Search</span>
-                  <kbd className="hidden sm:flex h-5 items-center gap-0.5 rounded border bg-white px-1.5 font-mono text-[10px] font-medium text-slate-400">
-                    <span className="text-xs">⌘</span>K
-                  </kbd>
-                </button>
-
-                {/* Preferences */}
-                <DashboardPreferencesPanel
-                  preferences={preferences}
-                  onPreferencesChange={handlePreferencesChange}
-                />
-              </div>
+    <div className="h-[calc(100vh-1.5rem)] flex flex-col bg-[#FAFBFC]">
+      {/* Header */}
+      <div className="px-8 py-5 border-b border-slate-200/60">
+        <div className="flex items-center justify-between">
+          {/* Title section */}
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "h-9 w-9 rounded-lg flex items-center justify-center",
+              theme && `bg-gradient-to-br ${theme.gradient}`
+            )}>
+              {Icon && <Icon className="h-4.5 w-4.5 text-white" />}
             </div>
+            <div>
+              <h1 className="text-xl font-semibold text-slate-900">Dashboard</h1>
+              {!loading && (
+                <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                  <span>{attentionCount} items need attention</span>
+                  {criticalCount > 0 && (
+                    <>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-red-600">{criticalCount} critical</span>
+                    </>
+                  )}
+                  {alertCount > 0 && (
+                    <>
+                      <span className="text-slate-300">·</span>
+                      <span className="text-amber-600">{alertCount} alerts</span>
+                    </>
+                  )}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            {/* Command Palette trigger */}
+            <button
+              onClick={() => setCommandOpen(true)}
+              className="flex items-center gap-1.5 h-9 px-3 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors text-xs text-slate-600"
+            >
+              <Command className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Search</span>
+              <kbd className="hidden sm:flex h-5 items-center gap-0.5 rounded border bg-white px-1.5 font-mono text-[10px] font-medium text-slate-400">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+            </button>
+
+            {/* Preferences */}
+            <DashboardPreferencesPanel
+              preferences={preferences}
+              onPreferencesChange={handlePreferencesChange}
+            />
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="max-w-7xl mx-auto px-8 py-6">
-        {/* Truth Bar - always at top */}
-        {isModuleVisible("truth_bar") && (
-          <div className="mb-6">
+      <div className="flex-1 min-h-0 overflow-auto">
+        <div className="max-w-6xl mx-auto px-6 py-6 space-y-4">
+          {/* Truth Bar - 5 stat cards in a row */}
+          {isModuleVisible("truth_bar") && (
             <TruthBar metrics={data?.truthBar || null} loading={loading} />
-          </div>
-        )}
+          )}
 
-        {/* Alerts - show at top if present */}
-        {isModuleVisible("alerts") && !loading && data?.alerts && data.alerts.length > 0 && (
-          <div className="mb-6">
+          {/* Alerts */}
+          {isModuleVisible("alerts") && !loading && data?.alerts && data.alerts.length > 0 && (
             <AlertsModule
               alerts={data.alerts}
               loading={loading}
               onDismiss={handleDismissAlert}
             />
-          </div>
-        )}
+          )}
 
-        {/* Main grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left column - primary action items */}
-          <div className="space-y-6">
-            {isModuleVisible("attention") && (
-              <AttentionModule
-                items={data?.attentionItems || []}
-                loading={loading}
-                timeframe={filters.timeframe}
-                scope={filters.scope}
-                onTimeframeChange={handleTimeframeChange}
-                onScopeChange={handleScopeChange}
-              />
-            )}
-            {isModuleVisible("active_deals") && (
-              <ActiveDealsModule
-                deals={data?.activeDeals || []}
-                loading={loading}
-              />
-            )}
-          </div>
+          {/* Two column layout for main content */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Left column - Attention & Follow-ups */}
+            <div className="space-y-4">
+              {isModuleVisible("attention") && (
+                <AttentionModule
+                  items={data?.attentionItems || []}
+                  loading={loading}
+                  timeframe={filters.timeframe}
+                  scope={filters.scope}
+                  onTimeframeChange={handleTimeframeChange}
+                  onScopeChange={handleScopeChange}
+                />
+              )}
+              {isModuleVisible("relationships") && (
+                <RelationshipsModule
+                  signals={data?.relationshipSignals || []}
+                  loading={loading}
+                />
+              )}
+              {isModuleVisible("capital") && data?.capitalByEntity && data.capitalByEntity.length > 0 && (
+                <CapitalModule
+                  entities={data.capitalByEntity}
+                  loading={loading}
+                />
+              )}
+            </div>
 
-          {/* Right column - context and upcoming */}
-          <div className="space-y-6">
-            {isModuleVisible("capital") && data?.capitalByEntity && data.capitalByEntity.length > 0 && (
-              <CapitalModule
-                entities={data.capitalByEntity}
-                loading={loading}
-              />
-            )}
-            {isModuleVisible("relationships") && (
-              <RelationshipsModule
-                signals={data?.relationshipSignals || []}
-                loading={loading}
-              />
-            )}
-            {isModuleVisible("events") && (
-              <EventsModule
-                events={data?.upcomingEvents || []}
-                loading={loading}
-              />
-            )}
+            {/* Right column - Deals & Events */}
+            <div className="space-y-4">
+              {isModuleVisible("active_deals") && (
+                <ActiveDealsModule
+                  deals={data?.activeDeals || []}
+                  loading={loading}
+                />
+              )}
+              {isModuleVisible("events") && (
+                <EventsModule
+                  events={data?.upcomingEvents || []}
+                  loading={loading}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>

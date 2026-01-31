@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingUp, Clock, AlertTriangle, DollarSign, Target } from "lucide-react";
+import { TrendingUp, AlertTriangle, DollarSign, Target, Banknote } from "lucide-react";
 
 interface KPIStripProps {
   stats: {
@@ -15,103 +15,93 @@ interface KPIStripProps {
   activeFilter?: string;
 }
 
-function formatCurrency(cents: number) {
+function fmt(cents: number) {
   if (!cents || cents === 0) return "$0";
-  const dollars = cents / 100;
-  if (dollars >= 1_000_000_000) {
-    return `$${(dollars / 1_000_000_000).toFixed(1).replace(/\.0$/, "")}B`;
-  }
-  if (dollars >= 1_000_000) {
-    return `$${(dollars / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  }
-  if (dollars >= 1_000) {
-    return `$${(dollars / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
-  }
-  return `$${dollars.toFixed(0)}`;
+  const d = cents / 100;
+  if (d >= 1_000_000_000) return `$${(d / 1e9).toFixed(1).replace(/\.0$/, "")}B`;
+  if (d >= 1_000_000) return `$${(d / 1e6).toFixed(1).replace(/\.0$/, "")}M`;
+  if (d >= 1_000) return `$${(d / 1e3).toFixed(1).replace(/\.0$/, "")}K`;
+  return `$${d.toFixed(0)}`;
 }
 
 export function KPIStrip({ stats, onFilterClick, activeFilter }: KPIStripProps) {
   const kpis = [
     {
       key: "live",
-      label: "Live Deals",
-      value: stats.liveCount,
-      format: "number",
+      label: "Live",
+      value: String(stats.liveCount),
       icon: TrendingUp,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      borderColor: "border-green-200",
+      accent: "text-emerald-600",
+      bg: "bg-emerald-50",
+      ring: "ring-emerald-200",
     },
     {
       key: "softCircled",
       label: "Soft Circled",
-      value: stats.totalSoftCircled,
-      format: "currency",
+      value: fmt(stats.totalSoftCircled),
       icon: Target,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200",
+      accent: "text-blue-600",
+      bg: "bg-blue-50",
+      ring: "ring-blue-200",
     },
     {
       key: "committed",
       label: "Committed",
-      value: stats.totalCommitted,
-      format: "currency",
+      value: fmt(stats.totalCommitted),
       icon: DollarSign,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      borderColor: "border-purple-200",
+      accent: "text-violet-600",
+      bg: "bg-violet-50",
+      ring: "ring-violet-200",
     },
     {
       key: "wired",
       label: "Wired",
-      value: stats.totalWired,
-      format: "currency",
-      icon: DollarSign,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-50",
-      borderColor: "border-emerald-200",
+      value: fmt(stats.totalWired),
+      icon: Banknote,
+      accent: "text-emerald-600",
+      bg: "bg-emerald-50",
+      ring: "ring-emerald-200",
     },
     {
       key: "atRisk",
       label: "At Risk",
-      value: stats.atRiskCount,
-      format: "number",
+      value: String(stats.atRiskCount),
       icon: AlertTriangle,
-      color: "text-red-600",
-      bgColor: "bg-red-50",
-      borderColor: "border-red-200",
+      accent: "text-red-600",
+      bg: "bg-red-50",
+      ring: "ring-red-200",
     },
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-3">
+    <div className="grid grid-cols-5 gap-2">
       {kpis.map((kpi) => {
         const Icon = kpi.icon;
         const isActive = activeFilter === kpi.key;
-        const displayValue = kpi.format === "currency"
-          ? formatCurrency(kpi.value)
-          : kpi.value;
 
         return (
           <button
             key={kpi.key}
             onClick={() => onFilterClick?.(kpi.key)}
-            className={`
-              flex items-center gap-3 p-3 rounded-lg border transition-all
-              ${isActive
-                ? `${kpi.bgColor} ${kpi.borderColor} ring-2 ring-offset-1 ring-${kpi.color.replace('text-', '')}`
-                : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-              }
-            `}
+            className={`flex items-center gap-2.5 rounded-lg border px-3 py-2 transition-all text-left ${
+              isActive
+                ? `${kpi.bg} ${kpi.ring} ring-1 border-transparent`
+                : "bg-white border-slate-200 hover:border-slate-300"
+            }`}
           >
-            <div className={`p-2 rounded-lg ${kpi.bgColor}`}>
-              <Icon className={`h-4 w-4 ${kpi.color}`} />
+            <div className={`p-1.5 rounded-md ${kpi.bg}`}>
+              <Icon className={`h-3.5 w-3.5 ${kpi.accent}`} />
             </div>
-            <div className="text-left">
-              <div className="text-xs text-muted-foreground">{kpi.label}</div>
-              <div className={`text-lg font-semibold ${isActive ? kpi.color : ''}`}>
-                {displayValue}
+            <div>
+              <div className="text-[11px] text-muted-foreground leading-none">
+                {kpi.label}
+              </div>
+              <div
+                className={`text-base font-semibold tabular-nums leading-tight ${
+                  isActive ? kpi.accent : ""
+                }`}
+              >
+                {kpi.value}
               </div>
             </div>
           </button>
@@ -131,17 +121,17 @@ export function KPIStripCompact({ stats }: { stats: KPIStripProps["stats"] }) {
       </div>
       <span className="text-slate-300">|</span>
       <div className="flex items-center gap-1.5">
-        <span className="font-medium">{formatCurrency(stats.totalSoftCircled)}</span>
+        <span className="font-medium">{fmt(stats.totalSoftCircled)}</span>
         <span className="text-muted-foreground">soft circled</span>
       </div>
       <span className="text-slate-300">|</span>
       <div className="flex items-center gap-1.5">
-        <span className="font-medium">{formatCurrency(stats.totalCommitted)}</span>
+        <span className="font-medium">{fmt(stats.totalCommitted)}</span>
         <span className="text-muted-foreground">committed</span>
       </div>
       <span className="text-slate-300">|</span>
       <div className="flex items-center gap-1.5">
-        <span className="text-emerald-600 font-medium">{formatCurrency(stats.totalWired)}</span>
+        <span className="text-emerald-600 font-medium">{fmt(stats.totalWired)}</span>
         <span className="text-muted-foreground">wired</span>
       </div>
       {stats.atRiskCount > 0 && (

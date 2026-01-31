@@ -11,7 +11,6 @@ import {
   TrendingUp,
   Map,
   CheckSquare,
-  FolderKanban,
   KeyRound,
   Landmark,
 } from "lucide-react"
@@ -75,11 +74,6 @@ const data = {
       title: "Tasks",
       url: "/tasks",
       icon: CheckSquare,
-    },
-    {
-      title: "Projects",
-      url: "/projects",
-      icon: FolderKanban,
     },
     {
       title: "Map",

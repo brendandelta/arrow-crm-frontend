@@ -279,90 +279,57 @@ export default function InternalEntitiesPage() {
   const Icon = pageIdentity?.icon;
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
-      {/* Premium Header */}
-      <div className="relative bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm">
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-50/50 via-transparent to-slate-50/50 pointer-events-none" />
-        <div className="relative px-8 py-5">
-          <div className="flex items-center justify-between">
-            {/* Title Section */}
-            <div className="flex items-center gap-4">
-              <div className="relative group">
-                <div className={cn(
-                  "absolute -inset-1 rounded-2xl blur-md opacity-40 group-hover:opacity-60 transition-opacity",
-                  theme && `bg-gradient-to-br ${theme.gradient}`
-                )} />
-                <div className={cn(
-                  "relative h-11 w-11 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-[1.02]",
-                  theme && `bg-gradient-to-br ${theme.gradient}`
-                )}>
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent to-white/20" />
-                  {Icon && <Icon className="relative h-5 w-5 text-white drop-shadow-sm" />}
-                </div>
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
-                  Internal Entities
-                </h1>
-                <p className="text-[13px] text-slate-500 mt-0.5">
-                  {loading ? (
-                    <span className="inline-block w-28 h-3.5 bg-slate-100 rounded-md animate-pulse" />
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <span className="tabular-nums">{totalCount} {totalCount === 1 ? "entity" : "entities"}</span>
-                      {entities.length !== totalCount && (
-                        <>
-                          <span className="text-slate-300">·</span>
-                          <span className="tabular-nums">{entities.length} showing</span>
-                        </>
-                      )}
-                    </span>
-                  )}
-                </p>
-              </div>
+    <div className="h-[calc(100vh-1.5rem)] flex flex-col">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-slate-200 bg-white">
+        <div className="flex items-center justify-between">
+          {/* Title Section */}
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "h-9 w-9 rounded-lg flex items-center justify-center",
+              theme && `bg-gradient-to-br ${theme.gradient}`
+            )}>
+              {Icon && <Icon className="h-4 w-4 text-white" />}
             </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-3">
-              {/* Search */}
-              <div className="relative group">
-                <div className={cn(
-                  "absolute -inset-0.5 rounded-xl blur-md transition-opacity duration-300 opacity-0 group-focus-within:opacity-30",
-                  theme && `bg-gradient-to-r ${theme.gradient}`
-                )} />
-                <div className="relative">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-slate-600 transition-colors" />
-                  <input
-                    type="text"
-                    placeholder="Search entities..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={cn(
-                      "w-64 h-10 pl-10 pr-4 text-sm rounded-xl transition-all duration-200",
-                      "bg-slate-50/80 border border-slate-200/60",
-                      "placeholder:text-slate-400",
-                      "focus:outline-none focus:bg-white/90 focus:border-slate-300 focus:shadow-sm"
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Primary Action */}
-              <button
-                onClick={() => setShowNewEntityDialog(true)}
-                className={cn(
-                  "group relative flex items-center gap-2 h-10 px-4",
-                  "text-white text-sm font-medium rounded-xl",
-                  "shadow-md hover:shadow-lg active:scale-[0.98]",
-                  "transition-all duration-200",
-                  theme && `bg-gradient-to-b ${theme.gradient} ${theme.shadow}`
+            <div>
+              <h1 className="text-lg font-semibold text-slate-900">
+                Internal Entities
+              </h1>
+              <p className="text-xs text-slate-500">
+                {loading ? (
+                  <span className="inline-block w-20 h-3 bg-slate-100 rounded animate-pulse" />
+                ) : (
+                  <span className="tabular-nums">{totalCount} {totalCount === 1 ? "entity" : "entities"}</span>
                 )}
-              >
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent via-white/5 to-white/15 pointer-events-none" />
-                <Plus className="relative h-4 w-4" />
-                <span className="relative">New Entity</span>
-              </button>
+              </p>
             </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search entities..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-56 h-9 pl-9 pr-3 text-sm rounded-lg bg-slate-50 border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-slate-300"
+              />
+            </div>
+
+            {/* Primary Action */}
+            <button
+              onClick={() => setShowNewEntityDialog(true)}
+              className={cn(
+                "flex items-center gap-1.5 h-9 px-3 text-white text-sm font-medium rounded-lg transition-colors",
+                theme && `bg-gradient-to-br ${theme.gradient} hover:opacity-90`
+              )}
+            >
+              <Plus className="h-4 w-4" />
+              <span>New Entity</span>
+            </button>
           </div>
         </div>
       </div>

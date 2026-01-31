@@ -404,7 +404,27 @@ export function EntityGroupSection({
 
         <CollapsibleContent>
           <div className="border-t border-slate-100 px-2 py-1">
-            {subGroups ? (
+            {tasks.length === 0 ? (
+              // Empty state for projects with no tasks
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <div className={cn("p-2 rounded-lg mb-2", style.bgColor)}>
+                  <Icon className={cn("h-5 w-5", style.color)} />
+                </div>
+                <p className="text-sm text-slate-500 mb-3">No tasks yet</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => {
+                    setShowAddInput(true);
+                    setTimeout(() => inputRef.current?.focus(), 0);
+                  }}
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Add first task
+                </Button>
+              </div>
+            ) : subGroups ? (
               // Render sub-grouped tasks
               subGroups.map((subGroup, idx) => {
                 const SubIcon = subGroup.icon;

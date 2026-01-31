@@ -161,45 +161,45 @@ function QuickActivityLogger({ personId, onActivityLogged }: QuickActivityLogger
   const showOutcome = selectedType && ["call", "meeting", "video_call"].includes(selectedType);
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
       {!expanded ? (
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="h-6 w-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-              <Zap className="h-3 w-3 text-white" />
+        <div className="p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-5 w-5 rounded bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+              <Zap className="h-2.5 w-2.5 text-white" />
             </div>
-            <span className="text-sm font-semibold text-slate-900">Quick Log</span>
+            <span className="text-xs font-semibold text-slate-900">Quick Log</span>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {ACTIVITY_TYPES.map((type) => {
               const Icon = type.icon;
               return (
                 <button
                   key={type.value}
                   onClick={() => handleQuickLog(type.value)}
-                  className={`group flex items-center gap-2 px-3 py-2 rounded-xl border transition-all duration-200 ${type.bgColor} ${type.borderColor} ${type.hoverBg} hover:shadow-md hover:scale-[1.02]`}
+                  className={`group flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-colors ${type.bgColor} ${type.borderColor} ${type.hoverBg}`}
                 >
-                  <Icon className={`h-4 w-4 ${type.color}`} />
-                  <span className={`text-sm font-medium ${type.color}`}>{type.label}</span>
+                  <Icon className={`h-3 w-3 ${type.color}`} />
+                  <span className={`text-[10px] font-medium ${type.color}`}>{type.label}</span>
                 </button>
               );
             })}
           </div>
         </div>
       ) : (
-        <div className="p-4 space-y-4">
+        <div className="p-3 space-y-3">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {typeConfig && (
-                <div className={`p-2 rounded-xl ${typeConfig.bgColor}`}>
-                  <typeConfig.icon className={`h-5 w-5 ${typeConfig.color}`} />
+                <div className={`p-1.5 rounded-lg ${typeConfig.bgColor}`}>
+                  <typeConfig.icon className={`h-4 w-4 ${typeConfig.color}`} />
                 </div>
               )}
-              <span className="font-semibold text-slate-900">Log {typeConfig?.label}</span>
+              <span className="text-xs font-semibold text-slate-900">Log {typeConfig?.label}</span>
             </div>
-            <button onClick={handleCancel} className="p-1 hover:bg-slate-100 rounded-lg transition-colors">
-              <X className="h-4 w-4 text-slate-400" />
+            <button onClick={handleCancel} className="p-1 hover:bg-slate-100 rounded transition-colors">
+              <X className="h-3.5 w-3.5 text-slate-400" />
             </button>
           </div>
 
@@ -210,25 +210,25 @@ function QuickActivityLogger({ personId, onActivityLogged }: QuickActivityLogger
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Brief description..."
-            className="w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+            className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
           />
 
           {/* Direction */}
           {showDirection && (
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Direction</span>
+              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Direction</span>
               <div className="flex gap-1">
                 {(["outbound", "inbound"] as const).map((d) => (
                   <button
                     key={d}
                     onClick={() => setDirection(d)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                    className={`flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded border transition-all ${
                       direction === d
                         ? "bg-slate-900 text-white border-slate-900"
                         : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                     }`}
                   >
-                    {d === "outbound" ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownLeft className="h-3 w-3" />}
+                    {d === "outbound" ? <ArrowUpRight className="h-2.5 w-2.5" /> : <ArrowDownLeft className="h-2.5 w-2.5" />}
                     {d.charAt(0).toUpperCase() + d.slice(1)}
                   </button>
                 ))}
@@ -239,15 +239,15 @@ function QuickActivityLogger({ personId, onActivityLogged }: QuickActivityLogger
           {/* Outcome */}
           {showOutcome && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Outcome</span>
+              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Outcome</span>
               <div className="flex flex-wrap gap-1">
                 {OUTCOMES.map((o) => (
                   <button
                     key={o.value}
                     onClick={() => setOutcome(outcome === o.value ? "" : o.value)}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-all ${
+                    className={`px-2 py-0.5 text-[10px] font-medium rounded transition-all ${
                       outcome === o.value
-                        ? `${o.color} ring-2 ring-offset-1 ring-current`
+                        ? `${o.color} ring-1 ring-current`
                         : "bg-slate-50 text-slate-600 hover:bg-slate-100"
                     }`}
                   >
@@ -264,23 +264,23 @@ function QuickActivityLogger({ personId, onActivityLogged }: QuickActivityLogger
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Add notes (optional)..."
             rows={2}
-            className="w-full px-4 py-3 text-sm bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none"
+            className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none"
           />
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-2">
             <button
               onClick={handleCancel}
-              className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+              className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 rounded-xl shadow-md shadow-indigo-500/25 transition-all disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-gradient-to-br from-indigo-500 to-purple-600 hover:opacity-90 rounded-lg transition-all disabled:opacity-50"
             >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
               Log Activity
             </button>
           </div>
@@ -1698,32 +1698,32 @@ export default function PersonDetailPage() {
   const relatedBlocksCount = person.relatedBlocks?.length || 0;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-12">
+    <div className="h-[calc(100vh-1.5rem)] flex flex-col bg-slate-50">
       {/* Page Header */}
-      <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100 bg-white/50">
-          <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors">
-            <ArrowLeft className="h-4 w-4" />
+      <div className="bg-white border-b border-slate-200">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100">
+          <button onClick={() => router.back()} className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-900 transition-colors">
+            <ArrowLeft className="h-3.5 w-3.5" />
             <span>Back</span>
           </button>
           <MissingDataDropdown missingFields={missingFields} onAddClick={handleAddField} />
         </div>
 
-        <div className="p-6">
-          <div className="flex items-start gap-5">
+        <div className="px-6 py-4">
+          <div className="flex items-start gap-4">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar} className="relative h-20 w-20 rounded-2xl overflow-hidden group focus:outline-none focus:ring-4 focus:ring-indigo-500/20 shadow-lg">
+              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar} className="relative h-14 w-14 rounded-lg overflow-hidden group focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 {person.avatarUrl ? (
                   <img src={person.avatarUrl} alt={fullName} className="h-full w-full object-cover" />
                 ) : (
-                  <div className="h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white">
+                  <div className="h-full w-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-lg font-semibold text-white">
                     {person.firstName.charAt(0)}{person.lastName.charAt(0)}
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  {uploadingAvatar ? <Loader2 className="h-6 w-6 text-white animate-spin" /> : <Camera className="h-6 w-6 text-white" />}
+                  {uploadingAvatar ? <Loader2 className="h-4 w-4 text-white animate-spin" /> : <Camera className="h-4 w-4 text-white" />}
                 </div>
               </button>
             </div>
@@ -1732,26 +1732,26 @@ export default function PersonDetailPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <InlineText value={person.firstName} placeholder="First name" onSave={(val) => saveField("firstName", val)} className="text-2xl font-bold text-slate-900" inputClassName="text-2xl font-bold text-slate-900 w-40" />
-                    <InlineText value={person.lastName} placeholder="Last name" onSave={(val) => saveField("lastName", val)} className="text-2xl font-bold text-slate-900" inputClassName="text-2xl font-bold text-slate-900 w-40" />
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <InlineText value={person.firstName} placeholder="First name" onSave={(val) => saveField("firstName", val)} className="text-base font-semibold text-slate-900" inputClassName="text-base font-semibold text-slate-900 w-32" />
+                    <InlineText value={person.lastName} placeholder="Last name" onSave={(val) => saveField("lastName", val)} className="text-base font-semibold text-slate-900" inputClassName="text-base font-semibold text-slate-900 w-32" />
                   </div>
 
                   {person.currentEmployment && (
-                    <p className="text-sm text-slate-600 mb-2">
+                    <p className="text-xs text-slate-600 mb-1">
                       {person.currentEmployment.title && <span className="font-medium">{person.currentEmployment.title}</span>}
                       {person.currentEmployment.title && " at "}
-                      <Link href={`/organizations/${person.currentEmployment.organization.id}`} className="text-indigo-600 hover:text-indigo-700 font-medium hover:underline">
+                      <Link href={`/organizations/${person.currentEmployment.organization.id}`} className="text-indigo-600 hover:text-indigo-700 font-medium">
                         {person.currentEmployment.organization.name}
                       </Link>
                     </p>
                   )}
 
-                  <div className="flex items-center gap-1.5 text-sm text-slate-500">
-                    <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
-                    <InlineText value={person.address?.city || ""} placeholder="City" onSave={(val) => saveField("city", val)} className="text-slate-500" inputClassName="text-sm w-24" />
+                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <MapPin className="h-3 w-3 flex-shrink-0" />
+                    <InlineText value={person.address?.city || ""} placeholder="City" onSave={(val) => saveField("city", val)} className="text-slate-500 text-xs" inputClassName="text-xs w-20" />
                     <span>,</span>
-                    <InlineText value={person.address?.country || ""} placeholder="Country" onSave={(val) => saveField("country", val)} className="text-slate-500" inputClassName="text-sm w-28" />
+                    <InlineText value={person.address?.country || ""} placeholder="Country" onSave={(val) => saveField("country", val)} className="text-slate-500 text-xs" inputClassName="text-xs w-24" />
                   </div>
                 </div>
 
@@ -1759,27 +1759,27 @@ export default function PersonDetailPage() {
               </div>
 
               {/* Quick Actions */}
-              <div className="flex items-center gap-2 mt-4 flex-wrap">
+              <div className="flex items-center gap-1.5 mt-3 flex-wrap">
                 {primaryEmail && (
-                  <a href={`mailto:${primaryEmail}`} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
-                    <Mail className="h-4 w-4" />
+                  <a href={`mailto:${primaryEmail}`} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors">
+                    <Mail className="h-3 w-3" />
                     Email
                   </a>
                 )}
                 {primaryPhone && (
-                  <a href={`tel:${primaryPhone}`} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md">
-                    <Phone className="h-4 w-4" />
+                  <a href={`tel:${primaryPhone}`} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors">
+                    <Phone className="h-3 w-3" />
                     Call
                   </a>
                 )}
                 {whatsappNumber && (
-                  <a href={`whatsapp://send?phone=${whatsappNumber}`} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-green-700 bg-green-50 hover:bg-green-100 rounded-xl border border-green-200 transition-all hover:shadow-md">
-                    <WhatsAppIcon className="h-4 w-4" />
+                  <a href={`whatsapp://send?phone=${whatsappNumber}`} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg border border-green-200 transition-colors">
+                    <WhatsAppIcon className="h-3 w-3" />
                     WhatsApp
                   </a>
                 )}
                 <LinkChip label="LinkedIn" icon={LinkedInIcon} url={person.linkedinUrl} onSave={(val) => saveField("linkedinUrl", val || null)} colors="text-[#0A66C2] bg-blue-50 hover:bg-blue-100 border border-blue-200" />
-                <LinkChip label="Twitter" icon={TwitterIcon} url={person.twitterUrl} onSave={(val) => saveField("twitterUrl", val || null)} colors="text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200" />
+                <LinkChip label="Twitter" icon={TwitterIcon} url={person.twitterUrl} onSave={(val) => saveField("twitterUrl", val || null)} colors="text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200" />
                 <LinkChip label="Instagram" icon={InstagramIcon} url={person.instagramUrl} onSave={(val) => saveField("instagramUrl", val || null)} colors="text-[#E4405F] bg-pink-50 hover:bg-pink-100 border border-pink-200" />
               </div>
             </div>
@@ -1788,82 +1788,83 @@ export default function PersonDetailPage() {
       </div>
 
       {/* Two Column Layout */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="flex-1 min-h-0 overflow-auto p-6">
+        <div className="max-w-5xl mx-auto grid grid-cols-3 gap-6">
         {/* Main Column */}
-        <div className="col-span-2 space-y-6">
+        <div className="col-span-2 space-y-4">
           {/* Quick Activity Logger */}
           <QuickActivityLogger personId={person.id} onActivityLogged={fetchActivities} />
 
           {/* Activity Timeline */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                  <Clock className="h-4 w-4 text-white" />
+                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                  <Clock className="h-3.5 w-3.5 text-white" />
                 </div>
-                <h2 className="text-sm font-semibold text-slate-900">Activity Timeline</h2>
+                <h2 className="text-xs font-semibold text-slate-900">Activity Timeline</h2>
               </div>
-              <span className="text-xs font-medium text-slate-400">{activities.length} activities</span>
+              <span className="text-[10px] font-medium text-slate-400">{activities.length} activities</span>
             </div>
-            <div className="p-4 max-h-[500px] overflow-y-auto">
+            <div className="p-3 max-h-[400px] overflow-y-auto">
               <ActivityTimeline activities={activities} onActivityClick={(a) => setSelectedActivityId(a.id)} loading={loadingActivities} />
             </div>
           </div>
 
           {/* Deals & Activity */}
           {(relatedDealsCount > 0 || relatedInterestsCount > 0 || relatedBlocksCount > 0) && (
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
-              <div className="px-5 py-4 border-b border-slate-100">
-                <h2 className="text-sm font-semibold text-slate-900">Deal Involvement</h2>
+            <div className="bg-white border border-slate-200 rounded-lg">
+              <div className="px-4 py-3 border-b border-slate-100">
+                <h2 className="text-xs font-semibold text-slate-900">Deal Involvement</h2>
               </div>
-              <div className="p-4 space-y-3">
+              <div className="p-3 space-y-2">
                 {person.relatedDeals.map((deal) => (
-                  <Link key={deal.id} href={`/deals/${deal.id}`} className="flex items-center justify-between py-3 px-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                        <Briefcase className="h-4 w-4 text-white" />
+                  <Link key={deal.id} href={`/deals/${deal.id}`} className="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                        <Briefcase className="h-3.5 w-3.5 text-white" />
                       </div>
                       <div>
-                        <span className="text-sm font-semibold text-slate-900">{deal.name}</span>
-                        {deal.company && <span className="text-xs text-slate-500 block">{deal.company}</span>}
+                        <span className="text-xs font-medium text-slate-900">{deal.name}</span>
+                        {deal.company && <span className="text-[10px] text-slate-500 block">{deal.company}</span>}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-slate-500 bg-white px-2 py-1 rounded-lg">{deal.role}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-medium text-slate-500 bg-white px-1.5 py-0.5 rounded">{deal.role}</span>
                       <StatusBadge status={deal.status} />
                     </div>
                   </Link>
                 ))}
                 {person.relatedInterests.map((interest) => (
-                  <Link key={interest.id} href={`/deals/${interest.dealId}`} className="flex items-center justify-between py-3 px-4 bg-purple-50/50 rounded-xl hover:bg-purple-100/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-                        <Users className="h-4 w-4 text-white" />
+                  <Link key={interest.id} href={`/deals/${interest.dealId}`} className="flex items-center justify-between py-2 px-3 bg-purple-50/50 rounded-lg hover:bg-purple-100/50 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
+                        <Users className="h-3.5 w-3.5 text-white" />
                       </div>
                       <div>
-                        <span className="text-sm font-semibold text-slate-900">{interest.dealName}</span>
-                        {interest.investor && <span className="text-xs text-slate-500 block">via {interest.investor}</span>}
+                        <span className="text-xs font-medium text-slate-900">{interest.dealName}</span>
+                        {interest.investor && <span className="text-[10px] text-slate-500 block">via {interest.investor}</span>}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-purple-600 bg-purple-100 px-2 py-1 rounded-lg">{interest.role}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-medium text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded">{interest.role}</span>
                       <StatusBadge status={interest.status} />
                     </div>
                   </Link>
                 ))}
                 {person.relatedBlocks.map((block) => (
-                  <Link key={block.id} href={`/deals/${block.dealId}`} className="flex items-center justify-between py-3 px-4 bg-amber-50/50 rounded-xl hover:bg-amber-100/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                        <DollarSign className="h-4 w-4 text-white" />
+                  <Link key={block.id} href={`/deals/${block.dealId}`} className="flex items-center justify-between py-2 px-3 bg-amber-50/50 rounded-lg hover:bg-amber-100/50 transition-colors">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                        <DollarSign className="h-3.5 w-3.5 text-white" />
                       </div>
                       <div>
-                        <span className="text-sm font-semibold text-slate-900">{block.dealName}</span>
-                        {block.seller && <span className="text-xs text-slate-500 block">from {block.seller}</span>}
+                        <span className="text-xs font-medium text-slate-900">{block.dealName}</span>
+                        {block.seller && <span className="text-[10px] text-slate-500 block">from {block.seller}</span>}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-amber-600 bg-amber-100 px-2 py-1 rounded-lg">{block.role}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-medium text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">{block.role}</span>
                       <StatusBadge status={block.status} />
                     </div>
                   </Link>
@@ -1874,21 +1875,21 @@ export default function PersonDetailPage() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Relationships - Always Visible */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center">
-                  <Heart className="h-4 w-4 text-white" />
+                <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center">
+                  <Heart className="h-3.5 w-3.5 text-white" />
                 </div>
-                <h2 className="text-sm font-semibold text-slate-900">Relationships</h2>
+                <h2 className="text-xs font-semibold text-slate-900">Relationships</h2>
               </div>
               <button
                 onClick={() => { setNewRelationship(createEmptyRelationship()); setAddingRelationship(true); }}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+                className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded transition-colors"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-3 w-3" />
                 Add
               </button>
             </div>
@@ -2017,14 +2018,14 @@ export default function PersonDetailPage() {
           </div>
 
           {/* Contact Info */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
-              <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
-                <Mail className="h-4 w-4 text-white" />
+          <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2">
+              <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                <Mail className="h-3.5 w-3.5 text-white" />
               </div>
-              <h2 className="text-sm font-semibold text-slate-900">Contact Info</h2>
+              <h2 className="text-xs font-semibold text-slate-900">Contact Info</h2>
             </div>
-            <div className="p-4">
+            <div className="p-3">
               <ContactInfoEditor
                 emails={person.emails || []}
                 phones={person.phones || []}
@@ -2143,6 +2144,7 @@ export default function PersonDetailPage() {
             </div>
           </Collapsible.Root>
         </div>
+      </div>
       </div>
 
       {/* Event Modal */}

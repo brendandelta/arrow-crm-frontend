@@ -193,22 +193,22 @@ export function EntityFiltersRail({
 
   if (isCollapsed) {
     return (
-      <div className="w-16 bg-white border-r border-slate-200/80 flex flex-col items-center py-6 gap-2">
+      <div className="w-12 bg-white border-r border-slate-200 flex flex-col items-center py-4 gap-1.5">
         <button
           onClick={onToggleCollapse}
-          className="h-10 w-10 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 transition-colors mb-4"
+          className="h-8 w-8 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-500 transition-colors mb-3"
           title="Expand filters"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3.5 w-3.5" />
         </button>
-        <div className="w-8 h-px bg-slate-200 mb-4" />
+        <div className="w-6 h-px bg-slate-200 mb-3" />
         {QUICK_SCOPES.slice(1).map((scope) => (
           <button
             key={scope.id}
             onClick={() => handleQuickScopeClick(scope)}
-            className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-200 ${
+            className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
               isQuickScopeActive(scope)
-                ? "bg-indigo-100 text-indigo-600 shadow-sm"
+                ? "bg-indigo-100 text-indigo-600"
                 : "text-slate-400 hover:bg-slate-50 hover:text-slate-600"
             }`}
             title={scope.label}
@@ -221,48 +221,48 @@ export function EntityFiltersRail({
   }
 
   return (
-    <div className="w-72 bg-white border-r border-slate-200/80 flex flex-col overflow-hidden">
+    <div className="w-64 bg-white border-r border-slate-200 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-slate-400" />
-          <span className="text-sm font-semibold text-slate-700">Filters</span>
+          <Filter className="h-3.5 w-3.5 text-slate-400" />
+          <span className="text-sm font-medium text-slate-700">Filters</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {hasActiveFilters && (
             <button
               onClick={clearAllFilters}
-              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium px-2 py-1 rounded-lg hover:bg-indigo-50 transition-colors"
+              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium px-2 py-1 rounded hover:bg-indigo-50 transition-colors"
             >
-              Clear all
+              Clear
             </button>
           )}
           <button
             onClick={onToggleCollapse}
-            className="h-8 w-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+            className="h-7 w-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
             title="Collapse filters"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto">
         {/* Quick Scopes */}
-        <div className="px-4 py-4 border-b border-slate-100">
-          <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3 px-1">Quick Filters</p>
-          <div className="space-y-1">
+        <div className="px-3 py-3 border-b border-slate-200">
+          <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-2 px-1">Quick Filters</p>
+          <div className="space-y-0.5">
             {QUICK_SCOPES.map((scope) => (
               <button
                 key={scope.id}
                 onClick={() => handleQuickScopeClick(scope)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl transition-all duration-200 ${
+                className={`w-full flex items-center gap-2.5 px-2.5 py-2 text-xs rounded-lg transition-colors ${
                   isQuickScopeActive(scope)
-                    ? "bg-gradient-to-r from-indigo-50 to-indigo-50/50 text-indigo-700 font-medium shadow-sm"
+                    ? "bg-indigo-50 text-indigo-700 font-medium"
                     : "text-slate-600 hover:bg-slate-50"
                 }`}
               >
-                <span className={`transition-colors ${isQuickScopeActive(scope) ? "text-indigo-500" : "text-slate-400"}`}>
+                <span className={isQuickScopeActive(scope) ? "text-indigo-500" : "text-slate-400"}>
                   {scope.icon}
                 </span>
                 <span>{scope.label}</span>
@@ -272,7 +272,7 @@ export function EntityFiltersRail({
         </div>
 
         {/* Facet Sections */}
-        <div className="px-4 py-4 space-y-2">
+        <div className="px-3 py-3 space-y-1">
           {/* Entity Type */}
           <FacetSection
             title="Entity Type"
@@ -310,15 +310,15 @@ export function EntityFiltersRail({
             open={openSections.has("sort")}
             onOpenChange={() => toggleSection("sort")}
           >
-            <CollapsibleTrigger className="w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">
+            <CollapsibleTrigger className="w-full flex items-center justify-between px-2.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
               <span>Sort by</span>
               <ChevronRight
-                className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
+                className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${
                   openSections.has("sort") ? "rotate-90" : ""
                 }`}
               />
             </CollapsibleTrigger>
-            <CollapsibleContent className="pt-1 pb-2 space-y-0.5">
+            <CollapsibleContent className="pt-0.5 pb-1.5 space-y-0.5">
               {[
                 { value: "name", label: "Name" },
                 { value: "updatedAt", label: "Last Updated" },
@@ -332,7 +332,7 @@ export function EntityFiltersRail({
                       sort: option.value as EntityFilters["sort"],
                     })
                   }
-                  className={`w-full flex items-center px-4 py-2 text-sm rounded-lg transition-all duration-200 ${
+                  className={`w-full flex items-center px-3 py-1.5 text-xs rounded-lg transition-colors ${
                     (filters.sort || "name") === option.value
                       ? "bg-indigo-50 text-indigo-700 font-medium"
                       : "text-slate-600 hover:bg-slate-50"
@@ -372,32 +372,32 @@ function FacetSection({
 
   return (
     <Collapsible open={isOpen} onOpenChange={onToggleOpen}>
-      <CollapsibleTrigger className="w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-xl transition-colors">
-        <div className="flex items-center gap-2">
+      <CollapsibleTrigger className="w-full flex items-center justify-between px-2.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+        <div className="flex items-center gap-1.5">
           <span>{title}</span>
           {selectedCount > 0 && (
-            <span className="flex items-center justify-center h-5 min-w-[20px] px-1.5 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full">
+            <span className="flex items-center justify-center h-4 min-w-[16px] px-1 bg-indigo-100 text-indigo-700 text-[10px] font-semibold rounded-full">
               {selectedCount}
             </span>
           )}
         </div>
         <ChevronRight
-          className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
+          className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
         />
       </CollapsibleTrigger>
-      <CollapsibleContent className="pt-1 pb-2 space-y-0.5">
+      <CollapsibleContent className="pt-0.5 pb-1.5 space-y-0.5">
         {items.map((item) => (
           <label
             key={item.value}
-            className="flex items-center gap-3 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors"
+            className="flex items-center gap-2.5 px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors"
           >
             <Checkbox
               checked={selectedValues.includes(item.value)}
               onCheckedChange={() => onToggle(item.value)}
-              className="data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+              className="h-3.5 w-3.5 data-[state=checked]:bg-slate-900 data-[state=checked]:border-slate-900"
             />
             <span className="flex-1 truncate">{item.label || item.value}</span>
-            <span className="text-xs text-slate-400 tabular-nums">{item.count}</span>
+            <span className="text-[10px] text-slate-400 tabular-nums">{item.count}</span>
           </label>
         ))}
       </CollapsibleContent>

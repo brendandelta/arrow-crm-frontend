@@ -35,6 +35,7 @@ interface TasksHeaderProps {
   activeTab: TasksTab;
   onTabChange: (tab: TasksTab) => void;
   onCreateTask: () => void;
+  onCreateProject?: () => void;
   groupBy?: GroupByType;
   onGroupByChange?: (groupBy: GroupByType) => void;
   subGroupByAssociation?: boolean;
@@ -49,6 +50,7 @@ export function TasksHeader({
   activeTab,
   onTabChange,
   onCreateTask,
+  onCreateProject,
   groupBy = "deal",
   onGroupByChange,
   subGroupByAssociation = false,
@@ -164,7 +166,17 @@ export function TasksHeader({
               )}
             </div>
 
-            {/* Create button */}
+            {/* Create buttons */}
+            {activeTab === "grouped" && groupBy === "project" && onCreateProject && (
+              <Button
+                onClick={onCreateProject}
+                variant="outline"
+                className="gap-1.5"
+              >
+                <FolderKanban className="h-4 w-4" />
+                New Project
+              </Button>
+            )}
             <Button
               onClick={onCreateTask}
               className={cn(

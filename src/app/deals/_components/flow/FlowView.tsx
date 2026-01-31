@@ -18,6 +18,8 @@ interface FlowViewProps {
   loading: boolean;
   onStatusChange: (dealId: number, newStatus: string) => void;
   onPriorityChange: (dealId: number, priority: number) => void;
+  onOwnerChange?: (dealId: number, ownerId: number | null) => void;
+  onCloseDateChange?: (dealId: number, date: string | null) => void;
   onCreateDeal: () => void;
   owners: Owner[];
   currentUserId?: number | null;
@@ -55,6 +57,8 @@ export function FlowView({
   loading,
   onStatusChange,
   onPriorityChange,
+  onOwnerChange,
+  onCloseDateChange,
   onCreateDeal,
   owners,
   currentUserId,
@@ -201,7 +205,7 @@ export function FlowView({
   }
 
   return (
-    <div className={`space-y-3 ${focusMode ? "max-w-none" : ""}`}>
+    <div className={`h-full flex flex-col gap-3 ${focusMode ? "max-w-none" : ""}`}>
       {/* Metrics strip — hidden in focus mode */}
       {!focusMode && (
         <FlowMetrics
@@ -227,11 +231,13 @@ export function FlowView({
       />
 
       {/* Stage board */}
-      <StageBoard
-        deals={filteredDeals}
-        onSelectDeal={(deal) => setSelectedDeal(deal)}
-        onStatusChange={onStatusChange}
-      />
+      <div className="flex-1 min-h-0">
+        <StageBoard
+          deals={filteredDeals}
+          onSelectDeal={(deal) => setSelectedDeal(deal)}
+          onStatusChange={onStatusChange}
+        />
+      </div>
 
       {/* Inspector sheet */}
       <DealInspector
@@ -240,6 +246,8 @@ export function FlowView({
         onClose={() => setSelectedDeal(null)}
         onStatusChange={onStatusChange}
         onPriorityChange={onPriorityChange}
+        onOwnerChange={onOwnerChange}
+        onCloseDateChange={onCloseDateChange}
         onNavigate={(id) => router.push(`/deals/${id}`)}
         owners={owners}
       />

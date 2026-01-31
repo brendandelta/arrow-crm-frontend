@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 interface EnumOption {
   value: string;
@@ -47,16 +46,16 @@ export function EnumFilter({ options, selected, counts, onChange }: EnumFilterPr
   };
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       {showSearch && (
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search..."
-            className="w-full text-[12px] pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder:text-slate-300"
+            className="w-full text-xs pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:bg-white focus:border-slate-300 placeholder:text-slate-400"
             onPointerDown={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           />
@@ -65,21 +64,21 @@ export function EnumFilter({ options, selected, counts, onChange }: EnumFilterPr
 
       <button
         onClick={toggleAll}
-        className="text-[11px] text-blue-600 hover:text-blue-800 font-medium transition-colors"
+        className="text-[11px] text-slate-500 hover:text-slate-700 font-medium transition-colors"
         onPointerDown={(e) => e.stopPropagation()}
       >
         {allSelected ? "Clear all" : "Select all"}
       </button>
 
-      <div className="max-h-[200px] overflow-y-auto space-y-0.5">
+      <div className="max-h-[180px] overflow-y-auto space-y-0.5">
         {filtered.map((option) => {
           const isChecked = selected.has(option.value);
           const count = counts.get(option.value) ?? 0;
           return (
             <label
               key={option.value}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors hover:bg-slate-50 ${
-                isChecked ? "bg-blue-50/50" : ""
+              className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer transition-colors hover:bg-slate-50 ${
+                isChecked ? "bg-slate-100" : ""
               }`}
               onPointerDown={(e) => e.stopPropagation()}
             >
@@ -87,13 +86,11 @@ export function EnumFilter({ options, selected, counts, onChange }: EnumFilterPr
                 type="checkbox"
                 checked={isChecked}
                 onChange={() => toggle(option.value)}
-                className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20"
+                className="h-3.5 w-3.5 rounded border-slate-300 text-slate-900 focus:ring-slate-500/20"
               />
-              <Badge
-                className={`text-[11px] ${option.color || "bg-slate-100 text-slate-600"}`}
-              >
+              <span className={`text-xs px-1.5 py-0.5 rounded ${option.color || "bg-slate-100 text-slate-600"}`}>
                 {option.label}
-              </Badge>
+              </span>
               <span className="ml-auto text-[11px] text-slate-400 tabular-nums">
                 {count}
               </span>

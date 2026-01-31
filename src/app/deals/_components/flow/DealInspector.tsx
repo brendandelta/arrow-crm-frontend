@@ -8,9 +8,6 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -21,11 +18,9 @@ import {
 import {
   Calendar,
   ExternalLink,
-  ListTodo,
   Users,
   Blocks,
   Copy,
-  AlertTriangle,
   CheckCircle2,
   Clock,
 } from "lucide-react";
@@ -73,8 +68,10 @@ interface DealInspectorProps {
   onClose: () => void;
   onStatusChange: (dealId: number, newStatus: string) => void;
   onPriorityChange: (dealId: number, priority: number) => void;
+  onOwnerChange?: (dealId: number, ownerId: number | null) => void;
+  onCloseDateChange?: (dealId: number, date: string | null) => void;
   onNavigate: (dealId: number) => void;
-  owners: Owner[];
+  owners?: Owner[];
 }
 
 export function DealInspector({
@@ -83,8 +80,10 @@ export function DealInspector({
   onClose,
   onStatusChange,
   onPriorityChange,
+  onOwnerChange,
+  onCloseDateChange,
   onNavigate,
-  owners,
+  owners = [],
 }: DealInspectorProps) {
   const [expanded, setExpanded] = useState<ExpandedData | null>(null);
   const [loadingExpanded, setLoadingExpanded] = useState(false);
@@ -149,64 +148,56 @@ export function DealInspector({
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md p-0 flex flex-col"
+        className="w-full sm:max-w-md p-0 flex flex-col h-full"
       >
-        <SheetHeader className="px-5 pt-5 pb-3 border-b space-y-3">
+        {/* Compact header */}
+        <div className="shrink-0 px-4 pt-4 pb-3 border-b border-slate-200">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <SheetTitle className="text-base leading-tight truncate">
-                {deal.name}
-              </SheetTitle>
-              <SheetDescription className="text-xs mt-0.5">
-                {deal.company || "No company"}{" "}
-                {deal.sector && `· ${deal.sector}`}
-              </SheetDescription>
+              <SheetHeader className="p-0 space-y-0">
+                <SheetTitle className="text-sm font-semibold leading-tight truncate">
+                  {deal.name}
+                </SheetTitle>
+                <SheetDescription className="text-xs text-slate-500 mt-0.5">
+                  {deal.company || "No company"}
+                  {deal.sector && ` · ${deal.sector}`}
+                </SheetDescription>
+              </SheetHeader>
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span
-                className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium ${statusCfg.bgColor} ${statusCfg.color}`}
-              >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${statusCfg.dotColor}`}
-                />
-                {statusCfg.label}
-              </span>
-              <span
-                className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${priorityConfig.color}`}
-              >
-                {priorityConfig.shortLabel}
-              </span>
-            </div>
-          </div>
-
-          {/* Quick action row */}
-          <div className="flex items-center gap-1.5">
             <button
               onClick={() => onNavigate(deal.id)}
-              className="h-7 px-2.5 rounded-md text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-1.5"
+              className="shrink-0 h-7 px-2.5 rounded text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-1"
             >
               <ExternalLink className="h-3 w-3" />
-              Open Deal
-            </button>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(
-                  `${window.location.origin}/deals/${deal.id}`
-                );
-              }}
-              className="h-7 px-2 rounded-md text-xs bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors flex items-center gap-1"
-            >
-              <Copy className="h-3 w-3" />
-              Link
+              Open
             </button>
           </div>
-        </SheetHeader>
 
-        <ScrollArea className="flex-1">
-          <div className="px-5 py-4 space-y-5">
+          {/* Badges row */}
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium ${statusCfg.bgColor} ${statusCfg.color}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${statusCfg.dotColor}`} />
+              {statusCfg.label}
+            </span>
+            <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium ${priorityConfig.color}`}>
+              {priorityConfig.shortLabel}
+            </span>
+            <button
+              onClick={() => navigator.clipboard.writeText(`${window.location.origin}/deals/${deal.id}`)}
+              className="ml-auto text-[11px] text-slate-400 hover:text-slate-600 flex items-center gap-1"
+            >
+              <Copy className="h-3 w-3" />
+              Copy link
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 space-y-4">
             {/* Editable fields */}
-            <section className="space-y-3">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <section className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 space-y-3">
+              <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                 Details
               </h3>
 
@@ -262,11 +253,32 @@ export function DealInspector({
                   <label className="text-[11px] text-muted-foreground block mb-1">
                     Owner
                   </label>
-                  <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-white">
-                    {deal.owner
-                      ? `${deal.owner.firstName} ${deal.owner.lastName}`
-                      : "Unassigned"}
-                  </div>
+                  {onOwnerChange && owners.length > 0 ? (
+                    <Select
+                      value={deal.owner ? String(deal.owner.id) : "unassigned"}
+                      onValueChange={(v) =>
+                        onOwnerChange(deal.id, v === "unassigned" ? null : Number(v))
+                      }
+                    >
+                      <SelectTrigger size="sm" className="h-8 text-xs bg-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        {owners.map((o) => (
+                          <SelectItem key={o.id} value={String(o.id)}>
+                            {o.firstName} {o.lastName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="h-8 flex items-center text-xs text-foreground border rounded-md px-2.5 bg-white">
+                      {deal.owner
+                        ? `${deal.owner.firstName} ${deal.owner.lastName}`
+                        : "Unassigned"}
+                    </div>
+                  )}
                 </div>
 
                 {/* Close date */}
@@ -274,29 +286,35 @@ export function DealInspector({
                   <label className="text-[11px] text-muted-foreground block mb-1">
                     Close Date
                   </label>
-                  <div
-                    className={`h-8 flex items-center gap-1.5 text-xs border rounded-md px-2.5 bg-white ${
-                      isPastDue
-                        ? "text-red-600"
-                        : isUrgent
-                        ? "text-amber-600"
-                        : "text-foreground"
-                    }`}
-                  >
-                    <Calendar className="h-3 w-3" />
-                    {deal.expectedClose
-                      ? formatDate(deal.expectedClose)
-                      : "No date"}
-                    {deal.daysUntilClose !== null && (
-                      <span className="text-muted-foreground">
-                        ({isPastDue
-                          ? `${Math.abs(deal.daysUntilClose)}d over`
-                          : deal.daysUntilClose === 0
-                          ? "today"
-                          : `${deal.daysUntilClose}d`})
-                      </span>
-                    )}
-                  </div>
+                  {onCloseDateChange ? (
+                    <input
+                      type="date"
+                      value={deal.expectedClose ? deal.expectedClose.split('T')[0] : ''}
+                      onChange={(e) => onCloseDateChange(deal.id, e.target.value || null)}
+                      className={`h-8 w-full text-xs border rounded-md px-2.5 bg-white ${
+                        isPastDue
+                          ? "text-red-600"
+                          : isUrgent
+                          ? "text-amber-600"
+                          : "text-foreground"
+                      }`}
+                    />
+                  ) : (
+                    <div
+                      className={`h-8 flex items-center gap-1.5 text-xs border rounded-md px-2.5 bg-white ${
+                        isPastDue
+                          ? "text-red-600"
+                          : isUrgent
+                          ? "text-amber-600"
+                          : "text-foreground"
+                      }`}
+                    >
+                      <Calendar className="h-3 w-3" />
+                      {deal.expectedClose
+                        ? formatDate(deal.expectedClose)
+                        : "No date"}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -323,11 +341,9 @@ export function DealInspector({
               </div>
             </section>
 
-            <Separator />
-
             {/* Demand / Coverage */}
-            <section className="space-y-2.5">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <section className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 space-y-2.5">
+              <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                 Demand
               </h3>
               <DemandProgressBar
@@ -345,32 +361,27 @@ export function DealInspector({
               )}
             </section>
 
-            <Separator />
-
             {/* Risk */}
             {deal.riskFlagsSummary.count > 0 && (
-              <>
-                <section className="space-y-2.5">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Risk Flags
-                  </h3>
-                  <RiskFlagIndicator
-                    riskFlags={deal.riskFlags}
-                    showLabels
-                    size="md"
-                  />
-                </section>
-                <Separator />
-              </>
+              <section className="rounded-lg border border-red-200 bg-red-50/50 p-3 space-y-2.5">
+                <h3 className="text-[11px] font-semibold text-red-600 uppercase tracking-wider">
+                  Risk Flags
+                </h3>
+                <RiskFlagIndicator
+                  riskFlags={deal.riskFlags}
+                  showLabels
+                  size="md"
+                />
+              </section>
             )}
 
             {/* Blocks */}
-            <section className="space-y-2.5">
+            <section className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 space-y-2.5">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                   Blocks
                 </h3>
-                <span className="text-xs text-muted-foreground tabular-nums">
+                <span className="text-[11px] text-slate-400 tabular-nums">
                   {deal.blocks} total
                 </span>
               </div>
@@ -409,21 +420,16 @@ export function DealInspector({
               )}
             </section>
 
-            <Separator />
-
             {/* Tasks */}
-            <section className="space-y-2.5">
+            <section className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 space-y-2.5">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                   Tasks
                 </h3>
                 {deal.overdueTasksCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="text-[10px] px-1.5 py-0"
-                  >
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-red-100 text-red-700">
                     {deal.overdueTasksCount} overdue
-                  </Badge>
+                  </span>
                 )}
               </div>
               {loadingExpanded ? (
@@ -473,21 +479,16 @@ export function DealInspector({
               )}
             </section>
 
-            <Separator />
-
             {/* Outreach / Follow-ups */}
-            <section className="space-y-2.5">
+            <section className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 space-y-2.5">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <h3 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                   Follow-ups
                 </h3>
                 {deal.targetsNeedingFollowup > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="text-[10px] px-1.5 py-0 bg-amber-100 text-amber-700"
-                  >
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">
                     {deal.targetsNeedingFollowup} need follow-up
-                  </Badge>
+                  </span>
                 )}
               </div>
               {loadingExpanded ? (
@@ -524,7 +525,7 @@ export function DealInspector({
               )}
             </section>
           </div>
-        </ScrollArea>
+        </div>
       </SheetContent>
     </Sheet>
   );

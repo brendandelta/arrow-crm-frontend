@@ -4,7 +4,6 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   Building2,
@@ -141,8 +140,8 @@ function formatLabel(str: string) {
 
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider w-24 shrink-0">{label}</div>
+    <div className="flex items-center gap-2">
+      <div className="text-[9px] text-slate-400 font-medium uppercase tracking-wider w-20 shrink-0">{label}</div>
       <div className="min-w-0 flex-1">{children}</div>
     </div>
   );
@@ -172,10 +171,10 @@ function InlineText({ value, placeholder, onSave }: {
       onBlur={commit}
       onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(value); setEditing(false); } }}
       placeholder={placeholder}
-      className="text-[13px] text-slate-700 bg-transparent border-b border-slate-300 outline-none py-0.5 w-full"
+      className="text-xs text-slate-700 bg-transparent border-b border-slate-300 outline-none py-0.5 w-full"
     />
   ) : (
-    <button onClick={() => { setDraft(value); setEditing(true); }} className="text-[13px] text-slate-700 hover:text-indigo-600 transition-colors cursor-text text-left">
+    <button onClick={() => { setDraft(value); setEditing(true); }} className="text-xs text-slate-700 hover:text-blue-600 transition-colors cursor-text text-left">
       {value || <span className="text-slate-300 italic">{placeholder}</span>}
     </button>
   );
@@ -201,7 +200,7 @@ function InlineSelect({ value, options, placeholder, onSave, displayClass }: {
       value={value}
       onChange={(e) => { onSave(e.target.value); setEditing(false); }}
       onBlur={() => setEditing(false)}
-      className="text-[13px] font-medium bg-transparent border-b border-slate-300 outline-none py-0 cursor-pointer"
+      className="text-xs font-medium bg-transparent border-b border-slate-300 outline-none py-0 cursor-pointer"
     >
       <option value="">{placeholder}</option>
       {options.map((opt) => (
@@ -211,8 +210,8 @@ function InlineSelect({ value, options, placeholder, onSave, displayClass }: {
   ) : (
     <button
       onClick={() => setEditing(true)}
-      className={`text-[13px] font-medium cursor-pointer transition-colors ${
-        displayClass || (config ? `px-2 py-0.5 rounded-full text-[11px] ${config.bg} ${config.text}` : "text-slate-900 hover:text-indigo-600")
+      className={`text-xs font-medium cursor-pointer transition-colors ${
+        displayClass || (config ? `px-1.5 py-0.5 rounded text-[10px] ${config.bg} ${config.text}` : "text-slate-900 hover:text-blue-600")
       }`}
     >
       {value ? (config?.label || formatLabel(value)) : <span className="text-slate-300">{placeholder}</span>}
@@ -235,10 +234,10 @@ function InlineDate({ value, onSave }: { value: string; onSave: (val: string) =>
       value={localValue}
       onChange={(e) => { setLocalValue(e.target.value); onSave(e.target.value); setEditing(false); }}
       onBlur={() => setEditing(false)}
-      className="text-[13px] font-medium bg-transparent border-b border-slate-300 outline-none py-0"
+      className="text-xs font-medium bg-transparent border-b border-slate-300 outline-none py-0"
     />
   ) : (
-    <button onClick={() => setEditing(true)} className="text-[13px] font-medium text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer">
+    <button onClick={() => setEditing(true)} className="text-xs font-medium text-slate-900 hover:text-blue-600 transition-colors cursor-pointer">
       {localValue ? formatDate(localValue) : <span className="text-slate-300">Set date</span>}
     </button>
   );
@@ -249,12 +248,12 @@ function InlineWarmthSelector({ warmth, onSave }: { warmth: number; onSave: (val
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1" onMouseLeave={() => setEditing(false)}>
+      <div className="flex items-center gap-0.5" onMouseLeave={() => setEditing(false)}>
         {WARMTH_CONFIG.map((w, i) => (
           <button
             key={i}
             onClick={() => { onSave(i); setEditing(false); }}
-            className={`px-2.5 py-1 text-[11px] font-medium rounded-full border transition-all ${
+            className={`px-1.5 py-0.5 text-[9px] font-medium rounded border transition-colors ${
               i === warmth
                 ? `${w.color} text-white border-transparent`
                 : `bg-white border-slate-200 text-slate-600 ${w.hoverBg}`
@@ -268,13 +267,13 @@ function InlineWarmthSelector({ warmth, onSave }: { warmth: number; onSave: (val
   }
 
   return (
-    <button onClick={() => setEditing(true)} className="flex items-center gap-2 group cursor-pointer">
+    <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 group cursor-pointer">
       <div className="flex gap-0.5">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className={`h-2 w-4 rounded-full transition-all ${i <= warmth ? WARMTH_CONFIG[warmth].color : "bg-slate-200"}`} />
+          <div key={i} className={`h-1 w-2.5 rounded-full transition-colors ${i <= warmth ? WARMTH_CONFIG[warmth].color : "bg-slate-200"}`} />
         ))}
       </div>
-      <span className="text-sm text-slate-600 group-hover:text-indigo-600 transition-colors font-medium">
+      <span className="text-[10px] text-slate-600 group-hover:text-blue-600 transition-colors font-medium">
         {WARMTH_CONFIG[warmth].label}
       </span>
     </button>
@@ -300,8 +299,8 @@ function LinkChip({ label, icon: Icon, url, onSave }: {
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1.5 bg-slate-50 rounded-lg px-3 py-2 border border-slate-200">
-        <Icon className="h-4 w-4 text-slate-400 shrink-0" />
+      <div className="flex items-center gap-1 bg-slate-50 rounded-lg px-2.5 py-1.5 border border-slate-200">
+        <Icon className="h-3.5 w-3.5 text-slate-400 shrink-0" />
         <input
           ref={ref}
           value={draft}
@@ -309,7 +308,7 @@ function LinkChip({ label, icon: Icon, url, onSave }: {
           onBlur={commit}
           onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setDraft(url || ""); setEditing(false); } }}
           placeholder="https://..."
-          className="text-sm bg-transparent outline-none flex-1 min-w-0"
+          className="text-xs bg-transparent outline-none flex-1 min-w-0"
         />
       </div>
     );
@@ -321,12 +320,12 @@ function LinkChip({ label, icon: Icon, url, onSave }: {
         href={url.startsWith("http") ? url : `https://${url}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 rounded-lg transition-colors"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 rounded-lg transition-colors"
         onContextMenu={(e) => { e.preventDefault(); setDraft(url); setEditing(true); }}
       >
-        <Icon className="h-4 w-4" />
+        <Icon className="h-3.5 w-3.5" />
         {label}
-        <ExternalLink className="h-3 w-3 opacity-50" />
+        <ExternalLink className="h-2.5 w-2.5 opacity-50" />
       </a>
     );
   }
@@ -334,9 +333,9 @@ function LinkChip({ label, icon: Icon, url, onSave }: {
   return (
     <button
       onClick={() => { setDraft(""); setEditing(true); }}
-      className="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-400 hover:text-slate-600 rounded-lg transition-colors border border-dashed border-slate-200 hover:border-slate-300"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-400 hover:text-slate-600 rounded-lg transition-colors border border-dashed border-slate-200 hover:border-slate-300"
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-3.5 w-3.5" />
       {label}
     </button>
   );
@@ -366,15 +365,15 @@ function NotesEditor({ value, onSave }: { value: string; onSave: (val: string) =
           ref={textareaRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          rows={4}
-          className="w-full text-sm leading-relaxed text-slate-700 bg-white border border-slate-200 rounded-lg px-4 py-3 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 outline-none resize-none placeholder:text-slate-300"
+          rows={3}
+          className="w-full text-xs leading-relaxed text-slate-700 bg-white border border-slate-200 rounded-lg px-3 py-2 focus:border-slate-300 outline-none resize-none placeholder:text-slate-300"
           placeholder="Add notes about this organization..."
         />
-        <div className="flex items-center gap-2">
-          <button onClick={commit} className="px-3 py-1.5 text-xs font-medium text-white bg-slate-900 rounded-md hover:bg-slate-800 transition-colors">
+        <div className="flex items-center gap-1.5">
+          <button onClick={commit} className="px-2.5 py-1 text-[10px] font-medium text-white bg-slate-900 rounded hover:bg-slate-800 transition-colors">
             Save
           </button>
-          <button onClick={() => { setDraft(value); setEditing(false); }} className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors">
+          <button onClick={() => { setDraft(value); setEditing(false); }} className="px-2.5 py-1 text-[10px] text-slate-400 hover:text-slate-600 transition-colors">
             Cancel
           </button>
         </div>
@@ -386,7 +385,7 @@ function NotesEditor({ value, onSave }: { value: string; onSave: (val: string) =
     return (
       <button
         onClick={() => { setDraft(""); setEditing(true); }}
-        className="w-full text-left text-sm text-slate-400 hover:text-slate-600 py-3 px-4 border border-dashed border-slate-200 rounded-lg hover:border-slate-300 transition-colors"
+        className="w-full text-left text-xs text-slate-400 hover:text-slate-600 py-2.5 px-3 border border-dashed border-slate-200 rounded-lg hover:border-slate-300 transition-colors"
       >
         Click to add notes...
       </button>
@@ -396,9 +395,9 @@ function NotesEditor({ value, onSave }: { value: string; onSave: (val: string) =
   return (
     <button
       onClick={() => { setDraft(value); setEditing(true); }}
-      className="w-full text-left bg-amber-50 border border-amber-100 rounded-lg p-4 hover:bg-amber-100/50 transition-colors cursor-text"
+      className="w-full text-left bg-amber-50 border border-amber-100 rounded-lg p-3 hover:bg-amber-100/50 transition-colors cursor-text"
     >
-      <p className="text-sm text-slate-700 whitespace-pre-wrap">{value}</p>
+      <p className="text-xs text-slate-700 whitespace-pre-wrap">{value}</p>
     </button>
   );
 }
@@ -423,14 +422,14 @@ function TagsEditor({ tags, onSave }: { tags: string[]; onSave: (tags: string[])
   };
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
+    <div className="flex items-center gap-1 flex-wrap">
       {tags.map((tag) => (
-        <Badge key={tag} variant="secondary" className="text-[11px] font-normal pl-2.5 pr-1 py-0.5 h-6 flex items-center gap-1 bg-slate-100">
+        <span key={tag} className="inline-flex items-center gap-1 text-[10px] font-normal pl-2 pr-1 py-0.5 h-5 bg-slate-100 rounded">
           {tag}
-          <button onClick={() => removeTag(tag)} className="text-slate-400 hover:text-rose-500 transition-colors ml-0.5">
-            <X className="h-3 w-3" />
+          <button onClick={() => removeTag(tag)} className="text-slate-400 hover:text-rose-500 transition-colors">
+            <X className="h-2.5 w-2.5" />
           </button>
-        </Badge>
+        </span>
       ))}
       {addingTag ? (
         <input
@@ -444,11 +443,11 @@ function TagsEditor({ tags, onSave }: { tags: string[]; onSave: (tags: string[])
             if (e.key === "Escape") { setAddingTag(false); setNewTag(""); }
           }}
           placeholder="tag name"
-          className="text-[11px] border-b border-slate-300 outline-none w-20 py-0.5 bg-transparent"
+          className="text-[10px] border-b border-slate-300 outline-none w-16 py-0.5 bg-transparent"
         />
       ) : (
-        <button onClick={() => setAddingTag(true)} className="text-slate-300 hover:text-slate-500 transition-colors p-1">
-          <Plus className="h-3.5 w-3.5" />
+        <button onClick={() => setAddingTag(true)} className="text-slate-300 hover:text-slate-500 transition-colors p-0.5">
+          <Plus className="h-3 w-3" />
         </button>
       )}
     </div>
@@ -505,9 +504,9 @@ export default function OrganizationDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex items-center gap-2 text-slate-400">
-          <div className="h-4 w-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+      <div className="flex items-center justify-center h-48">
+        <div className="flex items-center gap-2 text-slate-400 text-xs">
+          <div className="h-3.5 w-3.5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
           Loading...
         </div>
       </div>
@@ -516,10 +515,10 @@ export default function OrganizationDetailPage() {
 
   if (!org) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-2">
-        <Building2 className="h-12 w-12 text-slate-300" />
-        <span className="text-slate-500">Organization not found</span>
-        <button onClick={() => router.back()} className="text-sm text-blue-600 hover:underline">Go back</button>
+      <div className="flex flex-col items-center justify-center h-48 gap-2">
+        <Building2 className="h-8 w-8 text-slate-300" />
+        <span className="text-xs text-slate-500">Organization not found</span>
+        <button onClick={() => router.back()} className="text-xs text-blue-600 hover:underline">Go back</button>
       </div>
     );
   }
@@ -528,35 +527,34 @@ export default function OrganizationDetailPage() {
   const kindConfig = KIND_CONFIG[org.kind] || KIND_CONFIG.other;
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Navigation */}
-      <div className="flex items-center justify-between mb-6">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back</span>
-        </button>
-      </div>
+    <div className="h-[calc(100vh-1.5rem)] flex flex-col">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-slate-200 bg-white">
+        <div className="flex items-center gap-3 mb-3">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Back</span>
+          </button>
+        </div>
 
-      {/* Header Card */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 mb-6">
-        <div className="flex items-start gap-5">
+        <div className="flex items-start gap-4">
           {/* Avatar */}
-          <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center flex-shrink-0">
-            <Building2 className="h-10 w-10 text-slate-400" />
+          <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+            <Building2 className="h-6 w-6 text-white" />
           </div>
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="flex items-start justify-between gap-4 mb-3">
               <div>
-                <h1 className="text-2xl font-semibold text-slate-900 mb-1">{org.name}</h1>
-                {org.sector && <p className="text-slate-600">{org.sector}</p>}
+                <h1 className="text-lg font-semibold text-slate-900">{org.name}</h1>
+                {org.sector && <p className="text-xs text-slate-600">{org.sector}</p>}
                 {location && (
-                  <p className="text-sm text-slate-500 mt-1 flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5" />
+                  <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
                     {location}
                   </p>
                 )}
@@ -564,7 +562,7 @@ export default function OrganizationDetailPage() {
             </div>
 
             {/* Inline Editable Properties */}
-            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <FieldRow label="Type">
                 <InlineSelect
                   value={org.kind}
@@ -608,32 +606,32 @@ export default function OrganizationDetailPage() {
             </div>
 
             {/* Links */}
-            <div className="flex items-center gap-2 mt-5 pt-5 border-t border-slate-100">
+            <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-slate-100">
               <LinkChip label="Website" icon={Globe} url={org.website} onSave={(val) => saveField("website", val || null)} />
               <LinkChip label="LinkedIn" icon={LinkedInIcon} url={org.linkedinUrl} onSave={(val) => saveField("linkedinUrl", val || null)} />
               <LinkChip label="Twitter" icon={TwitterIcon} url={org.twitterUrl} onSave={(val) => saveField("twitterUrl", val || null)} />
               {org.email && (
-                <a href={`mailto:${org.email}`} className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 rounded-lg transition-colors">
-                  <Mail className="h-4 w-4" />
+                <a href={`mailto:${org.email}`} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 rounded-lg transition-colors">
+                  <Mail className="h-3.5 w-3.5" />
                   Email
                 </a>
               )}
               {org.phone && (
-                <a href={`tel:${org.phone}`} className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 rounded-lg transition-colors">
-                  <Phone className="h-4 w-4" />
+                <a href={`tel:${org.phone}`} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 rounded-lg transition-colors">
+                  <Phone className="h-3.5 w-3.5" />
                   Call
                 </a>
               )}
             </div>
 
             {/* More Section */}
-            <Collapsible open={moreOpen} onOpenChange={setMoreOpen} className="mt-4">
-              <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 transition-colors cursor-pointer">
-                {moreOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+            <Collapsible open={moreOpen} onOpenChange={setMoreOpen} className="mt-3">
+              <CollapsibleTrigger className="flex items-center gap-1 text-[10px] font-medium text-slate-500 hover:text-slate-700 transition-colors cursor-pointer">
+                {moreOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
                 More Details
               </CollapsibleTrigger>
-              <CollapsibleContent className="mt-4 space-y-4 pt-4 border-t border-slate-100">
-                <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+              <CollapsibleContent className="mt-3 space-y-3 pt-3 border-t border-slate-100">
+                <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                   <FieldRow label="Legal Name">
                     <InlineText
                       value={org.legalName || ""}
@@ -676,45 +674,47 @@ export default function OrganizationDetailPage() {
         </div>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-slate-500 mb-1">
-            <Users className="h-4 w-4" />
-            <span className="text-xs font-medium uppercase tracking-wide">People</span>
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto px-6 py-4">
+        {/* Stats Row */}
+        <div className="grid grid-cols-4 gap-3 mb-4">
+          <div className="bg-white border border-slate-200 rounded-lg p-3">
+            <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+              <Users className="h-3.5 w-3.5" />
+              <span className="text-[10px] font-medium uppercase tracking-wide">People</span>
+            </div>
+            <div className="text-lg font-semibold text-slate-900">{org.people.length}</div>
           </div>
-          <div className="text-2xl font-semibold text-slate-900">{org.people.length}</div>
+          <div className="bg-white border border-slate-200 rounded-lg p-3">
+            <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+              <Briefcase className="h-3.5 w-3.5" />
+              <span className="text-[10px] font-medium uppercase tracking-wide">Deals</span>
+            </div>
+            <div className="text-lg font-semibold text-slate-900">{org.deals.length}</div>
+          </div>
+          <div className="bg-white border border-slate-200 rounded-lg p-3">
+            <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+              <Calendar className="h-3.5 w-3.5" />
+              <span className="text-[10px] font-medium uppercase tracking-wide">Last Contact</span>
+            </div>
+            <div className="text-sm font-semibold text-slate-900">
+              {formatDateShort(org.lastContactedAt) || <span className="text-slate-300 font-normal">Never</span>}
+            </div>
+          </div>
+          <div className="bg-white border border-slate-200 rounded-lg p-3">
+            <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+              <Calendar className="h-3.5 w-3.5" />
+              <span className="text-[10px] font-medium uppercase tracking-wide">Follow Up</span>
+            </div>
+            <div className="text-sm font-semibold text-slate-900">
+              {formatDateShort(org.nextFollowUpAt) || <span className="text-slate-300 font-normal">Not set</span>}
+            </div>
+          </div>
         </div>
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-slate-500 mb-1">
-            <Briefcase className="h-4 w-4" />
-            <span className="text-xs font-medium uppercase tracking-wide">Deals</span>
-          </div>
-          <div className="text-2xl font-semibold text-slate-900">{org.deals.length}</div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-slate-500 mb-1">
-            <Calendar className="h-4 w-4" />
-            <span className="text-xs font-medium uppercase tracking-wide">Last Contact</span>
-          </div>
-          <div className="text-lg font-semibold text-slate-900">
-            {formatDateShort(org.lastContactedAt) || <span className="text-slate-300 font-normal">Never</span>}
-          </div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-slate-500 mb-1">
-            <Calendar className="h-4 w-4" />
-            <span className="text-xs font-medium uppercase tracking-wide">Follow Up</span>
-          </div>
-          <div className="text-lg font-semibold text-slate-900">
-            {formatDateShort(org.nextFollowUpAt) || <span className="text-slate-300 font-normal">Not set</span>}
-          </div>
-        </div>
-      </div>
 
       {/* Description */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6">
-        <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Description</h2>
+      <div className="bg-white border border-slate-200 rounded-lg p-4 mb-4">
+        <h2 className="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-2">Description</h2>
         <NotesEditor
           value={org.description || ""}
           onSave={(val) => saveField("description", val || null)}
@@ -722,14 +722,14 @@ export default function OrganizationDetailPage() {
       </div>
 
       {/* Tags */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6">
-        <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Tags</h2>
+      <div className="bg-white border border-slate-200 rounded-lg p-4 mb-4">
+        <h2 className="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-2">Tags</h2>
         <TagsEditor tags={org.tags || []} onSave={(tags) => saveField("tags", tags.length > 0 ? tags : null)} />
       </div>
 
       {/* Notes */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6">
-        <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-3">Notes</h2>
+      <div className="bg-white border border-slate-200 rounded-lg p-4 mb-4">
+        <h2 className="text-[10px] font-medium text-slate-400 uppercase tracking-wide mb-2">Notes</h2>
         <NotesEditor
           value={org.notes || ""}
           onSave={(val) => saveField("notes", val || null)}
@@ -737,32 +737,32 @@ export default function OrganizationDetailPage() {
       </div>
 
       {/* People & Deals */}
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
+      <div className="grid md:grid-cols-2 gap-4 mb-4">
         {/* People */}
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+        <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
+            <h2 className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">
               People <span className="text-slate-300">({org.people.length})</span>
             </h2>
           </div>
           {org.people.length === 0 ? (
-            <div className="p-5 text-center text-slate-400 text-sm">No people at this organization</div>
+            <div className="p-4 text-center text-slate-400 text-xs">No people at this organization</div>
           ) : (
             <div className="divide-y divide-slate-100">
               {org.people.map((person) => (
                 <Link
                   key={person.id}
                   href={`/people/${person.id}`}
-                  className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-colors"
+                  className="flex items-center gap-2.5 px-4 py-2.5 hover:bg-slate-50 transition-colors"
                 >
-                  <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-500 flex-shrink-0">
+                  <div className="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-medium text-slate-500 flex-shrink-0">
                     {person.firstName.charAt(0)}{person.lastName.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-slate-900 text-sm">{person.firstName} {person.lastName}</div>
-                    {person.title && <div className="text-xs text-slate-500 truncate">{person.title}</div>}
+                    <div className="font-medium text-slate-900 text-xs">{person.firstName} {person.lastName}</div>
+                    {person.title && <div className="text-[10px] text-slate-500 truncate">{person.title}</div>}
                   </div>
-                  <div className={`w-2 h-2 rounded-full ${WARMTH_CONFIG[person.warmth].color}`} />
+                  <div className={`w-1.5 h-1.5 rounded-full ${WARMTH_CONFIG[person.warmth].color}`} />
                 </Link>
               ))}
             </div>
@@ -770,14 +770,14 @@ export default function OrganizationDetailPage() {
         </div>
 
         {/* Deals */}
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+        <div className="bg-white border border-slate-200 rounded-lg overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
+            <h2 className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">
               Deals <span className="text-slate-300">({org.deals.length})</span>
             </h2>
           </div>
           {org.deals.length === 0 ? (
-            <div className="p-5 text-center text-slate-400 text-sm">No deals with this organization</div>
+            <div className="p-4 text-center text-slate-400 text-xs">No deals with this organization</div>
           ) : (
             <div className="divide-y divide-slate-100">
               {org.deals.map((deal) => {
@@ -786,15 +786,15 @@ export default function OrganizationDetailPage() {
                   <Link
                     key={deal.id}
                     href={`/deals/${deal.id}`}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 transition-colors"
+                    className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-slate-900 text-sm">{deal.name}</div>
+                      <div className="font-medium text-slate-900 text-xs">{deal.name}</div>
                       {formatCurrency(deal.committed) && (
-                        <div className="text-xs text-slate-500">{formatCurrency(deal.committed)} committed</div>
+                        <div className="text-[10px] text-slate-500">{formatCurrency(deal.committed)} committed</div>
                       )}
                     </div>
-                    <span className={`text-[10px] font-medium px-2 py-1 rounded-full ${status.bg} ${status.text}`}>
+                    <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded ${status.bg} ${status.text}`}>
                       {status.label}
                     </span>
                   </Link>
@@ -806,8 +806,9 @@ export default function OrganizationDetailPage() {
       </div>
 
       {/* Footer */}
-      <div className="text-xs text-slate-400 mb-8">
+      <div className="text-[10px] text-slate-400 pb-4">
         Added {formatDate(org.createdAt)}
+      </div>
       </div>
     </div>
   );

@@ -7,13 +7,8 @@ import {
   Phone,
   Video,
   Users,
-  MapPin,
-  ExternalLink,
-  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { type UpcomingEvent } from "@/lib/dashboard-api";
 
 interface EventsModuleProps {
@@ -22,20 +17,20 @@ interface EventsModuleProps {
 }
 
 const kindIcons: Record<string, React.ReactNode> = {
-  call: <Phone className="h-3.5 w-3.5" />,
-  video_call: <Video className="h-3.5 w-3.5" />,
-  in_person_meeting: <Users className="h-3.5 w-3.5" />,
-  meeting: <Calendar className="h-3.5 w-3.5" />,
+  call: <Phone className="h-3 w-3" />,
+  video_call: <Video className="h-3 w-3" />,
+  in_person_meeting: <Users className="h-3 w-3" />,
+  meeting: <Calendar className="h-3 w-3" />,
 };
 
-const kindStyles: Record<string, string> = {
-  call: "bg-green-100 text-green-700",
-  video_call: "bg-blue-100 text-blue-700",
-  in_person_meeting: "bg-purple-100 text-purple-700",
-  meeting: "bg-indigo-100 text-indigo-700",
+const kindColors: Record<string, string> = {
+  call: "bg-green-100 text-green-600",
+  video_call: "bg-blue-100 text-blue-600",
+  in_person_meeting: "bg-purple-100 text-purple-600",
+  meeting: "bg-slate-100 text-slate-600",
 };
 
-function formatEventTime(startsAt: string): { time: string; date: string; isToday: boolean; isTomorrow: boolean } {
+function formatEventTime(startsAt: string): { time: string; label: string; isUrgent: boolean } {
   const date = new Date(startsAt);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -46,116 +41,79 @@ function formatEventTime(startsAt: string): { time: string; date: string; isToda
   const isToday = eventDate.getTime() === today.getTime();
   const isTomorrow = eventDate.getTime() === tomorrow.getTime();
 
-  const time = date.toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  const time = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
-  let dateStr = "";
+  let label: string;
   if (isToday) {
-    dateStr = "Today";
+    label = "Today";
   } else if (isTomorrow) {
-    dateStr = "Tomorrow";
+    label = "Tomorrow";
   } else {
-    dateStr = date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    label = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   }
 
-  return { time, date: dateStr, isToday, isTomorrow };
+  return { time, label, isUrgent: isToday || isTomorrow };
 }
 
 function EventRow({ event }: { event: UpcomingEvent }) {
-  const { time, date, isToday, isTomorrow } = formatEventTime(event.startsAt);
-  const kindIcon = kindIcons[event.kind] || <Calendar className="h-3.5 w-3.5" />;
-  const kindStyle = kindStyles[event.kind] || "bg-slate-100 text-slate-600";
+  const { time, label, isUrgent } = formatEventTime(event.startsAt);
+  const kindIcon = kindIcons[event.kind] || kindIcons.meeting;
+  const kindColor = kindColors[event.kind] || kindColors.meeting;
 
   return (
-    <div
-      className={cn(
-        "group flex items-start gap-3 px-4 py-3",
-        "hover:bg-slate-50/80 transition-colors",
-        "border-b border-slate-100 last:border-b-0"
-      )}
-    >
-      {/* Time column */}
-      <div className="flex-shrink-0 w-14 pt-0.5">
-        <p
-          className={cn(
-            "text-[10px] font-medium",
-            isToday ? "text-rose-600" : isTomorrow ? "text-amber-600" : "text-slate-500"
-          )}
-        >
-          {date}
+    <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors">
+      {/* Date/time column - fixed width */}
+      <div className="w-14 flex-shrink-0 text-right">
+        <p className={cn("text-[9px] font-medium", isUrgent ? "text-rose-600" : "text-slate-400")}>
+          {label}
         </p>
-        <p className="text-sm font-semibold text-slate-900 tabular-nums">{time}</p>
+        <p className="text-xs font-semibold text-slate-900 tabular-nums">{time}</p>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <Badge
-            variant="outline"
-            className={cn("text-[10px] flex items-center gap-1 border-transparent", kindStyle)}
-          >
-            {kindIcon}
-            {event.kindLabel}
-          </Badge>
-          {event.attendeeCount > 0 && (
-            <span className="text-[10px] text-slate-400">
-              {event.attendeeCount} attendee{event.attendeeCount !== 1 ? "s" : ""}
-            </span>
-          )}
-        </div>
+      {/* Type icon */}
+      <div className={cn("h-6 w-6 rounded flex items-center justify-center flex-shrink-0", kindColor)}>
+        {kindIcon}
+      </div>
 
-        <p className="text-sm font-medium text-slate-900 mt-1 truncate">
+      {/* Content - flexible */}
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium text-slate-900 truncate">
           {event.subject || "No subject"}
         </p>
-
-        <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-500">
-          {event.dealName && (
-            <Link
-              href={`/deals?search=${encodeURIComponent(event.dealName)}`}
-              className="flex items-center gap-1 hover:text-slate-700"
-            >
-              <span className="truncate">{event.dealName}</span>
-            </Link>
-          )}
-          {event.location && (
-            <span className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              <span className="truncate">{event.location}</span>
-            </span>
-          )}
-          {event.meetingUrl && (
-            <a
-              href={event.meetingUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-blue-600 hover:text-blue-700"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Video className="h-3 w-3" />
-              Join
-            </a>
-          )}
-        </div>
+        <p className="text-[10px] text-slate-500 truncate">
+          {event.dealName || event.kindLabel}
+        </p>
       </div>
+
+      {/* Join button - fixed width */}
+      {event.meetingUrl ? (
+        <a
+          href={event.meetingUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-8 text-[9px] font-medium text-blue-600 hover:text-blue-700 flex-shrink-0 text-right"
+          onClick={(e) => e.stopPropagation()}
+        >
+          Join
+        </a>
+      ) : (
+        <div className="w-8 flex-shrink-0" />
+      )}
     </div>
   );
 }
 
 function EventSkeleton() {
   return (
-    <div className="px-4 py-3 border-b border-slate-100">
-      <div className="flex items-start gap-3">
-        <div className="w-14 space-y-1">
-          <div className="h-3 w-10 bg-slate-100 rounded animate-pulse" />
-          <div className="h-4 w-12 bg-slate-100 rounded animate-pulse" />
-        </div>
-        <div className="flex-1 space-y-1.5">
-          <div className="h-4 w-20 bg-slate-100 rounded animate-pulse" />
-          <div className="h-4 w-48 bg-slate-100 rounded animate-pulse" />
-          <div className="h-3 w-32 bg-slate-100 rounded animate-pulse" />
-        </div>
+    <div className="flex items-center gap-3 px-4 py-2.5">
+      <div className="w-14 space-y-1">
+        <div className="h-2 w-10 bg-slate-100 rounded animate-pulse ml-auto" />
+        <div className="h-3 w-12 bg-slate-100 rounded animate-pulse ml-auto" />
+      </div>
+      <div className="h-6 w-6 bg-slate-100 rounded animate-pulse" />
+      <div className="flex-1 space-y-1">
+        <div className="h-3 w-28 bg-slate-100 rounded animate-pulse" />
+        <div className="h-2.5 w-16 bg-slate-100 rounded animate-pulse" />
       </div>
     </div>
   );
@@ -169,33 +127,25 @@ export function EventsModule({ events, loading }: EventsModuleProps) {
   }).length;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h2 className="text-sm font-semibold text-slate-900">Upcoming Events</h2>
-            {!loading && todayCount > 0 && (
-              <Badge
-                variant="outline"
-                className="text-[10px] bg-rose-50 text-rose-700 border-rose-200"
-              >
-                {todayCount} today
-              </Badge>
-            )}
+      <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="h-6 w-6 rounded bg-fuchsia-100 flex items-center justify-center">
+            <Calendar className="h-3.5 w-3.5 text-fuchsia-600" />
           </div>
-          <Link
-            href="/events?time_filter=upcoming"
-            className="text-xs text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-1"
-          >
-            View all
-            <ChevronRight className="h-3 w-3" />
-          </Link>
+          <span className="text-sm font-semibold text-slate-900">Events</span>
+          {!loading && todayCount > 0 && (
+            <span className="text-[10px] text-rose-600">{todayCount} today</span>
+          )}
         </div>
+        <Link href="/events?time_filter=upcoming" className="text-[10px] text-slate-500 hover:text-slate-700 flex items-center">
+          View all <ChevronRight className="h-3 w-3" />
+        </Link>
       </div>
 
-      {/* Events list */}
-      <ScrollArea className="max-h-[280px]">
+      {/* List */}
+      <div className="divide-y divide-slate-50">
         {loading ? (
           <>
             <EventSkeleton />
@@ -204,13 +154,22 @@ export function EventsModule({ events, loading }: EventsModuleProps) {
           </>
         ) : events.length === 0 ? (
           <div className="px-4 py-8 text-center">
-            <Calendar className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-            <p className="text-sm text-slate-500">No upcoming events</p>
+            <Calendar className="h-6 w-6 text-slate-300 mx-auto mb-1" />
+            <p className="text-xs text-slate-500">No upcoming events</p>
           </div>
         ) : (
-          events.map((event) => <EventRow key={event.id} event={event} />)
+          events.slice(0, 4).map((event) => <EventRow key={event.id} event={event} />)
         )}
-      </ScrollArea>
+      </div>
+
+      {/* Footer */}
+      {events.length > 4 && (
+        <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/50">
+          <Link href="/events?time_filter=upcoming" className="text-[10px] text-slate-500 hover:text-slate-700">
+            +{events.length - 4} more
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

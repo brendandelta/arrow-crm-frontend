@@ -15,8 +15,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarTrigger className="h-9 w-9 rounded-lg bg-white shadow-md border border-slate-200" />
         </div>
 
-        {/* Main content card with built-in padding */}
-        <main className="min-h-[calc(100vh-1.5rem)] bg-white rounded-xl border border-slate-200/50 shadow-sm px-6 py-4">
+        {/* Main content card - pages fill to corners */}
+        <main className="min-h-[calc(100vh-1.5rem)] bg-white rounded-xl border border-slate-200/50 overflow-hidden">
           {children}
         </main>
       </div>

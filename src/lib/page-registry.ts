@@ -21,13 +21,10 @@ import {
   Landmark,
   Users,
   CheckSquare,
-  FolderKanban,
   Map,
   Calendar,
   FileText,
   KeyRound,
-  Settings,
-  BarChart3,
   type LucideIcon,
 } from "lucide-react";
 
@@ -255,11 +252,6 @@ export const PAGE_REGISTRY: PageIdentity[] = [
     group: "main",
     defaultOrder: 1,
     isCore: true,
-    children: [
-      { id: "deals-all", label: "All Deals", href: "/deals" },
-      { id: "deals-live", label: "Live", href: "/deals/live" },
-      { id: "deals-sourcing", label: "Sourcing", href: "/deals/sourcing" },
-    ],
   },
   {
     id: "organizations",
@@ -321,16 +313,6 @@ export const PAGE_REGISTRY: PageIdentity[] = [
     ],
   },
   {
-    id: "projects",
-    label: "Projects",
-    description: "Initiatives and workstreams",
-    href: "/projects",
-    icon: FolderKanban,
-    theme: COLORS.cyan,
-    group: "workspace",
-    defaultOrder: 6,
-  },
-  {
     id: "map",
     label: "Map",
     description: "Geographic visualization",
@@ -369,16 +351,6 @@ export const PAGE_REGISTRY: PageIdentity[] = [
     theme: COLORS.purple,
     group: "workspace",
     defaultOrder: 10,
-  },
-  {
-    id: "capital-map",
-    label: "Capital Map",
-    description: "Entity hierarchy and capital flow",
-    href: "/capital-map",
-    icon: BarChart3,
-    theme: COLORS.green,
-    group: "workspace",
-    defaultOrder: 11,
   },
 ];
 

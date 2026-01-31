@@ -261,7 +261,7 @@ export function StageBoard({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="flex gap-2 overflow-x-auto pb-2 items-start">
+      <div className="h-full flex gap-2">
         {STATUS_ORDER.map((status) => (
           <StageColumn
             key={status}

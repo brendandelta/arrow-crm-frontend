@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import { ChevronRight, ChevronDown, Flame, Calendar, Users, DollarSign } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ChevronRight, ChevronDown, Flame, Calendar, Users } from "lucide-react";
 
 interface Block {
   id: number;
@@ -169,8 +167,8 @@ export function ExpandableTableRow({
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{formatCurrency(interest.committedCents)}</span>
-                        <Badge
-                          className={`text-xs ${
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded ${
                             interest.status === "committed"
                               ? "bg-green-100 text-green-700"
                               : interest.status === "soft_circled"
@@ -179,7 +177,7 @@ export function ExpandableTableRow({
                           }`}
                         >
                           {interest.status.replace("_", " ")}
-                        </Badge>
+                        </span>
                       </div>
                     </div>
                   ))}
@@ -279,8 +277,8 @@ export function ExpandedRowContent({
   if (loading) {
     return (
       <tr>
-        <td colSpan={10} className="bg-slate-50 p-4 text-center text-muted-foreground">
-          Loading details...
+        <td colSpan={12} className="bg-slate-50/50 border-t border-slate-100">
+          <div className="px-4 py-3 text-xs text-slate-400">Loading...</div>
         </td>
       </tr>
     );
@@ -289,8 +287,8 @@ export function ExpandedRowContent({
   if (!data) {
     return (
       <tr>
-        <td colSpan={10} className="bg-slate-50 p-4 text-center text-muted-foreground">
-          No details available
+        <td colSpan={12} className="bg-slate-50/50 border-t border-slate-100">
+          <div className="px-4 py-3 text-xs text-slate-400">No details available</div>
         </td>
       </tr>
     );
@@ -298,99 +296,112 @@ export function ExpandedRowContent({
 
   return (
     <tr>
-      <td colSpan={10} className="bg-slate-50 p-0">
-        <div className="grid grid-cols-4 gap-4 p-4">
-          {/* Reuse the same content structure */}
-          <ExpandedSection title="Top Blocks">
-            {data.topBlocks.slice(0, 3).map((block) => (
-              <div
-                key={block.id}
-                className="flex items-center justify-between p-2 bg-white rounded border text-sm"
-              >
-                <div>
-                  <div className="font-medium">{block.seller?.name || "—"}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {formatCurrency(block.priceCents)}/sh
+      <td colSpan={12} className="bg-slate-50/50 border-t border-slate-100 p-0">
+        <div className="flex gap-3 p-3">
+          {/* Top Blocks */}
+          <div className="flex-1 min-w-0">
+            <h4 className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1.5">
+              Blocks
+            </h4>
+            {data.topBlocks.length === 0 ? (
+              <p className="text-xs text-slate-400">None</p>
+            ) : (
+              <div className="space-y-1">
+                {data.topBlocks.slice(0, 3).map((block) => (
+                  <div
+                    key={block.id}
+                    className="flex items-center justify-between px-2 py-1.5 bg-white rounded border border-slate-200 text-xs"
+                  >
+                    <span className="font-medium truncate">{block.seller?.name || "—"}</span>
+                    <span className="font-medium tabular-nums text-slate-600 ml-2">
+                      {formatCurrency(block.totalCents)}
+                    </span>
                   </div>
-                </div>
-                <div className="text-right">
-                  <div className="font-medium">{formatCurrency(block.totalCents)}</div>
-                  <HeatIndicator heat={block.heat} />
-                </div>
+                ))}
               </div>
-            ))}
-          </ExpandedSection>
+            )}
+          </div>
 
-          <ExpandedSection title="Top Interests">
-            {data.topInterests.slice(0, 5).map((interest) => (
-              <div
-                key={interest.id}
-                className="flex items-center justify-between p-2 bg-white rounded border text-sm"
-              >
-                <div className="font-medium truncate max-w-[120px]">
-                  {interest.investor?.name || "—"}
-                </div>
-                <span className="font-medium">{formatCurrency(interest.committedCents)}</span>
-              </div>
-            ))}
-          </ExpandedSection>
-
-          <ExpandedSection title="Next Follow-ups">
-            {data.nextFollowups.slice(0, 3).map((target) => (
-              <div key={target.id} className="p-2 bg-white rounded border text-sm">
-                <div className="font-medium truncate">{target.targetName}</div>
-                {target.nextStepAt && (
-                  <div className="text-xs text-muted-foreground">{formatDate(target.nextStepAt)}</div>
-                )}
-              </div>
-            ))}
-          </ExpandedSection>
-
-          <ExpandedSection title="Next Tasks">
-            {data.nextTasks.slice(0, 3).map((task) => (
-              <div
-                key={task.id}
-                className={`p-2 bg-white rounded border text-sm ${
-                  task.overdue ? "border-red-200" : ""
-                }`}
-              >
-                <div className={`font-medium truncate ${task.overdue ? "text-red-600" : ""}`}>
-                  {task.subject}
-                </div>
-                {task.dueAt && (
-                  <div className={`text-xs ${task.overdue ? "text-red-600" : "text-muted-foreground"}`}>
-                    {formatDate(task.dueAt)}
+          {/* Top Interests */}
+          <div className="flex-1 min-w-0">
+            <h4 className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1.5">
+              Interests
+            </h4>
+            {data.topInterests.length === 0 ? (
+              <p className="text-xs text-slate-400">None</p>
+            ) : (
+              <div className="space-y-1">
+                {data.topInterests.slice(0, 3).map((interest) => (
+                  <div
+                    key={interest.id}
+                    className="flex items-center justify-between px-2 py-1.5 bg-white rounded border border-slate-200 text-xs"
+                  >
+                    <span className="font-medium truncate">{interest.investor?.name || "—"}</span>
+                    <span className="font-medium tabular-nums text-slate-600 ml-2">
+                      {formatCurrency(interest.committedCents)}
+                    </span>
                   </div>
-                )}
+                ))}
               </div>
-            ))}
-          </ExpandedSection>
+            )}
+          </div>
+
+          {/* Next Follow-ups */}
+          <div className="flex-1 min-w-0">
+            <h4 className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1.5">
+              Follow-ups
+            </h4>
+            {data.nextFollowups.length === 0 ? (
+              <p className="text-xs text-slate-400">None</p>
+            ) : (
+              <div className="space-y-1">
+                {data.nextFollowups.slice(0, 3).map((target) => (
+                  <div
+                    key={target.id}
+                    className="flex items-center justify-between px-2 py-1.5 bg-white rounded border border-slate-200 text-xs"
+                  >
+                    <span className="font-medium truncate">{target.targetName}</span>
+                    {target.nextStepAt && (
+                      <span className="text-slate-400 ml-2 shrink-0">{formatDate(target.nextStepAt)}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Next Tasks */}
+          <div className="flex-1 min-w-0">
+            <h4 className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1.5">
+              Tasks
+            </h4>
+            {data.nextTasks.length === 0 ? (
+              <p className="text-xs text-slate-400">None</p>
+            ) : (
+              <div className="space-y-1">
+                {data.nextTasks.slice(0, 3).map((task) => (
+                  <div
+                    key={task.id}
+                    className={`flex items-center justify-between px-2 py-1.5 bg-white rounded border text-xs ${
+                      task.overdue ? "border-red-200" : "border-slate-200"
+                    }`}
+                  >
+                    <span className={`font-medium truncate ${task.overdue ? "text-red-600" : ""}`}>
+                      {task.subject}
+                    </span>
+                    {task.dueAt && (
+                      <span className={`ml-2 shrink-0 ${task.overdue ? "text-red-500" : "text-slate-400"}`}>
+                        {formatDate(task.dueAt)}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </td>
     </tr>
-  );
-}
-
-function ExpandedSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  const childArray = React.Children.toArray(children);
-
-  return (
-    <div>
-      <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-        {title}
-      </h4>
-      {childArray.length === 0 ? (
-        <p className="text-sm text-muted-foreground">None</p>
-      ) : (
-        <div className="space-y-2">{children}</div>
-      )}
-    </div>
   );
 }
 

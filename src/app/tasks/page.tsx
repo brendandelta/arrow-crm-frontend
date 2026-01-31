@@ -19,6 +19,7 @@ import { TaskGroupSection, EntityGroupSection } from "./_components/TaskGroupSec
 import { TaskRow, TaskRowSkeleton } from "./_components/TaskRow";
 import { TaskInspector } from "./_components/TaskInspector";
 import { CreateTaskDialog } from "./_components/CreateTaskDialog";
+import { CreateProjectDialog } from "./_components/CreateProjectDialog";
 import {
   type Task,
   type TaskStats,
@@ -41,6 +42,7 @@ import {
   loadGroupBy,
   saveGroupBy,
 } from "@/lib/tasks-api";
+import { fetchProjects } from "@/lib/projects-api";
 
 type GroupByType = "deal" | "project";
 
@@ -76,6 +78,7 @@ export default function TasksPage() {
 
   // Create dialog state
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
 
   // Initialize from URL params (for redirects) or localStorage
   useEffect(() => {
@@ -253,8 +256,52 @@ export default function TasksPage() {
         const data = await fetchTasksByDeal();
         setDealGroups(data);
       } else {
-        const data = await fetchTasksByProject();
-        setProjectGroups(data);
+        // Fetch both all projects and tasks grouped by project
+        const [allProjectsResponse, taskGroups] = await Promise.all([
+          fetchProjects(),
+          fetchTasksByProject(),
+        ]);
+
+        const allProjects = allProjectsResponse.projects || [];
+
+        // Create a map of project IDs that have tasks
+        const projectsWithTasks = new Map(
+          taskGroups.map((g) => [g.id, g])
+        );
+
+        // Merge: include all projects, use task data where available
+        const mergedGroups: TaskGroup[] = allProjects.map((project) => {
+          const existingGroup = projectsWithTasks.get(project.id);
+          if (existingGroup) {
+            // Project has tasks - use the existing group data
+            return {
+              ...existingGroup,
+              name: project.name, // Ensure we use the latest project name
+              status: project.status,
+            };
+          } else {
+            // Project has no tasks - create empty group
+            return {
+              id: project.id,
+              name: project.name,
+              status: project.status,
+              taskCount: 0,
+              overdueCount: 0,
+              tasks: [],
+            };
+          }
+        });
+
+        // Sort: projects with tasks first, then by name
+        mergedGroups.sort((a, b) => {
+          const aHasTasks = a.tasks.length > 0;
+          const bHasTasks = b.tasks.length > 0;
+          if (aHasTasks && !bHasTasks) return -1;
+          if (!aHasTasks && bHasTasks) return 1;
+          return a.name.localeCompare(b.name);
+        });
+
+        setProjectGroups(mergedGroups);
       }
     } catch (error) {
       console.error("Failed to fetch grouped data:", error);
@@ -344,6 +391,12 @@ export default function TasksPage() {
     setTasks((prev) => [task, ...prev]);
     loadStats();
   }, [loadStats]);
+
+  // Handle new project created
+  const handleProjectCreated = useCallback(() => {
+    // Reload the grouped data to show the new project
+    loadGroupedData();
+  }, [loadGroupedData]);
 
   // Close inspector
   const handleCloseInspector = useCallback(() => {
@@ -581,6 +634,7 @@ export default function TasksPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onCreateTask={() => setShowCreateDialog(true)}
+        onCreateProject={() => setShowCreateProjectDialog(true)}
         groupBy={groupBy}
         onGroupByChange={setGroupBy}
         subGroupByAssociation={subGroupByAssociation}
@@ -633,6 +687,13 @@ export default function TasksPage() {
         onClose={() => setShowCreateDialog(false)}
         onTaskCreated={handleTaskCreated}
         users={users}
+      />
+
+      {/* Create Project Dialog */}
+      <CreateProjectDialog
+        open={showCreateProjectDialog}
+        onClose={() => setShowCreateProjectDialog(false)}
+        onProjectCreated={handleProjectCreated}
       />
     </div>
   );

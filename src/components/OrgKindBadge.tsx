@@ -21,7 +21,7 @@ export function OrgKindBadge({ kind, className = "" }: OrgKindBadgeProps) {
   const style = ORG_KIND_STYLES[kind] || ORG_KIND_STYLES.other;
 
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded ${style} ${className}`}>
+    <span className={`text-[9px] px-1 py-0.5 rounded font-medium ${style} ${className}`}>
       {kind}
     </span>
   );

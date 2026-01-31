@@ -1,1 +1,0 @@
-export { CapitalFlowEdge } from "./CapitalFlowEdge";

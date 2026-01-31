@@ -7,7 +7,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { FlowDealCard } from "./FlowDealCard";
 import { STATUS_CONFIG } from "./types";
 import { formatCurrency } from "../utils";
@@ -128,7 +127,7 @@ export function StageColumn({
   const itemIds = deals.map((d) => `deal-${d.id}`);
 
   return (
-    <div className="flex flex-col min-w-[280px] max-w-[300px] w-[300px] shrink-0">
+    <div className="h-full flex flex-col flex-1 min-w-0">
       {/* Column header */}
       <button
         onClick={onToggleCollapse}
@@ -158,13 +157,13 @@ export function StageColumn({
       {/* Cards area */}
       <div
         ref={setNodeRef}
-        className={`flex-1 rounded-b-lg border border-t-0 transition-all duration-200 ${
+        className={`flex-1 min-h-0 rounded-b-lg border border-t-0 transition-all duration-200 overflow-auto ${
           highlighted
             ? "bg-slate-100 ring-2 ring-inset ring-slate-300 shadow-inner"
             : "bg-slate-50/50"
         } ${cfg.borderColor}`}
       >
-        <ScrollArea className="h-[calc(100vh-340px)]">
+        <div className="h-full">
           <SortableContext
             items={itemIds}
             strategy={verticalListSortingStrategy}
@@ -190,7 +189,7 @@ export function StageColumn({
               )}
             </div>
           </SortableContext>
-        </ScrollArea>
+        </div>
       </div>
     </div>
   );

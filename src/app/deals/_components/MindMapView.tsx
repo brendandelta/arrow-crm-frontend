@@ -151,19 +151,19 @@ export function MindMapView() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[600px] text-slate-400">
+      <div className="flex items-center justify-center h-full text-slate-400">
         Loading mind map...
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-220px)] min-h-[500px]">
+    <div className="flex flex-col h-full">
       {/* Rail toggle + command palette shortcut hint */}
       <div className="mb-2 flex items-center gap-2">
         <button
           onClick={() => setRailOpen(!railOpen)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
         >
           {railOpen ? (
             <PanelLeftClose className="h-3.5 w-3.5" />
@@ -174,7 +174,7 @@ export function MindMapView() {
         </button>
         <button
           onClick={() => setCommandOpen(true)}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-400 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-slate-400 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
         >
           <kbd className="text-[10px] font-mono bg-slate-100 px-1 py-0.5 rounded">
             {typeof navigator !== "undefined" && /Mac/.test(navigator.userAgent) ? "\u2318" : "Ctrl+"}K
@@ -184,7 +184,7 @@ export function MindMapView() {
       </div>
 
       {/* Main layout */}
-      <div className="flex-1 flex rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="flex-1 flex rounded-xl border border-slate-200 overflow-hidden">
         {/* Left filter rail */}
         {railOpen && (
           <MindMapFilterRail

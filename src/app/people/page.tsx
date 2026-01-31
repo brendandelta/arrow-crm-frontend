@@ -117,7 +117,7 @@ function InlineWarmthSelector({
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1" onMouseLeave={() => setEditing(false)}>
+      <div className="flex items-center gap-0.5" onMouseLeave={() => setEditing(false)}>
         {WARMTH_CONFIG.map((w, i) => (
           <button
             key={i}
@@ -126,10 +126,10 @@ function InlineWarmthSelector({
               onUpdate(personId, i);
               setEditing(false);
             }}
-            className={`px-2 py-0.5 text-[11px] font-medium rounded-full border transition-all ${
+            className={`px-1.5 py-0.5 text-[9px] font-medium rounded border transition-all ${
               i === warmth
                 ? `${w.color} text-white border-transparent`
-                : `bg-white border-slate-200 text-slate-600 ${w.hoverBg}`
+                : `bg-white border-slate-200 text-slate-500 ${w.hoverBg}`
             }`}
           >
             {w.label}
@@ -145,7 +145,7 @@ function InlineWarmthSelector({
         e.stopPropagation();
         setEditing(true);
       }}
-      className={`px-2 py-0.5 text-[11px] font-medium rounded-full text-white ${config.color} hover:opacity-90 transition-opacity`}
+      className={`px-1.5 py-0.5 text-[9px] font-medium rounded text-white ${config.color} hover:opacity-90 transition-opacity`}
     >
       {config.label}
     </button>
@@ -593,7 +593,6 @@ export default function PeoplePage() {
   });
 
   const championsCount = people.filter((p) => p.warmth === 3).length;
-  const hotCount = people.filter((p) => p.warmth === 2).length;
 
   // Analytics: new this week + top sources
   const oneWeekAgo = new Date();
@@ -799,111 +798,83 @@ export default function PeoplePage() {
   const Icon = pageIdentity?.icon || Users;
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col bg-[#FAFBFC]">
-      {/* Premium Header */}
-      <div className="relative bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm">
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-50/50 via-transparent to-slate-50/50 pointer-events-none" />
-        <div className="relative px-8 py-5">
-          <div className="flex items-center justify-between">
-            {/* Title Section */}
-            <div className="flex items-center gap-4">
-              <div className="relative group">
-                <div className={cn(
-                  "absolute -inset-1 rounded-2xl blur-md opacity-40 group-hover:opacity-60 transition-opacity",
-                  theme && `bg-gradient-to-br ${theme.gradient}`
-                )} />
-                <div className={cn(
-                  "relative h-11 w-11 rounded-xl flex items-center justify-center shadow-lg transition-transform group-hover:scale-[1.02]",
-                  theme && `bg-gradient-to-br ${theme.gradient}`
-                )}>
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-transparent to-white/20" />
-                  <Icon className="relative h-5 w-5 text-white drop-shadow-sm" />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
-                  People
-                </h1>
-                <p className="text-sm text-slate-500 mt-0.5">
-                  {loading ? (
-                    <span className="inline-block w-32 h-4 bg-slate-100 rounded animate-pulse" />
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <span>{people.length} contacts</span>
-                      <span className="text-slate-300">·</span>
-                      <span className="text-violet-600">{newThisWeek} new this week</span>
-                      <span className="text-slate-300">·</span>
-                      <span className="text-red-500">{championsCount} champions</span>
-                      <span className="text-slate-300">·</span>
-                      <span className="text-orange-500">{hotCount} hot</span>
-                    </span>
-                  )}
-                </p>
-              </div>
+    <div className="h-[calc(100vh-1.5rem)] flex flex-col bg-slate-50">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-slate-200 bg-white">
+        <div className="flex items-center justify-between">
+          {/* Title Section */}
+          <div className="flex items-center gap-4">
+            <div className={cn(
+              "h-9 w-9 rounded-lg flex items-center justify-center",
+              theme && `bg-gradient-to-br ${theme.gradient}`
+            )}>
+              <Icon className="h-4 w-4 text-white" />
             </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-3">
-              {/* Smart Search */}
-              <div className="relative group">
-                <div className={cn(
-                  "absolute inset-0 rounded-xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity",
-                  theme && `bg-gradient-to-r ${theme.gradient}`
-                )} style={{ opacity: 0.15 }} />
-                <div className="relative">
-                  {useSmartSearch ? (
-                    <SmartSearchBar
-                      people={parsedPeople}
-                      knownOrgs={knownOrgs}
-                      knownSources={knownSources}
-                      onResults={handleSmartSearchResults}
-                    />
-                  ) : (
-                    <div className="relative">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search people..."
-                        className={cn(
-                          "w-72 h-11 pl-11 pr-4 text-sm rounded-xl transition-all duration-200",
-                          "bg-slate-50 border border-slate-200/80",
-                          "placeholder:text-slate-400",
-                          "focus:outline-none focus:bg-white focus:border-violet-300 focus:ring-4 focus:ring-violet-500/10"
-                        )}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* New Contact Button */}
-              <button
-                onClick={() => setShowContactSlideOut(true)}
-                className={cn(
-                  "group relative flex items-center gap-2.5 h-11 px-5",
-                  "text-white text-sm font-medium rounded-xl",
-                  "shadow-lg active:scale-[0.98] transition-all duration-200",
-                  theme && `bg-gradient-to-b ${theme.gradient} ${theme.shadow}`,
-                  theme && `hover:shadow-xl`
+            <div>
+              <h1 className="text-base font-semibold text-slate-900">People</h1>
+              <p className="text-xs text-slate-500">
+                {loading ? (
+                  <span className="inline-block w-24 h-3 bg-slate-100 rounded animate-pulse" />
+                ) : (
+                  <span className="flex items-center gap-1.5">
+                    <span>{people.length} contacts</span>
+                    <span className="text-slate-300">·</span>
+                    <span className="text-indigo-600">{newThisWeek} new</span>
+                    <span className="text-slate-300">·</span>
+                    <span className="text-red-500">{championsCount} champions</span>
+                  </span>
                 )}
-              >
-                <Plus className="h-4 w-4" />
-                <span>New Contact</span>
-              </button>
+              </p>
             </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            {/* Smart Search */}
+            {useSmartSearch ? (
+              <SmartSearchBar
+                people={parsedPeople}
+                knownOrgs={knownOrgs}
+                knownSources={knownSources}
+                onResults={handleSmartSearchResults}
+              />
+            ) : (
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search people..."
+                  className="w-56 h-9 pl-9 pr-3 text-sm rounded-lg bg-slate-50 border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+            )}
+
+            {/* New Contact Button */}
+            <button
+              onClick={() => setShowContactSlideOut(true)}
+              className={cn(
+                "flex items-center gap-2 h-9 px-4",
+                "text-white text-xs font-medium rounded-lg",
+                "transition-colors",
+                theme && `bg-gradient-to-br ${theme.gradient} hover:opacity-90`
+              )}
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>New Contact</span>
+            </button>
           </div>
         </div>
 
         {/* Secondary toolbar */}
-        <div className="px-8 pb-4">
-          <div className="flex items-center gap-3 flex-wrap">
+        <div className="mt-4">
+          <div className="flex items-center gap-2 flex-wrap">
             {/* Top Sources Analytics */}
             {topSources.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">Top Sources:</span>
-                {topSources.slice(0, 4).map(([name, count]) => {
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Sources:</span>
+                {topSources.slice(0, 3).map(([name, count]) => {
                   const resolved = resolveSource(name);
                   const config = resolved
                     ? SOURCE_CATEGORIES.find((c) => c.value === resolved.category)
@@ -915,9 +886,9 @@ export default function PeoplePage() {
                         setSourceFilter(name);
                         setShowFilterDropdown(false);
                       }}
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-full border transition-colors ${
+                      className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] rounded border transition-colors ${
                         sourceFilter === name
-                          ? "border-violet-400 bg-violet-50 text-violet-700"
+                          ? "border-indigo-400 bg-indigo-50 text-indigo-700"
                           : "border-slate-200 text-slate-600 hover:bg-slate-50"
                       }`}
                     >
@@ -934,28 +905,75 @@ export default function PeoplePage() {
 
             <div className="flex-1" />
 
+            {/* Results count when filtered */}
+            {(searchQuery || smartSearchResults !== null || activeFiltersCount > 0 || columnFiltersCount > 0) && (
+              <div className="text-[10px] text-slate-500">
+                {smartSearchResults !== null ? (
+                  <span>
+                    <span className="text-indigo-600 font-medium">{sortedPeople.length}</span>
+                    {searchSource === "llm" ? " AI results" : " ranked"}
+                  </span>
+                ) : (
+                  <>{sortedPeople.length} of {people.length}</>
+                )}
+              </div>
+            )}
+
+            {/* Active column filters indicator */}
+            {columnFiltersCount > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {Object.entries(columnFilters).map(([columnId, filter]) => {
+                  const column = ALL_COLUMNS.find((c) => c.id === columnId);
+                  const operatorLabel = OPERATORS_BY_TYPE[COLUMN_TYPES[columnId]]?.find(
+                    (o) => o.value === filter.operator
+                  )?.label;
+                  return (
+                    <span
+                      key={columnId}
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] rounded border border-indigo-200"
+                    >
+                      <span className="font-medium">{column?.label}:</span>
+                      <span>{operatorLabel}</span>
+                      <button
+                        onClick={() => handleColumnFilterChange(columnId, undefined)}
+                        className="ml-0.5 hover:text-indigo-900"
+                      >
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </span>
+                  );
+                })}
+                <button
+                  onClick={() => setColumnFilters({})}
+                  className="text-[10px] text-indigo-600 hover:text-indigo-800"
+                >
+                  Clear
+                </button>
+              </div>
+            )}
+
             {/* Columns Dropdown */}
             <div ref={columnDropdownRef} className="relative">
               <button
                 onClick={() => setShowColumnDropdown(!showColumnDropdown)}
-                className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-600 hover:bg-slate-50 transition-colors"
               >
-                <Columns3 className="h-4 w-4" />
+                <Columns3 className="h-3.5 w-3.5" />
                 <span>Columns</span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${showColumnDropdown ? "rotate-180" : ""}`} />
+                <ChevronDown className={`h-3 w-3 transition-transform ${showColumnDropdown ? "rotate-180" : ""}`} />
               </button>
 
               {showColumnDropdown && (
-                <div className="absolute z-50 top-full right-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
-                  <div className="p-2">
-                    <div className="text-xs font-medium text-slate-500 uppercase tracking-wide px-2 py-1">
+                <div className="absolute z-50 top-full right-0 mt-1 w-44 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
+                  <div className="p-1.5">
+                    <div className="text-[10px] font-medium text-slate-400 uppercase tracking-wider px-2 py-1">
                       Show Columns
                     </div>
                     {ALL_COLUMNS.map((column) => (
                       <div
                         key={column.id}
                         onClick={() => !column.required && toggleColumn(column.id)}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded transition-colors ${
+                        className={`w-full flex items-center gap-2 px-2 py-1 text-xs rounded transition-colors ${
                           column.required ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 cursor-pointer"
                         }`}
                       >
@@ -963,10 +981,11 @@ export default function PeoplePage() {
                           checked={visibleColumns.has(column.id)}
                           disabled={column.required}
                           onCheckedChange={() => !column.required && toggleColumn(column.id)}
+                          className="h-3 w-3"
                         />
-                        <span>{column.label}</span>
+                        <span className="text-slate-700">{column.label}</span>
                         {column.required && (
-                          <span className="text-xs text-slate-400 ml-auto">Required</span>
+                          <span className="text-[10px] text-slate-400 ml-auto">Required</span>
                         )}
                       </div>
                     ))}
@@ -979,32 +998,32 @@ export default function PeoplePage() {
             <div ref={filterDropdownRef} className="relative">
               <button
                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 border rounded-lg text-xs transition-colors ${
                   activeFiltersCount > 0
-                    ? "border-violet-500 bg-violet-50 text-violet-700"
-                    : "border-slate-200 text-slate-700 hover:bg-slate-50"
+                    ? "border-indigo-400 bg-indigo-50 text-indigo-700"
+                    : "border-slate-200 text-slate-600 hover:bg-slate-50"
                 }`}
               >
-                <SlidersHorizontal className="h-4 w-4" />
+                <SlidersHorizontal className="h-3.5 w-3.5" />
                 <span>Filters</span>
                 {activeFiltersCount > 0 && (
-                  <span className="flex items-center justify-center h-5 w-5 bg-violet-600 text-white text-xs rounded-full">
+                  <span className="flex items-center justify-center h-4 w-4 bg-indigo-600 text-white text-[10px] rounded-full">
                     {activeFiltersCount}
                   </span>
                 )}
               </button>
 
               {showFilterDropdown && (
-                <div className="absolute z-50 top-full right-0 mt-1 w-64 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
-                  <div className="p-3 space-y-3">
+                <div className="absolute z-50 top-full right-0 mt-1 w-56 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden">
+                  <div className="p-2.5 space-y-2.5">
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                      <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1">
                         Warmth
                       </label>
                       <select
                         value={warmthFilter}
                         onChange={(e) => setWarmthFilter(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
                         {WARMTH_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -1015,13 +1034,13 @@ export default function PeoplePage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                      <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1">
                         Organization Type
                       </label>
                       <select
                         value={orgKindFilter}
                         onChange={(e) => setOrgKindFilter(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
                         {ORG_KIND_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -1032,13 +1051,13 @@ export default function PeoplePage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                      <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1">
                         Source
                       </label>
                       <select
                         value={sourceFilter}
                         onChange={(e) => setSourceFilter(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
                         {sourceFilterOptions.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -1049,13 +1068,13 @@ export default function PeoplePage() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                      <label className="block text-[10px] font-medium text-slate-400 uppercase tracking-wider mb-1">
                         Source Category
                       </label>
                       <select
                         value={sourceCategoryFilter}
                         onChange={(e) => setSourceCategoryFilter(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-2.5 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
                         {SOURCE_CATEGORY_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -1068,7 +1087,7 @@ export default function PeoplePage() {
                     {activeFiltersCount > 0 && (
                       <button
                         onClick={resetFilters}
-                        className="w-full text-sm text-violet-600 hover:text-violet-800 py-1.5"
+                        className="w-full text-xs text-indigo-600 hover:text-indigo-800 py-1"
                       >
                         Clear all filters
                       </button>
@@ -1077,53 +1096,6 @@ export default function PeoplePage() {
                 </div>
               )}
             </div>
-
-            {/* Results count when filtered */}
-            {(searchQuery || smartSearchResults !== null || activeFiltersCount > 0 || columnFiltersCount > 0) && (
-              <div className="text-sm text-slate-500">
-                {smartSearchResults !== null ? (
-                  <span>
-                    <span className="text-violet-600 font-medium">{sortedPeople.length}</span>
-                    {searchSource === "llm" ? " AI-powered results" : " results ranked by relevance"}
-                  </span>
-                ) : (
-                  <>Showing {sortedPeople.length} of {people.length}</>
-                )}
-              </div>
-            )}
-
-            {/* Active column filters indicator */}
-            {columnFiltersCount > 0 && (
-              <div className="flex items-center gap-2 flex-wrap">
-                {Object.entries(columnFilters).map(([columnId, filter]) => {
-                  const column = ALL_COLUMNS.find((c) => c.id === columnId);
-                  const operatorLabel = OPERATORS_BY_TYPE[COLUMN_TYPES[columnId]]?.find(
-                    (o) => o.value === filter.operator
-                  )?.label;
-                  return (
-                    <span
-                      key={columnId}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-violet-50 text-violet-700 text-xs rounded-full border border-violet-200"
-                    >
-                      <span className="font-medium">{column?.label}:</span>
-                      <span>{operatorLabel}</span>
-                      <button
-                        onClick={() => handleColumnFilterChange(columnId, undefined)}
-                        className="ml-1 hover:text-violet-900"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  );
-                })}
-                <button
-                  onClick={() => setColumnFilters({})}
-                  className="text-xs text-violet-600 hover:text-violet-800"
-                >
-                  Clear all
-                </button>
-              </div>
-            )}
 
             {/* Actions Dropdown - only show when contacts are selected */}
             {selectedIds.size > 0 && (
@@ -1138,13 +1110,12 @@ export default function PeoplePage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="px-8 py-6">
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-slate-50/50">
-                  <TableHead className="w-[50px]">
+      <div className="flex-1 min-h-0 overflow-auto p-6">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-50 border-b border-slate-200">
+                <TableHead className="w-[40px] py-2.5 px-4">
                     <Checkbox
                       checked={allSelected}
                       ref={(el) => {
@@ -1324,7 +1295,7 @@ export default function PeoplePage() {
                       />
                     </TableHead>
                   )}
-                  {visibleColumns.has("links") && <TableHead className="text-xs uppercase tracking-wide text-slate-500">Links</TableHead>}
+                  {visibleColumns.has("links") && <TableHead className="text-[10px] font-medium text-slate-500 uppercase tracking-wider py-2.5 px-4">Links</TableHead>}
                   {visibleColumns.has("createdAt") && (
                     <TableHead>
                       <FilterableColumnHeader
@@ -1344,9 +1315,9 @@ export default function PeoplePage() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={visibleColumnCount} className="text-center py-12 text-muted-foreground">
+                    <TableCell colSpan={visibleColumnCount} className="text-center py-12 text-xs text-slate-500">
                       <div className="flex items-center justify-center gap-2">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
+                        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
                         Loading contacts...
                       </div>
                     </TableCell>
@@ -1355,14 +1326,16 @@ export default function PeoplePage() {
                   <TableRow>
                     <TableCell colSpan={visibleColumnCount} className="text-center py-12">
                       <div className="flex flex-col items-center gap-2">
-                        <Users className="h-8 w-8 text-slate-300" />
-                        <p className="text-muted-foreground">
+                        <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center">
+                          <Users className="h-5 w-5 text-slate-400" />
+                        </div>
+                        <p className="text-xs text-slate-500">
                           {people.length === 0 ? "No contacts yet" : "No results match your filters"}
                         </p>
                         {people.length === 0 && (
                           <button
                             onClick={() => setShowContactSlideOut(true)}
-                            className="mt-2 text-sm text-violet-600 hover:text-violet-700 font-medium"
+                            className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
                           >
                             Add your first contact
                           </button>
@@ -1375,29 +1348,29 @@ export default function PeoplePage() {
                     <TableRow
                       key={person.id}
                       className={cn(
-                        "cursor-pointer transition-colors",
-                        selectedIds.has(person.id) ? "bg-violet-50" : "hover:bg-slate-50"
+                        "cursor-pointer transition-colors border-b border-slate-100 last:border-0",
+                        selectedIds.has(person.id) ? "bg-indigo-50" : "hover:bg-slate-50"
                       )}
                       onClick={() => router.push(`/people/${person.id}`)}
                     >
-                      <TableCell onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={selectedIds.has(person.id)}
                           onCheckedChange={() => toggleSelect(person.id)}
                           aria-label={`Select ${person.firstName} ${person.lastName}`}
+                          className="h-3.5 w-3.5"
                         />
                       </TableCell>
                       {visibleColumns.has("name") && (
-                        <TableCell>
-                          <div className="flex items-center gap-3">
+                        <TableCell className="py-2.5 px-4">
+                          <div className="flex items-center gap-2.5">
                             <div className={cn(
-                              "h-9 w-9 rounded-full flex items-center justify-center text-xs font-medium text-white",
+                              "h-8 w-8 rounded-lg flex items-center justify-center text-[10px] font-medium text-white shrink-0",
                               `bg-gradient-to-br ${theme?.gradient || "from-violet-500 to-purple-600"}`
                             )}>
                               {getInitials(person.firstName, person.lastName)}
                             </div>
-                            <div className="font-medium text-slate-900">{person.firstName} {person.lastName}</div>
-                            {/* Smart search explainability */}
+                            <div className="text-xs font-medium text-slate-900">{person.firstName} {person.lastName}</div>
                             {smartResultMap?.has(person.id) && (
                               <ExplainTooltip
                                 explanations={smartResultMap.get(person.id)!.explanations}
@@ -1407,53 +1380,53 @@ export default function PeoplePage() {
                         </TableCell>
                       )}
                       {visibleColumns.has("organization") && (
-                        <TableCell>
+                        <TableCell className="py-2.5 px-4">
                           {person.org ? (
-                            <div className="flex items-center gap-2">
-                              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                              <span className="text-slate-700">{person.org}</span>
+                            <div className="flex items-center gap-1.5">
+                              <Building2 className="h-3 w-3 text-slate-400" />
+                              <span className="text-xs text-slate-700">{person.org}</span>
                               <OrgKindBadge kind={person.orgKind} />
                             </div>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-xs text-slate-400">—</span>
                           )}
                         </TableCell>
                       )}
                       {visibleColumns.has("title") && (
-                        <TableCell className="text-sm text-slate-600">
-                          {person.title || <span className="text-muted-foreground">—</span>}
+                        <TableCell className="py-2.5 px-4 text-xs text-slate-600">
+                          {person.title || <span className="text-slate-400">—</span>}
                         </TableCell>
                       )}
                       {visibleColumns.has("email") && (
-                        <TableCell>
+                        <TableCell className="py-2.5 px-4">
                           {person.email ? (
                             <a
                               href={`mailto:${person.email}`}
-                              className="text-sm text-violet-600 hover:underline flex items-center gap-1.5"
+                              className="text-xs text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <Mail className="h-3.5 w-3.5" />
+                              <Mail className="h-3 w-3" />
                               {person.email}
                             </a>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-xs text-slate-400">—</span>
                           )}
                         </TableCell>
                       )}
                       {visibleColumns.has("phone") && (
-                        <TableCell>
+                        <TableCell className="py-2.5 px-4">
                           <PhoneCell phone={person.phone} />
                         </TableCell>
                       )}
                       {visibleColumns.has("location") && (
-                        <TableCell className="text-muted-foreground text-sm">
+                        <TableCell className="py-2.5 px-4 text-xs text-slate-500">
                           {person.city && person.country
                             ? `${person.city}, ${person.country}`
                             : person.city || person.state || person.country || "—"}
                         </TableCell>
                       )}
                       {visibleColumns.has("warmth") && (
-                        <TableCell onClick={(e) => e.stopPropagation()}>
+                        <TableCell className="py-2.5 px-4" onClick={(e) => e.stopPropagation()}>
                           <InlineWarmthSelector
                             warmth={person.warmth}
                             personId={person.id}
@@ -1462,61 +1435,61 @@ export default function PeoplePage() {
                         </TableCell>
                       )}
                       {visibleColumns.has("tags") && (
-                        <TableCell>
+                        <TableCell className="py-2.5 px-4">
                           {person.tags && person.tags.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
+                            <div className="flex flex-wrap gap-0.5">
                               {person.tags.slice(0, 2).map((tag) => (
                                 <span
                                   key={tag}
-                                  className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded"
+                                  className="px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[10px] rounded"
                                 >
                                   {tag}
                                 </span>
                               ))}
                               {person.tags.length > 2 && (
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-[10px] text-slate-400">
                                   +{person.tags.length - 2}
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-xs text-slate-400">—</span>
                           )}
                         </TableCell>
                       )}
                       {visibleColumns.has("source") && (
-                        <TableCell className="text-sm">
+                        <TableCell className="py-2.5 px-4">
                           {person.source ? (
                             <SourceBadge source={person.source} />
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-xs text-slate-400">—</span>
                           )}
                         </TableCell>
                       )}
                       {visibleColumns.has("lastContact") && (
-                        <TableCell className="text-muted-foreground text-sm">
+                        <TableCell className="py-2.5 px-4 text-xs text-slate-500">
                           {formatDate(person.lastContactedAt)}
                         </TableCell>
                       )}
                       {visibleColumns.has("nextFollowUp") && (
-                        <TableCell className="text-sm">
+                        <TableCell className="py-2.5 px-4 text-xs">
                           {person.nextFollowUpAt ? (
-                            <span className={new Date(person.nextFollowUpAt) < new Date() ? "text-red-600" : "text-muted-foreground"}>
+                            <span className={new Date(person.nextFollowUpAt) < new Date() ? "text-red-600" : "text-slate-500"}>
                               {formatDate(person.nextFollowUpAt)}
                             </span>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-slate-400">—</span>
                           )}
                         </TableCell>
                       )}
                       {visibleColumns.has("contactCount") && (
-                        <TableCell className="text-sm text-muted-foreground text-center">
+                        <TableCell className="py-2.5 px-4 text-xs text-slate-500 text-center">
                           {person.contactCount || 0}
                         </TableCell>
                       )}
                       {visibleColumns.has("links") && (
-                        <TableCell>
-                          <div className="flex items-center gap-2">
+                        <TableCell className="py-2.5 px-4">
+                          <div className="flex items-center gap-1.5">
                             {person.linkedin && (
                               <a
                                 href={person.linkedin}
@@ -1526,7 +1499,7 @@ export default function PeoplePage() {
                                 onClick={(e) => e.stopPropagation()}
                                 title="LinkedIn"
                               >
-                                <LinkedInIcon className="h-4 w-4" />
+                                <LinkedInIcon className="h-3.5 w-3.5" />
                               </a>
                             )}
                             {person.twitter && (
@@ -1538,7 +1511,7 @@ export default function PeoplePage() {
                                 onClick={(e) => e.stopPropagation()}
                                 title="X (Twitter)"
                               >
-                                <TwitterIcon className="h-4 w-4" />
+                                <TwitterIcon className="h-3.5 w-3.5" />
                               </a>
                             )}
                             {person.instagram && (
@@ -1550,17 +1523,17 @@ export default function PeoplePage() {
                                 onClick={(e) => e.stopPropagation()}
                                 title="Instagram"
                               >
-                                <InstagramIcon className="h-4 w-4" />
+                                <InstagramIcon className="h-3.5 w-3.5" />
                               </a>
                             )}
                             {!person.linkedin && !person.twitter && !person.instagram && (
-                              <span className="text-muted-foreground">—</span>
+                              <span className="text-xs text-slate-400">—</span>
                             )}
                           </div>
                         </TableCell>
                       )}
                       {visibleColumns.has("createdAt") && (
-                        <TableCell className="text-muted-foreground text-sm">
+                        <TableCell className="py-2.5 px-4 text-xs text-slate-500">
                           {formatDate(person.createdAt)}
                         </TableCell>
                       )}
@@ -1571,7 +1544,6 @@ export default function PeoplePage() {
             </Table>
           </div>
         </div>
-      </div>
 
       {selectedPeople.length > 0 && (
         <BulkActionBar selectedPeople={selectedPeople} onClear={clearSelection} />

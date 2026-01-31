@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -30,22 +29,22 @@ interface Organization {
 function WarmthIndicator({ warmth }: { warmth: number }) {
   const labels = ["Cold", "Warm", "Hot", "Champion"];
   const colors = [
-    "bg-slate-200",
+    "bg-slate-300",
     "bg-yellow-400",
     "bg-orange-500",
     "bg-green-500",
   ];
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       <div className="flex gap-0.5">
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className={`h-1.5 w-3 rounded-full ${i <= warmth ? colors[warmth] : "bg-slate-100"}`}
+            className={`h-1 w-2.5 rounded-full ${i <= warmth ? colors[warmth] : "bg-slate-100"}`}
           />
         ))}
       </div>
-      <span className="text-xs text-muted-foreground">{labels[warmth]}</span>
+      <span className="text-[10px] text-slate-500">{labels[warmth]}</span>
     </div>
   );
 }
@@ -92,108 +91,122 @@ export default function CompaniesPage() {
   }, []);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="h-[calc(100vh-1.5rem)] flex flex-col bg-slate-50">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-slate-200 bg-white">
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/organizations")}
-            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors"
+            className="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h1 className="text-xl font-semibold">Companies</h1>
-          <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-100">
-            {organizations.length} companies
-          </Badge>
+          <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+            <Building2 className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <h1 className="text-base font-semibold text-slate-900">Companies</h1>
+            <p className="text-xs text-slate-500">{organizations.length} total</p>
+          </div>
         </div>
       </div>
 
-      <div className="rounded-md border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[280px]">Company</TableHead>
-              <TableHead>Sector</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Website</TableHead>
-              <TableHead>Warmth</TableHead>
-              <TableHead className="text-right">People</TableHead>
-              <TableHead className="text-right">Deals</TableHead>
-              <TableHead>Last Contact</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
-                  Loading...
-                </TableCell>
+      {/* Table */}
+      <div className="flex-1 min-h-0 overflow-auto p-6">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-50 border-b border-slate-200">
+                <TableHead className="w-[240px] text-[10px] font-medium text-slate-500 uppercase tracking-wider py-2.5 px-4">Company</TableHead>
+                <TableHead className="text-[10px] font-medium text-slate-500 uppercase tracking-wider py-2.5 px-4">Sector</TableHead>
+                <TableHead className="text-[10px] font-medium text-slate-500 uppercase tracking-wider py-2.5 px-4">Location</TableHead>
+                <TableHead className="text-[10px] font-medium text-slate-500 uppercase tracking-wider py-2.5 px-4">Website</TableHead>
+                <TableHead className="text-[10px] font-medium text-slate-500 uppercase tracking-wider py-2.5 px-4">Warmth</TableHead>
+                <TableHead className="text-[10px] font-medium text-slate-500 uppercase tracking-wider py-2.5 px-4 text-right">People</TableHead>
+                <TableHead className="text-[10px] font-medium text-slate-500 uppercase tracking-wider py-2.5 px-4 text-right">Deals</TableHead>
+                <TableHead className="text-[10px] font-medium text-slate-500 uppercase tracking-wider py-2.5 px-4">Last Contact</TableHead>
               </TableRow>
-            ) : organizations.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
-                  No companies found
-                </TableCell>
-              </TableRow>
-            ) : (
-              organizations.map((org) => (
-                <TableRow key={org.id} className="cursor-pointer" onClick={() => router.push(`/organizations/${org.id}`)}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-md bg-purple-100 flex items-center justify-center">
-                        <Building2 className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <div>
-                        <div className="font-medium">{org.name}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {org.sector || "—"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {org.city && org.country ? `${org.city}, ${org.country}` : org.city || org.country || "—"}
-                  </TableCell>
-                  <TableCell>
-                    {org.website ? (
-                      <a
-                        href={org.website.startsWith("http") ? org.website : `https://${org.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:underline flex items-center gap-1"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {getDomain(org.website)}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <WarmthIndicator warmth={org.warmth} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {org.peopleCount > 0 ? (
-                      <span className="inline-flex items-center gap-1 text-sm">
-                        <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                        {org.peopleCount}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    {org.dealsCount > 0 ? org.dealsCount : "—"}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {formatDate(org.lastContactedAt)}
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-12 text-xs text-slate-500">
+                    Loading...
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : organizations.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-12">
+                    <div className="flex flex-col items-center">
+                      <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center mb-2">
+                        <Building2 className="h-5 w-5 text-slate-400" />
+                      </div>
+                      <p className="text-xs text-slate-500">No companies found</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                organizations.map((org) => (
+                  <TableRow
+                    key={org.id}
+                    className="cursor-pointer hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0"
+                    onClick={() => router.push(`/organizations/${org.id}`)}
+                  >
+                    <TableCell className="py-2.5 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-8 w-8 rounded-lg bg-purple-50 flex items-center justify-center shrink-0">
+                          <Building2 className="h-3.5 w-3.5 text-purple-600" />
+                        </div>
+                        <div className="text-xs font-medium text-slate-900 truncate">{org.name}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-2.5 px-4 text-xs text-slate-500">
+                      {org.sector || "—"}
+                    </TableCell>
+                    <TableCell className="py-2.5 px-4 text-xs text-slate-500">
+                      {org.city && org.country ? `${org.city}, ${org.country}` : org.city || org.country || "—"}
+                    </TableCell>
+                    <TableCell className="py-2.5 px-4">
+                      {org.website ? (
+                        <a
+                          href={org.website.startsWith("http") ? org.website : `https://${org.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {getDomain(org.website)}
+                          <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      ) : (
+                        <span className="text-xs text-slate-400">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-2.5 px-4">
+                      <WarmthIndicator warmth={org.warmth} />
+                    </TableCell>
+                    <TableCell className="py-2.5 px-4 text-right">
+                      {org.peopleCount > 0 ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-slate-600">
+                          <Users className="h-3 w-3 text-slate-400" />
+                          {org.peopleCount}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-2.5 px-4 text-right text-xs text-slate-600 tabular-nums">
+                      {org.dealsCount > 0 ? org.dealsCount : "—"}
+                    </TableCell>
+                    <TableCell className="py-2.5 px-4 text-xs text-slate-500">
+                      {formatDate(org.lastContactedAt)}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

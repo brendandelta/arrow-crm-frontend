@@ -201,18 +201,18 @@ export function EntityDetailPanel({
 
   if (loading) {
     return (
-      <div className="w-[460px] bg-white border-l border-slate-200/80 flex flex-col shadow-xl shadow-slate-200/50">
-        <div className="p-8">
-          <div className="animate-pulse space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="h-14 w-14 bg-slate-100 rounded-2xl" />
+      <div className="w-[420px] bg-white border-l border-slate-200 flex flex-col">
+        <div className="p-5">
+          <div className="animate-pulse space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 bg-slate-100 rounded-lg" />
               <div className="flex-1 space-y-2">
-                <div className="h-6 w-48 bg-slate-100 rounded-lg" />
-                <div className="h-4 w-32 bg-slate-50 rounded-lg" />
+                <div className="h-5 w-40 bg-slate-100 rounded" />
+                <div className="h-3 w-28 bg-slate-50 rounded" />
               </div>
             </div>
-            <div className="h-40 bg-slate-50 rounded-2xl" />
-            <div className="h-32 bg-slate-50 rounded-2xl" />
+            <div className="h-32 bg-slate-50 rounded-lg" />
+            <div className="h-24 bg-slate-50 rounded-lg" />
           </div>
         </div>
       </div>
@@ -221,12 +221,12 @@ export function EntityDetailPanel({
 
   if (!entity) {
     return (
-      <div className="w-[460px] bg-white border-l border-slate-200/80 flex items-center justify-center shadow-xl shadow-slate-200/50">
-        <div className="text-center p-12">
-          <div className="h-16 w-16 mx-auto mb-4 rounded-2xl bg-slate-50 flex items-center justify-center">
-            <Landmark className="h-8 w-8 text-slate-300" />
+      <div className="w-[420px] bg-white border-l border-slate-200 flex items-center justify-center">
+        <div className="text-center p-8">
+          <div className="h-12 w-12 mx-auto mb-3 rounded-lg bg-slate-100 flex items-center justify-center">
+            <Landmark className="h-6 w-6 text-slate-400" />
           </div>
-          <p className="text-slate-500">Select an entity to view details</p>
+          <p className="text-sm text-slate-500">Select an entity to view details</p>
         </div>
       </div>
     );
@@ -236,45 +236,44 @@ export function EntityDetailPanel({
   const typeColor = getEntityTypeColor(entity.entityType);
 
   return (
-    <div className="w-[460px] bg-white border-l border-slate-200/80 flex flex-col overflow-hidden shadow-xl shadow-slate-200/50">
-      {/* Premium Header */}
-      <div className="px-8 py-6 bg-gradient-to-b from-slate-50 to-white border-b border-slate-100">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-start gap-4">
-            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <Landmark className="h-7 w-7 text-white" />
-            </div>
-            <div className="pt-1">
-              <h2 className="text-xl font-semibold text-slate-900 tracking-tight">{entity.displayName}</h2>
-              {entity.nameShort && entity.nameShort !== entity.displayName && (
-                <p className="text-sm text-slate-500 mt-0.5">{entity.nameLegal}</p>
-              )}
-            </div>
+    <div className="w-[420px] bg-white border-l border-slate-200 flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="px-5 py-4 border-b border-slate-200 pr-12 relative">
+        <div className="absolute top-3 right-3 flex items-center gap-1">
+          <button
+            onClick={handleDeleteEntity}
+            disabled={deleting}
+            className="h-8 w-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors disabled:opacity-50"
+            title="Delete entity"
+          >
+            {deleting ? (
+              <span className="h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin block" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+          </button>
+          <button
+            onClick={onClose}
+            className="h-8 w-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="flex items-start gap-3 mb-3">
+          <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shrink-0">
+            <Landmark className="h-5 w-5 text-white" />
           </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleDeleteEntity}
-              disabled={deleting}
-              className="h-9 w-9 rounded-xl hover:bg-red-50 flex items-center justify-center text-slate-400 hover:text-red-500 transition-all duration-200 disabled:opacity-50"
-              title="Delete entity"
-            >
-              {deleting ? (
-                <span className="h-5 w-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin block" />
-              ) : (
-                <Trash2 className="h-5 w-5" />
-              )}
-            </button>
-            <button
-              onClick={onClose}
-              className="h-9 w-9 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all duration-200"
-            >
-              <X className="h-5 w-5" />
-            </button>
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold text-slate-900 truncate">{entity.displayName}</h2>
+            {entity.nameShort && entity.nameShort !== entity.displayName && (
+              <p className="text-xs text-slate-500 truncate">{entity.nameLegal}</p>
+            )}
           </div>
         </div>
 
         {/* Status and Type Badges - Clickable to edit */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <EditableSelectBadge
             value={entity.status}
             label={entity.statusLabel}
@@ -513,19 +512,19 @@ export function EntityDetailPanel({
           action={
             <button
               onClick={(e) => { e.stopPropagation(); onAddBankAccount(); }}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-3 w-3" />
               Add
             </button>
           }
         >
           {(entity.bankAccounts ?? []).length === 0 ? (
-            <div className="text-center py-8">
-              <div className="h-12 w-12 mx-auto mb-3 rounded-xl bg-slate-50 flex items-center justify-center">
-                <Wallet className="h-6 w-6 text-slate-300" />
+            <div className="text-center py-6">
+              <div className="h-10 w-10 mx-auto mb-2 rounded-lg bg-slate-100 flex items-center justify-center">
+                <Wallet className="h-5 w-5 text-slate-400" />
               </div>
-              <p className="text-sm text-slate-500">No bank accounts linked</p>
+              <p className="text-xs text-slate-500">No bank accounts linked</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -552,42 +551,42 @@ export function EntityDetailPanel({
           action={
             <button
               onClick={(e) => { e.stopPropagation(); onAddSigner(); }}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-3 w-3" />
               Add
             </button>
           }
         >
           {(entity.signers ?? []).length === 0 ? (
-            <div className="text-center py-8">
-              <div className="h-12 w-12 mx-auto mb-3 rounded-xl bg-slate-50 flex items-center justify-center">
-                <Users className="h-6 w-6 text-slate-300" />
+            <div className="text-center py-6">
+              <div className="h-10 w-10 mx-auto mb-2 rounded-lg bg-slate-100 flex items-center justify-center">
+                <Users className="h-5 w-5 text-slate-400" />
               </div>
-              <p className="text-sm text-slate-500">No authorized signers</p>
+              <p className="text-xs text-slate-500">No authorized signers</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {(entity.signers ?? []).map((signer) => (
                 <div
                   key={signer.id}
-                  className="group flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100/80 rounded-xl transition-colors"
+                  className="group flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors"
                 >
                   <div>
                     <Link
                       href={`/people?id=${signer.personId}`}
-                      className="font-medium text-sm text-slate-900 hover:text-indigo-600 transition-colors"
+                      className="font-medium text-xs text-slate-900 hover:text-indigo-600 transition-colors"
                     >
                       {signer.fullName}
                     </Link>
-                    <p className="text-xs text-slate-500 mt-0.5">{signer.roleLabel}</p>
+                    <p className="text-[10px] text-slate-500">{signer.roleLabel}</p>
                   </div>
                   <button
                     onClick={() => handleDeleteSigner(signer.id, signer.fullName)}
-                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200"
+                    className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-all"
                     title="Remove signer"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ))}
@@ -604,44 +603,44 @@ export function EntityDetailPanel({
           action={
             <button
               onClick={(e) => { e.stopPropagation(); setShowUploadDialog(true); }}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-3 w-3" />
               Upload
             </button>
           }
         >
           {(entity.documents ?? []).length === 0 ? (
-            <div className="text-center py-8">
-              <div className="h-12 w-12 mx-auto mb-3 rounded-xl bg-slate-50 flex items-center justify-center">
-                <FileText className="h-6 w-6 text-slate-300" />
+            <div className="text-center py-6">
+              <div className="h-10 w-10 mx-auto mb-2 rounded-lg bg-slate-100 flex items-center justify-center">
+                <FileText className="h-5 w-5 text-slate-400" />
               </div>
-              <p className="text-sm text-slate-500">No documents linked</p>
+              <p className="text-xs text-slate-500">No documents linked</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {(entity.documents ?? []).map((doc) => (
                 <Link
                   key={doc.id}
                   href={`/documents?id=${doc.id}`}
-                  className="group flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors"
+                  className="group flex items-center gap-2.5 p-2.5 hover:bg-slate-50 rounded-lg transition-colors"
                 >
-                  <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
-                    <FileText className="h-5 w-5 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                  <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
+                    <FileText className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 truncate">
+                    <p className="text-xs font-medium text-slate-900 truncate">
                       {doc.title || doc.name}
                     </p>
-                    <p className="text-xs text-slate-500">{doc.category}</p>
+                    <p className="text-[10px] text-slate-500">{doc.category}</p>
                   </div>
-                  <ExternalLink className="h-4 w-4 text-slate-300 group-hover:text-indigo-400 transition-colors" />
+                  <ExternalLink className="h-3.5 w-3.5 text-slate-300 group-hover:text-indigo-400 transition-colors" />
                 </Link>
               ))}
               {entity.documentsCount > (entity.documents ?? []).length && (
                 <Link
                   href={`/documents?linkableType=InternalEntity&linkableId=${entity.id}`}
-                  className="block text-center text-sm text-indigo-600 hover:text-indigo-700 font-medium py-3 hover:bg-indigo-50 rounded-xl transition-colors"
+                  className="block text-center text-xs text-indigo-600 hover:text-indigo-700 font-medium py-2 hover:bg-indigo-50 rounded-lg transition-colors"
                 >
                   View all {entity.documentsCount} documents
                 </Link>
@@ -658,25 +657,25 @@ export function EntityDetailPanel({
             isExpanded={expandedSections.has("deals")}
             onToggle={() => toggleSection("deals")}
           >
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {(entity.linkedDeals ?? []).map((deal) => (
                 <Link
                   key={deal.id}
                   href={`/deals/${deal.id}`}
-                  className="group flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors"
+                  className="group flex items-center gap-2.5 p-2.5 hover:bg-slate-50 rounded-lg transition-colors"
                 >
-                  <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
-                    <Briefcase className="h-5 w-5 text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                  <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
+                    <Briefcase className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition-colors" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 truncate">
+                    <p className="text-xs font-medium text-slate-900 truncate">
                       {deal.name}
                     </p>
                     {deal.company && (
-                      <p className="text-xs text-slate-500">{deal.company}</p>
+                      <p className="text-[10px] text-slate-500">{deal.company}</p>
                     )}
                   </div>
-                  <span className="text-xs text-slate-500 capitalize px-2 py-1 bg-slate-100 rounded-md">{deal.status}</span>
+                  <span className="text-[10px] text-slate-500 capitalize px-1.5 py-0.5 bg-slate-100 rounded">{deal.status}</span>
                 </Link>
               ))}
             </div>
@@ -705,13 +704,13 @@ export function EntityDetailPanel({
         </CollapsibleSection>
 
         {/* Footer Meta */}
-        <div className="px-6 py-5 bg-slate-50/50 border-t border-slate-100">
-          <div className="flex justify-between text-xs text-slate-400">
+        <div className="px-5 py-3 bg-slate-50 border-t border-slate-200">
+          <div className="flex justify-between text-[10px] text-slate-400">
             <span>Created {new Date(entity.createdAt).toLocaleDateString()}</span>
             <span>Updated {new Date(entity.updatedAt).toLocaleDateString()}</span>
           </div>
           {entity.createdBy && (
-            <p className="mt-1 text-xs text-slate-400">By {entity.createdBy.name}</p>
+            <p className="mt-0.5 text-[10px] text-slate-400">By {entity.createdBy.name}</p>
           )}
         </div>
       </div>
@@ -749,8 +748,8 @@ export function EntityDetailPanel({
 function InfoField({ label, icon, value }: { label: string; icon?: React.ReactNode; value: string }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">{label}</label>
-      <div className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="block text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">{label}</label>
+      <div className="flex items-center gap-1.5 text-xs text-slate-700">
         {icon && <span className="text-slate-400">{icon}</span>}
         <span>{value}</span>
       </div>
@@ -777,31 +776,31 @@ function CollapsibleSection({
   children,
 }: CollapsibleSectionProps) {
   return (
-    <div className="border-b border-slate-100">
-      <div className="flex items-center justify-between px-6 py-4 hover:bg-slate-50/50 transition-colors">
+    <div className="border-b border-slate-200">
+      <div className="flex items-center justify-between px-5 py-3 hover:bg-slate-50 transition-colors">
         <button
           onClick={onToggle}
-          className="flex-1 flex items-center gap-3 text-sm font-medium text-slate-700 text-left"
+          className="flex-1 flex items-center gap-2.5 text-xs font-medium text-slate-700 text-left"
         >
           <span className="text-slate-400">{icon}</span>
           {title}
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {action}
           <button
             onClick={onToggle}
-            className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-slate-100 transition-colors"
+            className="h-5 w-5 rounded flex items-center justify-center hover:bg-slate-100 transition-colors"
           >
             {isExpanded ? (
-              <ChevronDown className="h-4 w-4 text-slate-400" />
+              <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
             ) : (
-              <ChevronRight className="h-4 w-4 text-slate-400" />
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
             )}
           </button>
         </div>
       </div>
       {isExpanded && (
-        <div className="px-6 pb-5">
+        <div className="px-5 pb-4">
           {children}
         </div>
       )}
@@ -856,15 +855,15 @@ function EditableField({
   if (editing) {
     return (
       <div>
-        {label && <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">{label}</label>}
-        <div className="flex items-start gap-2">
+        {label && <label className="block text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">{label}</label>}
+        <div className="flex items-start gap-1.5">
           {multiline ? (
             <textarea
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               placeholder={placeholder}
               rows={3}
-              className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 resize-none transition-all duration-200"
+              className="flex-1 px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-slate-300 resize-none"
               autoFocus
             />
           ) : (
@@ -873,7 +872,7 @@ function EditableField({
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 transition-all duration-200"
+              className="flex-1 px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-slate-300"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSave();
@@ -884,15 +883,15 @@ function EditableField({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="h-9 w-9 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors disabled:opacity-50"
+            className="h-7 w-7 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors disabled:opacity-50"
           >
-            <Check className="h-4 w-4" />
+            <Check className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={handleCancel}
-            className="h-9 w-9 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-colors"
+            className="h-7 w-7 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-colors"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
@@ -901,18 +900,18 @@ function EditableField({
 
   return (
     <div>
-      {label && <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">{label}</label>}
+      {label && <label className="block text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">{label}</label>}
       <button
         onClick={() => {
           setEditValue(value);
           setEditing(true);
         }}
-        className="w-full flex items-center justify-between group text-left py-1.5 px-1 -mx-1 rounded-lg hover:bg-slate-50 transition-colors"
+        className="w-full flex items-center justify-between group text-left py-1 px-1 -mx-1 rounded hover:bg-slate-50 transition-colors"
       >
-        <span className={`text-sm ${value ? "text-slate-700" : "text-slate-400"}`}>
+        <span className={`text-xs ${value ? "text-slate-700" : "text-slate-400"}`}>
           {value || placeholder || "Click to edit"}
         </span>
-        <Edit2 className="h-3.5 w-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <Edit2 className="h-3 w-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
       </button>
     </div>
   );
@@ -937,72 +936,72 @@ function BankAccountCard({
   const isActive = account.status === "active";
 
   return (
-    <div className={`p-4 rounded-xl border transition-all duration-200 ${
+    <div className={`p-3 rounded-lg border transition-colors ${
       isActive
-        ? "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
-        : "bg-slate-50 border-slate-100"
+        ? "bg-white border-slate-200 hover:border-slate-300"
+        : "bg-slate-50 border-slate-200"
     }`}>
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-            isActive ? "bg-gradient-to-br from-green-50 to-emerald-50" : "bg-slate-100"
+        <div className="flex items-center gap-2.5">
+          <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+            isActive ? "bg-green-50" : "bg-slate-100"
           }`}>
-            <Wallet className={`h-5 w-5 ${isActive ? "text-green-600" : "text-slate-400"}`} />
+            <Wallet className={`h-4 w-4 ${isActive ? "text-green-600" : "text-slate-400"}`} />
           </div>
           <div>
-            <p className="font-medium text-sm text-slate-900">{account.bankName}</p>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-xs text-slate-500">{account.accountTypeLabel}</span>
+            <p className="font-medium text-xs text-slate-900">{account.bankName}</p>
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className="text-[10px] text-slate-500">{account.accountTypeLabel}</span>
               {account.isPrimary && (
-                <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded text-[10px] font-semibold uppercase tracking-wide">
+                <span className="px-1 py-0.5 bg-indigo-100 text-indigo-600 rounded text-[9px] font-semibold uppercase">
                   Primary
                 </span>
               )}
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <button
             onClick={onReveal}
             disabled={revealing}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-200 disabled:opacity-50"
+            className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-50"
             title={revealed ? "Hide numbers" : "Reveal numbers"}
           >
             {revealing ? (
-              <span className="h-4 w-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin block" />
+              <span className="h-3.5 w-3.5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin block" />
             ) : revealed ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="h-3.5 w-3.5" />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="h-3.5 w-3.5" />
             )}
           </button>
           <button
             onClick={onDelete}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200"
+            className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
             title="Remove account"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4">
+      <div className="mt-3 grid grid-cols-2 gap-3">
         <div>
-          <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Routing</span>
-          <p className="font-mono text-sm text-slate-700 mt-1">
+          <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Routing</span>
+          <p className="font-mono text-xs text-slate-700 mt-0.5">
             {revealed ? revealed.routing : account.routingMasked || "••••••••"}
           </p>
         </div>
         <div>
-          <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Account</span>
-          <p className="font-mono text-sm text-slate-700 mt-1">
+          <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Account</span>
+          <p className="font-mono text-xs text-slate-700 mt-0.5">
             {revealed ? revealed.account : account.accountMasked || "••••••••"}
           </p>
         </div>
       </div>
 
       {account.nickname && (
-        <p className="mt-3 text-xs text-slate-500 pt-3 border-t border-slate-100">{account.nickname}</p>
+        <p className="mt-2 text-[10px] text-slate-500 pt-2 border-t border-slate-100">{account.nickname}</p>
       )}
     </div>
   );
@@ -1060,21 +1059,21 @@ function EditableSelectBadge({
   if (editing) {
     return (
       <div ref={ref} className="relative">
-        <div className={`px-3 py-1.5 text-xs font-medium rounded-${rounded} border ${colorClass} flex items-center gap-1`}>
+        <div className={`px-2 py-1 text-[10px] font-medium rounded-${rounded} border ${colorClass} flex items-center gap-0.5`}>
           {saving ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Loader2 className="h-2.5 w-2.5 animate-spin" />
           ) : (
             <span>{label}</span>
           )}
-          <ChevronDown className="h-3 w-3" />
+          <ChevronDown className="h-2.5 w-2.5" />
         </div>
-        <div className="absolute z-20 mt-1 min-w-[140px] bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute z-20 mt-1 min-w-[120px] bg-white border border-slate-200 rounded-lg shadow-lg max-h-40 overflow-y-auto">
           {options.map((option) => (
             <button
               key={option.value}
               onClick={() => handleSelect(option.value)}
               disabled={saving}
-              className={`w-full px-3 py-2 text-left text-xs font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 ${
+              className={`w-full px-2.5 py-1.5 text-left text-[10px] font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 ${
                 option.value === value ? "bg-indigo-50 text-indigo-700" : "text-slate-700"
               }`}
             >
@@ -1089,11 +1088,11 @@ function EditableSelectBadge({
   return (
     <button
       onClick={() => setEditing(true)}
-      className={`px-3 py-1.5 text-xs font-medium rounded-${rounded} border ${colorClass} hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1`}
+      className={`px-2 py-1 text-[10px] font-medium rounded-${rounded} border ${colorClass} hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-0.5`}
       title="Click to edit"
     >
       <span>{label}</span>
-      <Edit2 className="h-2.5 w-2.5 opacity-50" />
+      <Edit2 className="h-2 w-2 opacity-50" />
     </button>
   );
 }
@@ -1152,7 +1151,7 @@ function EditableSelectField({
 
   return (
     <div ref={ref}>
-      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+      <label className="block text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">
         {label}
       </label>
       {editing ? (
@@ -1161,7 +1160,7 @@ function EditableSelectField({
             value={value}
             onChange={(e) => handleSelect(e.target.value)}
             disabled={saving}
-            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 bg-white appearance-none cursor-pointer disabled:opacity-50"
+            className="w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-slate-300 bg-white appearance-none cursor-pointer disabled:opacity-50"
             autoFocus
           >
             <option value="">{placeholder || "Select..."}</option>
@@ -1171,21 +1170,21 @@ function EditableSelectField({
               </option>
             ))}
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
           {saving && (
-            <Loader2 className="absolute right-8 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-indigo-600" />
+            <Loader2 className="absolute right-7 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-indigo-600" />
           )}
         </div>
       ) : (
         <button
           onClick={() => setEditing(true)}
-          className="w-full flex items-center justify-between group text-left py-1.5 px-1 -mx-1 rounded-lg hover:bg-slate-50 transition-colors"
+          className="w-full flex items-center justify-between group text-left py-1 px-1 -mx-1 rounded hover:bg-slate-50 transition-colors"
         >
-          <div className="flex items-center gap-2 text-sm text-slate-700">
+          <div className="flex items-center gap-1.5 text-xs text-slate-700">
             {icon && <span className="text-slate-400">{icon}</span>}
             <span className={value ? "text-slate-700" : "text-slate-400"}>{displayValue}</span>
           </div>
-          <Edit2 className="h-3.5 w-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Edit2 className="h-3 w-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>
       )}
     </div>
@@ -1237,32 +1236,32 @@ function EditableDateField({
   if (editing) {
     return (
       <div>
-        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+        <label className="block text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">
           {label}
         </label>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <input
             type="date"
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300"
+            className="flex-1 px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-slate-300"
             autoFocus
           />
           <button
             onClick={handleSave}
             disabled={saving}
-            className="h-9 w-9 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors disabled:opacity-50"
+            className="h-7 w-7 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors disabled:opacity-50"
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
           </button>
           <button
             onClick={() => {
               setEditValue(value ? value.split("T")[0] : "");
               setEditing(false);
             }}
-            className="h-9 w-9 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-colors"
+            className="h-7 w-7 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-colors"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
@@ -1271,7 +1270,7 @@ function EditableDateField({
 
   return (
     <div>
-      <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">
+      <label className="block text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1">
         {label}
       </label>
       <button
@@ -1279,13 +1278,13 @@ function EditableDateField({
           setEditValue(value ? value.split("T")[0] : "");
           setEditing(true);
         }}
-        className="w-full flex items-center justify-between group text-left py-1.5 px-1 -mx-1 rounded-lg hover:bg-slate-50 transition-colors"
+        className="w-full flex items-center justify-between group text-left py-1 px-1 -mx-1 rounded hover:bg-slate-50 transition-colors"
       >
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-1.5 text-xs">
           {icon && <span className="text-slate-400">{icon}</span>}
           <span className={value ? "text-slate-700" : "text-slate-400"}>{displayValue}</span>
         </div>
-        <Edit2 className="h-3.5 w-3.5 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <Edit2 className="h-3 w-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
       </button>
     </div>
   );
@@ -1353,65 +1352,65 @@ function EditableEinField({
 
   if (editing) {
     return (
-      <div className="p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-100">
-        <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
+      <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+        <label className="block text-[10px] font-medium text-slate-500 uppercase tracking-wider mb-1.5">
           EIN
         </label>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <input
             type="text"
             value={editValue}
             onChange={(e) => setEditValue(formatInput(e.target.value))}
             placeholder="XX-XXXXXXX"
-            className="flex-1 px-3 py-2 font-mono text-lg border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300"
+            className="flex-1 px-2.5 py-1.5 font-mono text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-slate-300"
             autoFocus
           />
           <button
             onClick={handleSave}
             disabled={saving}
-            className="h-10 w-10 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors disabled:opacity-50"
+            className="h-7 w-7 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 flex items-center justify-center transition-colors disabled:opacity-50"
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
           </button>
           <button
             onClick={() => {
               setEditValue("");
               setEditing(false);
             }}
-            className="h-10 w-10 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-100 flex items-center justify-center transition-colors"
+            className="h-7 w-7 rounded-lg bg-slate-100 text-slate-400 hover:bg-slate-200 flex items-center justify-center transition-colors"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
-        <p className="text-xs text-slate-400 mt-2">Enter 9 digits, leave blank to remove</p>
+        <p className="text-[10px] text-slate-400 mt-1.5">Enter 9 digits, leave blank to remove</p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-100">
-      <div className="flex items-center justify-between mb-2">
-        <label className="text-xs font-medium text-slate-500 uppercase tracking-wider">EIN</label>
-        <div className="flex items-center gap-1">
+    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+      <div className="flex items-center justify-between mb-1.5">
+        <label className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">EIN</label>
+        <div className="flex items-center gap-0.5">
           <button
             onClick={() => setEditing(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all duration-200"
+            className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors"
           >
-            <Edit2 className="h-3.5 w-3.5" />
+            <Edit2 className="h-3 w-3" />
             Edit
           </button>
           {einPresent && (
             <button
               onClick={onReveal}
               disabled={revealingEin}
-              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-all duration-200 disabled:opacity-50"
+              className="flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded transition-colors disabled:opacity-50"
             >
               {revealingEin ? (
-                <span className="h-3 w-3 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                <span className="h-2.5 w-2.5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
               ) : revealedEin ? (
-                <EyeOff className="h-3.5 w-3.5" />
+                <EyeOff className="h-3 w-3" />
               ) : (
-                <Eye className="h-3.5 w-3.5" />
+                <Eye className="h-3 w-3" />
               )}
               {revealedEin ? "Hide" : "Reveal"}
             </button>
@@ -1421,18 +1420,18 @@ function EditableEinField({
       {einPresent ? (
         <button
           onClick={onCopy}
-          className="group flex items-center gap-2 text-left"
+          className="group flex items-center gap-1.5 text-left"
           title="Click to copy"
         >
-          <span className="font-mono text-lg font-medium text-slate-900">
+          <span className="font-mono text-sm font-medium text-slate-900">
             {revealedEin ? formatEinWithDash(revealedEin) : formatEinWithDash(einMasked)}
           </span>
-          <Copy className="h-4 w-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Copy className="h-3 w-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>
       ) : (
         <button
           onClick={() => setEditing(true)}
-          className="font-mono text-lg text-slate-400 hover:text-indigo-600 transition-colors"
+          className="font-mono text-sm text-slate-400 hover:text-indigo-600 transition-colors"
         >
           Click to add EIN
         </button>

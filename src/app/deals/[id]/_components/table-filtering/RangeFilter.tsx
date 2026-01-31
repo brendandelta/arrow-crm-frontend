@@ -41,10 +41,10 @@ export function RangeFilter({ min, max, filterType, onChange }: RangeFilterProps
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1">
-        <label className="text-[11px] text-slate-400 mb-0.5 block">Min</label>
+        <label className="text-[10px] text-slate-400 mb-0.5 block">Min</label>
         <div className="relative">
           {isCurrency && (
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[12px] text-slate-400">$</span>
+            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">$</span>
           )}
           <input
             type="number"
@@ -54,7 +54,7 @@ export function RangeFilter({ min, max, filterType, onChange }: RangeFilterProps
               commit(e.target.value, localMax);
             }}
             placeholder="—"
-            className={`w-full text-[12px] ${isCurrency ? "pl-5" : "pl-2.5"} pr-2 py-1.5 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder:text-slate-300 tabular-nums`}
+            className={`w-full text-xs ${isCurrency ? "pl-5" : "pl-2.5"} pr-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:bg-white focus:border-slate-300 placeholder:text-slate-400 tabular-nums`}
             onPointerDown={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           />
@@ -62,10 +62,10 @@ export function RangeFilter({ min, max, filterType, onChange }: RangeFilterProps
       </div>
       <span className="text-slate-300 mt-4">–</span>
       <div className="flex-1">
-        <label className="text-[11px] text-slate-400 mb-0.5 block">Max</label>
+        <label className="text-[10px] text-slate-400 mb-0.5 block">Max</label>
         <div className="relative">
           {isCurrency && (
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[12px] text-slate-400">$</span>
+            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">$</span>
           )}
           <input
             type="number"
@@ -75,7 +75,7 @@ export function RangeFilter({ min, max, filterType, onChange }: RangeFilterProps
               commit(localMin, e.target.value);
             }}
             placeholder="—"
-            className={`w-full text-[12px] ${isCurrency ? "pl-5" : "pl-2.5"} pr-2 py-1.5 bg-white border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 placeholder:text-slate-300 tabular-nums`}
+            className={`w-full text-xs ${isCurrency ? "pl-5" : "pl-2.5"} pr-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:bg-white focus:border-slate-300 placeholder:text-slate-400 tabular-nums`}
             onPointerDown={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           />
