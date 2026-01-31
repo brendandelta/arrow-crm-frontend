@@ -31,6 +31,16 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { LinkedObjectsSection } from "./LinkedObjectsSection";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { UniversalDocumentUploader } from "@/components/documents/UniversalDocumentUploader";
 import {
   type InternalEntityDetail,
@@ -80,6 +90,7 @@ export function EntityDetailPanel({
   const [revealingBankId, setRevealingBankId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const toggleSection = (section: string) => {
     const newExpanded = new Set(expandedSections);
@@ -166,12 +177,12 @@ export function EntityDetailPanel({
 
   const handleDeleteEntity = async () => {
     if (!entity) return;
-    if (!confirm(`Are you sure you want to delete "${entity.displayName}"? This will mark it as dissolved.`)) return;
 
     setDeleting(true);
     try {
       await deleteInternalEntity(entity.id);
-      toast.success("Entity deleted");
+      toast.success("Entity permanently deleted");
+      setShowDeleteConfirm(false);
       onDelete();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete entity");
@@ -241,16 +252,12 @@ export function EntityDetailPanel({
       <div className="px-5 py-4 border-b border-slate-200 pr-12 relative">
         <div className="absolute top-3 right-3 flex items-center gap-1">
           <button
-            onClick={handleDeleteEntity}
+            onClick={() => setShowDeleteConfirm(true)}
             disabled={deleting}
             className="h-8 w-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors disabled:opacity-50"
             title="Delete entity"
           >
-            {deleting ? (
-              <span className="h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin block" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
+            <Trash2 className="h-4 w-4" />
           </button>
           <button
             onClick={onClose}
@@ -740,6 +747,29 @@ export function EntityDetailPanel({
           />
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Internal Entity</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete &ldquo;{entity.displayName}&rdquo;?
+              This action cannot be undone and will remove the entity from the database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteEntity}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -371,7 +371,7 @@ export async function updateInternalEntity(
   return res.json();
 }
 
-// Delete internal entity (soft delete - sets status to dissolved)
+// Delete internal entity (permanently removes from database)
 export async function deleteInternalEntity(id: number): Promise<void> {
   const res = await authFetch(`${API_BASE}/api/internal_entities/${id}`, {
     method: 'DELETE',
